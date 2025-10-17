@@ -18,7 +18,7 @@ import java.util.List;
 public class NotificationScheduler {
 
     private final AppointmentRepository appointmentRepository;
-    private final EmailService emailService;
+    private final WhatsAppService whatsAppService;
 
     @Scheduled(cron = "0 0 8 * * ?") // Run at 8:00 AM every day
     @Transactional(readOnly = true)
@@ -26,14 +26,14 @@ public class NotificationScheduler {
         LocalDateTime tomorrow = LocalDateTime.now().plusDays(1).withHour(0).withMinute(0);
         LocalDateTime dayAfterTomorrow = tomorrow.plusDays(1);
 
-        List<Appointment> appointments = appointmentRepository.findByDateTimeBetweenAndStatus(
+        List<Appointment> appointments = appointmentRepository.findByAppointmentDateTimeBetweenAndStatus(
             tomorrow, dayAfterTomorrow, AppointmentStatus.CONFIRMED
         );
 
         for (Appointment appointment : appointments) {
             try {
-                emailService.sendAppointmentReminder(appointment);
-                log.info("Sent appointment reminder for appointment ID: {}", appointment.getId());
+                whatsAppService.sendAppointmentReminder(appointment);
+                log.info("Sent WhatsApp appointment reminder for appointment ID: {}", appointment.getId());
             } catch (Exception e) {
                 log.error("Failed to send reminder for appointment ID: {}", appointment.getId(), e);
             }
@@ -47,14 +47,14 @@ public class NotificationScheduler {
         LocalDateTime threeDaysFromNow = now.plusDays(3).withHour(0).withMinute(0);
         LocalDateTime fourDaysFromNow = threeDaysFromNow.plusDays(1);
 
-        List<Appointment> appointments = appointmentRepository.findByDateTimeBetweenAndStatus(
+        List<Appointment> appointments = appointmentRepository.findByAppointmentDateTimeBetweenAndStatus(
             threeDaysFromNow, fourDaysFromNow, AppointmentStatus.CONFIRMED
         );
 
         for (Appointment appointment : appointments) {
             try {
-                emailService.sendAppointmentReminder(appointment);
-                log.info("Sent 3-day reminder for appointment ID: {}", appointment.getId());
+                whatsAppService.sendAppointmentReminder(appointment);
+                log.info("Sent WhatsApp 3-day reminder for appointment ID: {}", appointment.getId());
             } catch (Exception e) {
                 log.error("Failed to send 3-day reminder for appointment ID: {}", appointment.getId(), e);
             }

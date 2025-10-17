@@ -19,10 +19,18 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     List<Doctor> findBySpecialization(String specialization);
 
     @Query("SELECT d FROM Doctor d JOIN d.hospital h " +
+            "WHERE (:query IS NULL OR " +
+            "lower(d.name) LIKE lower(concat('%', :query, '%')) OR " +
+            "lower(d.specialization) LIKE lower(concat('%', :query, '%')) OR " +
+            "lower(h.name) LIKE lower(concat('%', :query, '%')) OR " +
+            "d.mobileNumber LIKE concat('%', :query, '%')) ")
+    List<Doctor> searchDoctors(@Param("query") String query);
+
+    @Query("SELECT d FROM Doctor d " +
             "WHERE (:name IS NULL OR lower(d.name) LIKE lower(concat('%', :name, '%'))) " +
             "AND (:specialization IS NULL OR lower(d.specialization) LIKE lower(concat('%', :specialization, '%'))) " +
-            "AND (:hospitalName IS NULL OR lower(h.name) LIKE lower(concat('%', :hospitalName, '%'))) ")
-    List<Doctor> searchByNameSpecializationHospital(@Param("name") String name,
-                                                   @Param("specialization") String specialization,
-                                                   @Param("hospitalName") String hospitalName);
+            "AND (:hospitalId IS NULL OR d.hospital.id = :hospitalId) ")
+    List<Doctor> search(@Param("name") String name,
+                       @Param("specialization") String specialization,
+                       @Param("hospitalId") Long hospitalId);
 }

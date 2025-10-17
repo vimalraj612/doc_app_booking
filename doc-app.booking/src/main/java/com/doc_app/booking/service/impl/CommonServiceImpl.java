@@ -22,8 +22,8 @@ public class CommonServiceImpl implements CommonService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DoctorDTO> searchDoctors(String name, String specialization, String hospitalName) {
-        List<Doctor> doctors = doctorRepository.searchByNameSpecializationHospital(name, specialization, hospitalName);
+    public List<DoctorDTO> searchDoctors(String query) {
+        List<Doctor> doctors = doctorRepository.searchDoctors(query);
         return doctors.stream().map(mapper::toDoctorDTO).collect(Collectors.toList());
     }
 }
