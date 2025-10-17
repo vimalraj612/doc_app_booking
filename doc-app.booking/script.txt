@@ -1,0 +1,8 @@
+$env:JAVA_HOME="C:\Program Files\Java\jdk-17"
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+
+
+CREATE DATABASE doc_app_booking;
+CREATE USER bengine WITH PASSWORD 'admin';
+GRANT ALL PRIVILEGES ON DATABASE doc_app_booking TO bengine;
+GRANT ALL PRIVILEGES ON SCHEMA bengine TO bengine;
