@@ -7,10 +7,16 @@ import com.doc_app.booking.dto.request.UpdatePatientRequest;
 
 public interface PatientService {
     PatientDTO createPatient(CreatePatientRequest request);
+
     PatientDTO updatePatient(Long id, UpdatePatientRequest request);
+
     PatientDTO getPatientById(Long id);
+
     PageResponse<PatientDTO> getAllPatients(int pageNo, int pageSize, String sortBy, String sortDir);
+
     void deletePatient(Long id);
+
     PatientDTO getPatientByEmail(String email);
+
     PatientDTO getPatientByPhoneNumber(String phoneNumber);
 }

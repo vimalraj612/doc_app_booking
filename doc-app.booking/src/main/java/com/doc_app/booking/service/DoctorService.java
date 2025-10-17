@@ -8,11 +8,20 @@ import java.util.List;
 
 public interface DoctorService {
     DoctorDTO createDoctor(CreateDoctorRequest request);
+
     DoctorDTO updateDoctor(Long id, UpdateDoctorRequest request);
+
     DoctorDTO getDoctorById(Long id);
+
     PageResponse<DoctorDTO> getAllDoctors(int pageNo, int pageSize, String sortBy, String sortDir);
+
     void deleteDoctor(Long id);
+
     List<DoctorDTO> getDoctorsByHospital(Long hospitalId);
+
     List<DoctorDTO> getDoctorsBySpecialization(String specialization);
+
     DoctorDTO getDoctorByEmail(String email);
+
+    List<DoctorDTO> searchDoctors(String name, String specialization, Long hospitalId);
 }

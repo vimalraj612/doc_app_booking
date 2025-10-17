@@ -22,7 +22,8 @@ public class PatientController {
     @PostMapping
     public ResponseEntity<ApiResponse<PatientDTO>> createPatient(@Valid @RequestBody CreatePatientRequest request) {
         PatientDTO patientDTO = patientService.createPatient(request);
-        return new ResponseEntity<>(ApiResponse.success("Patient created successfully", patientDTO), HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponse.success("Patient created successfully", patientDTO),
+                HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

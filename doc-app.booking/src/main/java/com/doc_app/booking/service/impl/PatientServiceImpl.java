@@ -39,7 +39,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public PatientDTO updatePatient(Long id, UpdatePatientRequest request) {
         Patient patient = patientRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
 
         mapper.updatePatient(patient, request);
         patient = patientRepository.save(patient);
@@ -50,7 +50,7 @@ public class PatientServiceImpl implements PatientService {
     @Transactional(readOnly = true)
     public PatientDTO getPatientById(Long id) {
         Patient patient = patientRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
         return mapper.toPatientDTO(patient);
     }
 
@@ -64,19 +64,18 @@ public class PatientServiceImpl implements PatientService {
         Page<Patient> patients = patientRepository.findAll(pageable);
 
         return new PageResponse<>(
-            patients.getContent().stream().map(mapper::toPatientDTO).toList(),
-            patients.getNumber(),
-            patients.getSize(),
-            patients.getTotalElements(),
-            patients.getTotalPages(),
-            patients.isLast()
-        );
+                patients.getContent().stream().map(mapper::toPatientDTO).toList(),
+                patients.getNumber(),
+                patients.getSize(),
+                patients.getTotalElements(),
+                patients.getTotalPages(),
+                patients.isLast());
     }
 
     @Override
     public void deletePatient(Long id) {
         Patient patient = patientRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
         patientRepository.delete(patient);
     }
 
@@ -84,7 +83,7 @@ public class PatientServiceImpl implements PatientService {
     @Transactional(readOnly = true)
     public PatientDTO getPatientByEmail(String email) {
         Patient patient = patientRepository.findByEmail(email)
-            .orElseThrow(() -> new EntityNotFoundException("Patient not found with email: " + email));
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with email: " + email));
         return mapper.toPatientDTO(patient);
     }
 
@@ -92,7 +91,7 @@ public class PatientServiceImpl implements PatientService {
     @Transactional(readOnly = true)
     public PatientDTO getPatientByPhoneNumber(String phoneNumber) {
         Patient patient = patientRepository.findByPhoneNumber(phoneNumber)
-            .orElseThrow(() -> new EntityNotFoundException("Patient not found with phone number: " + phoneNumber));
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with phone number: " + phoneNumber));
         return mapper.toPatientDTO(patient);
     }
 }

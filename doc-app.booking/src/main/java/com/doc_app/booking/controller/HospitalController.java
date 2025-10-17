@@ -24,7 +24,8 @@ public class HospitalController {
     @PostMapping
     public ResponseEntity<ApiResponse<HospitalDTO>> createHospital(@Valid @RequestBody CreateHospitalRequest request) {
         HospitalDTO hospitalDTO = hospitalService.createHospital(request);
-        return new ResponseEntity<>(ApiResponse.success("Hospital created successfully", hospitalDTO), HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponse.success("Hospital created successfully", hospitalDTO),
+                HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

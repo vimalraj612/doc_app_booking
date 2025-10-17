@@ -10,7 +10,10 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findByAppointmentId(Long appointmentId);
+
     List<Notification> findByType(NotificationType type);
+
     List<Notification> findBySentAndScheduledForBefore(boolean sent, LocalDateTime dateTime);
+
     List<Notification> findByRecipient(String recipient);
 }

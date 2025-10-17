@@ -37,7 +37,8 @@ public class DoctorServiceImpl implements DoctorService {
         }
 
         Hospital hospital = hospitalRepository.findById(request.getHospitalId())
-            .orElseThrow(() -> new EntityNotFoundException("Hospital not found with id: " + request.getHospitalId()));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Hospital not found with id: " + request.getHospitalId()));
 
         Doctor doctor = mapper.toDoctor(request);
         doctor.setHospital(hospital);
@@ -48,11 +49,12 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public DoctorDTO updateDoctor(Long id, UpdateDoctorRequest request) {
         Doctor doctor = doctorRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
 
         if (request.getHospitalId() != null && !request.getHospitalId().equals(doctor.getHospital().getId())) {
             Hospital newHospital = hospitalRepository.findById(request.getHospitalId())
-                .orElseThrow(() -> new EntityNotFoundException("Hospital not found with id: " + request.getHospitalId()));
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Hospital not found with id: " + request.getHospitalId()));
             doctor.setHospital(newHospital);
         }
 
@@ -65,7 +67,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     public DoctorDTO getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
         return mapper.toDoctorDTO(doctor);
     }
 
@@ -83,19 +85,18 @@ public class DoctorServiceImpl implements DoctorService {
                 .collect(Collectors.toList());
 
         return new PageResponse<>(
-            content,
-            doctors.getNumber(),
-            doctors.getSize(),
-            doctors.getTotalElements(),
-            doctors.getTotalPages(),
-            doctors.isLast()
-        );
+                content,
+                doctors.getNumber(),
+                doctors.getSize(),
+                doctors.getTotalElements(),
+                doctors.getTotalPages(),
+                doctors.isLast());
     }
 
     @Override
     public void deleteDoctor(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
         doctorRepository.delete(doctor);
     }
 
@@ -119,7 +120,18 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     public DoctorDTO getDoctorByEmail(String email) {
         Doctor doctor = doctorRepository.findByEmail(email)
-            .orElseThrow(() -> new EntityNotFoundException("Doctor not found with email: " + email));
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with email: " + email));
         return mapper.toDoctorDTO(doctor);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DoctorDTO> searchDoctors(String name, String specialization, Long hospitalId) {
+        List<Doctor> doctors = doctorRepository.search(
+                name != null && !name.isBlank() ? name : null,
+                specialization != null && !specialization.isBlank() ? specialization : null,
+                hospitalId);
+
+        return doctors.stream().map(mapper::toDoctorDTO).collect(Collectors.toList());
     }
 }

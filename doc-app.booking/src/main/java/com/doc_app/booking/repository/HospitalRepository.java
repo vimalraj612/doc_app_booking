@@ -8,5 +8,6 @@ import java.util.Optional;
 @Repository
 public interface HospitalRepository extends JpaRepository<Hospital, Long> {
     Optional<Hospital> findByEmail(String email);
+
     boolean existsByEmail(String email);
 }

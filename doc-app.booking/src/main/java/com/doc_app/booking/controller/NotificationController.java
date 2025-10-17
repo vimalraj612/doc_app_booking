@@ -23,9 +23,11 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<NotificationDTO>> createNotification(@Valid @RequestBody CreateNotificationRequest request) {
+    public ResponseEntity<ApiResponse<NotificationDTO>> createNotification(
+            @Valid @RequestBody CreateNotificationRequest request) {
         NotificationDTO notificationDTO = notificationService.createNotification(request);
-        return new ResponseEntity<>(ApiResponse.success("Notification created successfully", notificationDTO), HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponse.success("Notification created successfully", notificationDTO),
+                HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -48,7 +50,8 @@ public class NotificationController {
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
-        PageResponse<NotificationDTO> response = notificationService.getAllNotifications(pageNo, pageSize, sortBy, sortDir);
+        PageResponse<NotificationDTO> response = notificationService.getAllNotifications(pageNo, pageSize, sortBy,
+                sortDir);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -59,13 +62,15 @@ public class NotificationController {
     }
 
     @GetMapping("/appointment/{appointmentId}")
-    public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotificationsByAppointment(@PathVariable Long appointmentId) {
+    public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotificationsByAppointment(
+            @PathVariable Long appointmentId) {
         List<NotificationDTO> notifications = notificationService.getNotificationsByAppointment(appointmentId);
         return ResponseEntity.ok(ApiResponse.success(notifications));
     }
 
     @GetMapping("/type/{type}")
-    public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotificationsByType(@PathVariable NotificationType type) {
+    public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotificationsByType(
+            @PathVariable NotificationType type) {
         List<NotificationDTO> notifications = notificationService.getNotificationsByType(type);
         return ResponseEntity.ok(ApiResponse.success(notifications));
     }
@@ -77,7 +82,8 @@ public class NotificationController {
     }
 
     @GetMapping("/recipient/{recipient}")
-    public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotificationsByRecipient(@PathVariable String recipient) {
+    public ResponseEntity<ApiResponse<List<NotificationDTO>>> getNotificationsByRecipient(
+            @PathVariable String recipient) {
         List<NotificationDTO> notifications = notificationService.getNotificationsByRecipient(recipient);
         return ResponseEntity.ok(ApiResponse.success(notifications));
     }

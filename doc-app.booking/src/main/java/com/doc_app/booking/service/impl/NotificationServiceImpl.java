@@ -40,7 +40,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationDTO createNotification(CreateNotificationRequest request) {
         Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
-            .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + request.getAppointmentId()));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Appointment not found with id: " + request.getAppointmentId()));
 
         Notification notification = mapper.toNotification(request);
         notification.setAppointment(appointment);
@@ -51,7 +52,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationDTO updateNotification(Long id, UpdateNotificationRequest request) {
         Notification notification = notificationRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + id));
 
         mapper.updateNotification(notification, request);
         notification = notificationRepository.save(notification);
@@ -62,7 +63,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional(readOnly = true)
     public NotificationDTO getNotificationById(Long id) {
         Notification notification = notificationRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + id));
         return mapper.toNotificationDTO(notification);
     }
 
@@ -80,19 +81,18 @@ public class NotificationServiceImpl implements NotificationService {
                 .collect(Collectors.toList());
 
         return new PageResponse<>(
-            content,
-            notifications.getNumber(),
-            notifications.getSize(),
-            notifications.getTotalElements(),
-            notifications.getTotalPages(),
-            notifications.isLast()
-        );
+                content,
+                notifications.getNumber(),
+                notifications.getSize(),
+                notifications.getTotalElements(),
+                notifications.getTotalPages(),
+                notifications.isLast());
     }
 
     @Override
     public void deleteNotification(Long id) {
         Notification notification = notificationRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + id));
         notificationRepository.delete(notification);
     }
 
@@ -131,7 +131,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void sendNotification(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
-            .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + notificationId));
+                .orElseThrow(() -> new EntityNotFoundException("Notification not found with id: " + notificationId));
 
         sendEmail(notification);
         notification.setSent(true);
@@ -143,7 +143,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Scheduled(fixedRate = 300000) // Run every 5 minutes
     public void sendAllPendingNotifications() {
         List<Notification> pendingNotifications = notificationRepository
-            .findBySentAndScheduledForBefore(false, LocalDateTime.now());
+                .findBySentAndScheduledForBefore(false, LocalDateTime.now());
 
         for (Notification notification : pendingNotifications) {
             try {
