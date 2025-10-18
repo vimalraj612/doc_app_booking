@@ -36,7 +36,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/patients/signup/**").permitAll() // Patient signup endpoints
                 .requestMatchers(HttpMethod.POST, "/api/v1/hospitals/signup/**").permitAll() // Hospital signup endpoints
                 .requestMatchers(HttpMethod.POST, "/api/v1/doctors/signup/**").permitAll() // Doctor signup endpoints
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/health", "/actuator/**").permitAll()
                 
                 // Hospital Admin only endpoints

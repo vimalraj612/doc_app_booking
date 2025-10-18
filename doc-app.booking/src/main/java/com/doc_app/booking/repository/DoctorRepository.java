@@ -25,7 +25,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
             "lower(d.name) LIKE lower(concat('%', :query, '%')) OR " +
             "lower(d.specialization) LIKE lower(concat('%', :query, '%')) OR " +
             "lower(h.name) LIKE lower(concat('%', :query, '%')) OR " +
-            "d.mobileNumber LIKE concat('%', :query, '%')) ")
+            "d.contact LIKE concat('%', :query, '%')) ")
     List<Doctor> searchDoctors(@Param("query") String query);
 
     @Query("SELECT d FROM Doctor d " +
