@@ -31,6 +31,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
+                .requestMatchers("/", "/index", "/welcome").permitAll() // Allow root access
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll() // Swagger access
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/whatsapp/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/patients/signup/**").permitAll() // Patient signup endpoints
