@@ -94,6 +94,14 @@ public class HospitalServiceImpl implements HospitalService {
 
     @Override
     @Transactional(readOnly = true)
+    public HospitalDTO getHospitalByPhoneNumber(String phoneNumber) {
+        Hospital hospital = hospitalRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Hospital not found with phone number: " + phoneNumber));
+        return mapper.toHospitalDTO(hospital);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<HospitalDTO> searchHospitals(String keyword) {
         // This is a simplified search. In a real application, you might want to use
         // full-text search capabilities of your database or search engines like

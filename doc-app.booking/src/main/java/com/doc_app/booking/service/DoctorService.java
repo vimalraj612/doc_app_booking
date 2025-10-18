@@ -23,5 +23,7 @@ public interface DoctorService {
 
     DoctorDTO getDoctorByEmail(String email);
 
+    DoctorDTO getDoctorByContact(String contact);
+
     List<DoctorDTO> searchDoctors(String name, String specialization, Long hospitalId);
 }

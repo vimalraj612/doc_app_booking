@@ -10,4 +10,6 @@ public interface HospitalRepository extends JpaRepository<Hospital, Long> {
     Optional<Hospital> findByEmail(String email);
 
     boolean existsByEmail(String email);
+    
+    Optional<Hospital> findByPhoneNumber(String phoneNumber);
 }

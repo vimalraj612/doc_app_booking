@@ -19,5 +19,7 @@ public interface HospitalService {
 
     HospitalDTO getHospitalByEmail(String email);
 
+    HospitalDTO getHospitalByPhoneNumber(String phoneNumber);
+
     List<HospitalDTO> searchHospitals(String keyword);
 }

@@ -19,4 +19,8 @@ public interface PatientService {
     PatientDTO getPatientByEmail(String email);
 
     PatientDTO getPatientByPhoneNumber(String phoneNumber);
+
+    void updateLastVisitedDoctor(Long patientId, Long doctorId);
+
+    PatientDTO getPatientWithLastVisitedDoctor(Long patientId);
 }

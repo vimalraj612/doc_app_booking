@@ -22,6 +22,7 @@ public class CreateDoctorRequest {
     private String email;
 
     @Size(max = 30)
+    @NotBlank
     private String phoneNumber;
 
     @NotNull

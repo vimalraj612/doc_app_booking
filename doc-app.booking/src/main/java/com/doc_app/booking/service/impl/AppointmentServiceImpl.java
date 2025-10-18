@@ -14,6 +14,7 @@ import com.doc_app.booking.repository.AppointmentRepository;
 import com.doc_app.booking.repository.DoctorRepository;
 import com.doc_app.booking.repository.PatientRepository;
 import com.doc_app.booking.service.AppointmentService;
+import com.doc_app.booking.service.PatientService;
 import jakarta.persistence.EntityNotFoundException;
 import com.doc_app.booking.exception.SlotAlreadyBookedException;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final PatientService patientService;
     private final EntityMapper mapper;
     private final com.doc_app.booking.repository.SlotRepository slotRepository;
 
@@ -103,6 +105,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(request.getStatus());
         if (request.getNotes() != null) {
             appointment.setNotes(request.getNotes());
+        }
+
+        // Update last visited doctor when appointment is completed
+        if (request.getStatus() == AppointmentStatus.COMPLETED) {
+            patientService.updateLastVisitedDoctor(appointment.getPatient().getId(), appointment.getDoctor().getId());
         }
 
         appointment = appointmentRepository.save(appointment);

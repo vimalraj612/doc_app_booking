@@ -126,6 +126,14 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional(readOnly = true)
+    public DoctorDTO getDoctorByContact(String contact) {
+        Doctor doctor = doctorRepository.findByContact(contact)
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with contact: " + contact));
+        return mapper.toDoctorDTO(doctor);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<DoctorDTO> searchDoctors(String name, String specialization, Long hospitalId) {
         List<Doctor> doctors = doctorRepository.search(
                 name != null && !name.isBlank() ? name : null,

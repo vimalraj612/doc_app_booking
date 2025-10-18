@@ -5,7 +5,9 @@ import com.doc_app.booking.dto.PageResponse;
 import com.doc_app.booking.dto.request.CreatePatientRequest;
 import com.doc_app.booking.dto.request.UpdatePatientRequest;
 import com.doc_app.booking.dto.mapper.EntityMapper;
+import com.doc_app.booking.model.Doctor;
 import com.doc_app.booking.model.Patient;
+import com.doc_app.booking.repository.DoctorRepository;
 import com.doc_app.booking.repository.PatientRepository;
 import com.doc_app.booking.service.PatientService;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
     private final EntityMapper mapper;
 
     @Override
@@ -92,6 +95,26 @@ public class PatientServiceImpl implements PatientService {
     public PatientDTO getPatientByPhoneNumber(String phoneNumber) {
         Patient patient = patientRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with phone number: " + phoneNumber));
+        return mapper.toPatientDTO(patient);
+    }
+
+    @Override
+    public void updateLastVisitedDoctor(Long patientId, Long doctorId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
+        
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + doctorId));
+        
+        patient.setLastVisitedDoctor(doctor);
+        patientRepository.save(patient);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PatientDTO getPatientWithLastVisitedDoctor(Long patientId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
         return mapper.toPatientDTO(patient);
     }
 }
