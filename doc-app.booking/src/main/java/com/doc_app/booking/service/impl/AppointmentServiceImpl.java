@@ -17,7 +17,10 @@ import com.doc_app.booking.service.AppointmentService;
 import com.doc_app.booking.service.PatientService;
 import jakarta.persistence.EntityNotFoundException;
 import com.doc_app.booking.exception.SlotAlreadyBookedException;
+import com.doc_app.booking.exception.PatientNotFoundException;
+import com.doc_app.booking.exception.DoctorNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
@@ -43,10 +47,20 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentDTO createAppointment(CreateAppointmentRequest request) {
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
-                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + request.getDoctorId()));
+                .orElseThrow(() -> new DoctorNotFoundException(request.getDoctorId()));
 
-        Patient patient = patientRepository.findById(request.getPatientId())
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + request.getPatientId()));
+        // Find patient by phone number (unique identifier)
+        Patient patient = patientRepository.findByPhoneNumber(request.getPatientPhone())
+                .orElseThrow(() -> new PatientNotFoundException(request.getPatientPhone()));
+
+        // Verify patient name matches if provided in request
+        if (request.getPatientName() != null && !request.getPatientName().isBlank()) {
+            String fullName = (patient.getFirstName() + " " + patient.getLastName()).trim();
+            if (!fullName.equalsIgnoreCase(request.getPatientName().trim())) {
+                log.warn("Patient name mismatch for phone {}: expected '{}', provided '{}'", 
+                    request.getPatientPhone(), fullName, request.getPatientName());
+            }
+        }
 
         // If slotId is provided, lock the slot and book it
         if (request.getSlotId() != null) {
@@ -60,11 +74,15 @@ public class AppointmentServiceImpl implements AppointmentService {
             slot.setAvailable(false);
             slotRepository.save(slot);
 
-            // create appointment at slot start
+            // create appointment at slot start, link slot
             Appointment appointment = mapper.toAppointment(request);
             appointment.setDoctor(doctor);
             appointment.setPatient(patient);
+            appointment.setSlot(slot);
             appointment.setAppointmentDateTime(LocalDateTime.of(slot.getDate(), slot.getStartTime()));
+            if (request.getAppointmentType() != null) {
+                appointment.setAppointmentType(request.getAppointmentType());
+            }
             appointment = appointmentRepository.save(appointment);
             return mapper.toAppointmentDTO(appointment);
         }
@@ -77,6 +95,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment appointment = mapper.toAppointment(request);
         appointment.setDoctor(doctor);
         appointment.setPatient(patient);
+        if (request.getAppointmentType() != null) {
+            appointment.setAppointmentType(request.getAppointmentType());
+        }
         appointment = appointmentRepository.save(appointment);
         return mapper.toAppointmentDTO(appointment);
     }
@@ -164,9 +185,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentDTO> getAppointmentsByPatient(Long patientId) {
-        return appointmentRepository.findByPatientId(patientId).stream()
-                .map(mapper::toAppointmentDTO)
-                .collect(Collectors.toList());
+    List<AppointmentStatus> allowed = List.of(
+        AppointmentStatus.SCHEDULED,
+        AppointmentStatus.COMPLETED,
+        AppointmentStatus.CANCELLED
+    );
+    return appointmentRepository.findByPatientIdAndStatusIn(patientId, allowed).stream()
+        .map(mapper::toAppointmentDTO)
+        .collect(Collectors.toList());
     }
 
     @Override
@@ -190,27 +216,42 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional(readOnly = true)
     public List<AppointmentDTO> getAppointmentsByDoctorAndDateRange(Long doctorId, LocalDateTime start,
             LocalDateTime end) {
-        return appointmentRepository.findByDoctorIdAndDateRange(doctorId, start, end).stream()
-                .map(mapper::toAppointmentDTO)
-                .collect(Collectors.toList());
+    List<AppointmentStatus> allowed = List.of(
+        AppointmentStatus.SCHEDULED,
+        AppointmentStatus.COMPLETED,
+        AppointmentStatus.CANCELLED
+    );
+    return appointmentRepository.findByDoctorIdAndDateRangeAndStatusIn(doctorId, start, end, allowed).stream()
+        .map(mapper::toAppointmentDTO)
+        .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentDTO> getAppointmentsByPatientAndDateRange(Long patientId, LocalDateTime start,
             LocalDateTime end) {
-        return appointmentRepository.findByPatientIdAndDateRange(patientId, start, end).stream()
-                .map(mapper::toAppointmentDTO)
-                .collect(Collectors.toList());
+    List<AppointmentStatus> allowed = List.of(
+        AppointmentStatus.SCHEDULED,
+        AppointmentStatus.COMPLETED,
+        AppointmentStatus.CANCELLED
+    );
+    return appointmentRepository.findByPatientIdAndDateRangeAndStatusIn(patientId, start, end, allowed).stream()
+        .map(mapper::toAppointmentDTO)
+        .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentDTO> getAppointmentsByHospitalAndDateRange(Long hospitalId, LocalDateTime start,
             LocalDateTime end) {
-        return appointmentRepository.findByHospitalIdAndDateRange(hospitalId, start, end).stream()
-                .map(mapper::toAppointmentDTO)
-                .collect(Collectors.toList());
+    List<AppointmentStatus> allowed = List.of(
+        AppointmentStatus.SCHEDULED,
+        AppointmentStatus.COMPLETED,
+        AppointmentStatus.CANCELLED
+    );
+    return appointmentRepository.findByHospitalIdAndDateRangeAndStatusIn(hospitalId, start, end, allowed).stream()
+        .map(mapper::toAppointmentDTO)
+        .collect(Collectors.toList());
     }
 
     @Override

@@ -29,7 +29,7 @@ public class NotificationScheduler {
         LocalDateTime dayAfterTomorrow = tomorrow.plusDays(1);
 
         List<Appointment> appointments = appointmentRepository.findByAppointmentDateTimeBetweenAndStatus(
-                tomorrow, dayAfterTomorrow, AppointmentStatus.CONFIRMED);
+                tomorrow, dayAfterTomorrow, AppointmentStatus.SCHEDULED);
 
         for (Appointment appointment : appointments) {
             try {
@@ -49,7 +49,7 @@ public class NotificationScheduler {
         LocalDateTime fourDaysFromNow = threeDaysFromNow.plusDays(1);
 
         List<Appointment> appointments = appointmentRepository.findByAppointmentDateTimeBetweenAndStatus(
-                threeDaysFromNow, fourDaysFromNow, AppointmentStatus.CONFIRMED);
+                threeDaysFromNow, fourDaysFromNow, AppointmentStatus.SCHEDULED);
 
         for (Appointment appointment : appointments) {
             try {

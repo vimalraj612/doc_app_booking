@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Patients", description = "Patient management APIs")
 @SecurityRequirement(name = "Bearer Authentication")
+@Slf4j
 public class PatientController {
 
     private final PatientService patientService;
@@ -44,11 +47,11 @@ public class PatientController {
                 // Patient doesn't exist, proceed with OTP
             }
             
-            // Generate and send OTP
-            otpService.generateAndSendOTP(phoneNumber, "PATIENT");
+            // TODO: Re-enable OTP generation and sending
+            // otpService.generateAndSendOTP(phoneNumber, "PATIENT");
             
             return ResponseEntity.ok(
-                ApiResponse.success("OTP sent successfully. Please verify to complete registration.")
+                ApiResponse.success("OTP bypassed. Proceed to complete patient registration (OTP verification disabled).")
             );
 
         } catch (Exception e) {
@@ -64,13 +67,16 @@ public class PatientController {
             @RequestParam String otp,
             @Valid @RequestBody CreatePatientRequest request) {
         try {
-            // Validate OTP
-            boolean isValidOTP = otpService.validateOTP(phoneNumber, otp);
+            // TODO: Re-enable OTP validation
+            // boolean isValidOTP = otpService.validateOTP(phoneNumber, otp);
+            // 
+            // if (!isValidOTP) {
+            //     return ResponseEntity.badRequest()
+            //         .body(ApiResponse.error("Invalid or expired OTP"));
+            // }
             
-            if (!isValidOTP) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Invalid or expired OTP"));
-            }
+            // TEMPORARY: Accept any OTP for development (bypass validation)
+            log.info("OTP validation bypassed for patient signup: {} (OTP verification disabled)", phoneNumber);
             
             // Ensure phone number matches
             if (!phoneNumber.equals(request.getPhoneNumber())) {

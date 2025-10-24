@@ -94,6 +94,53 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageResponse<DoctorDTO> getAllDoctors(
+            int pageNo,
+            int pageSize,
+            String sortBy,
+            String sortDir,
+            String name,
+            String specialization,
+            String department,
+            Long hospitalId,
+            Integer minExperience,
+            Integer maxExperience,
+            String email,
+            String phoneNumber
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        
+        // Call repository method for filtered search
+        Page<Doctor> doctors = doctorRepository.findWithFilters(
+                name,
+                specialization,
+                department,
+                hospitalId,
+                minExperience,
+                maxExperience,
+                email,
+                phoneNumber,
+                pageable
+        );
+
+        List<DoctorDTO> content = doctors.getContent().stream()
+                .map(mapper::toDoctorDTO)
+                .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                content,
+                doctors.getNumber(),
+                doctors.getSize(),
+                doctors.getTotalElements(),
+                doctors.getTotalPages(),
+                doctors.isLast());
+    }
+
+    @Override
     public void deleteDoctor(Long id) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
@@ -141,5 +188,29 @@ public class DoctorServiceImpl implements DoctorService {
                 hospitalId);
 
         return doctors.stream().map(mapper::toDoctorDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getDoctorCount(
+            String name,
+            String specialization,
+            String department,
+            Long hospitalId,
+            Integer minExperience,
+            Integer maxExperience,
+            String email,
+            String phoneNumber
+    ) {
+        return doctorRepository.countWithFilters(
+                name,
+                specialization,
+                department,
+                hospitalId,
+                minExperience,
+                maxExperience,
+                email,
+                phoneNumber
+        );
     }
 }

@@ -15,6 +15,21 @@ public interface DoctorService {
 
     PageResponse<DoctorDTO> getAllDoctors(int pageNo, int pageSize, String sortBy, String sortDir);
 
+    PageResponse<DoctorDTO> getAllDoctors(
+            int pageNo,
+            int pageSize,
+            String sortBy,
+            String sortDir,
+            String name,
+            String specialization,
+            String department,
+            Long hospitalId,
+            Integer minExperience,
+            Integer maxExperience,
+            String email,
+            String phoneNumber
+    );
+
     void deleteDoctor(Long id);
 
     List<DoctorDTO> getDoctorsByHospital(Long hospitalId);
@@ -26,4 +41,15 @@ public interface DoctorService {
     DoctorDTO getDoctorByContact(String contact);
 
     List<DoctorDTO> searchDoctors(String name, String specialization, Long hospitalId);
+
+    long getDoctorCount(
+            String name,
+            String specialization,
+            String department,
+            Long hospitalId,
+            Integer minExperience,
+            Integer maxExperience,
+            String email,
+            String phoneNumber
+    );
 }

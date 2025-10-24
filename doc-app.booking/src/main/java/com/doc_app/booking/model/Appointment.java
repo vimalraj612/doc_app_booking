@@ -20,12 +20,20 @@ public class Appointment {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
+
     @Column(nullable = false)
     private LocalDateTime appointmentDateTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "slot_id")
+    private Slot slot;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private com.doc_app.booking.model.AppointmentType appointmentType;
 
     private String reason;
 

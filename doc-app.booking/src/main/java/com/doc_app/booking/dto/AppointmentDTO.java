@@ -13,6 +13,7 @@ public class AppointmentDTO {
     private String patientName;
     private LocalDateTime appointmentDateTime;
     private AppointmentStatus status;
+    private com.doc_app.booking.model.AppointmentType appointmentType;
     private String reason;
     private String notes;
     private LocalDateTime createdAt;

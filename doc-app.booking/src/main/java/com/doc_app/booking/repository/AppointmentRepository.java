@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+    List<Appointment> findByPatientIdAndStatusIn(Long patientId, List<AppointmentStatus> statuses);
     List<Appointment> findByAppointmentDateTimeBetweenAndStatus(LocalDateTime startDateTime, LocalDateTime endDateTime,
             AppointmentStatus status);
 
@@ -19,18 +20,21 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByStatus(AppointmentStatus status);
 
-    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = ?1 AND a.appointmentDateTime BETWEEN ?2 AND ?3")
-    List<Appointment> findByDoctorIdAndDateRange(Long doctorId, LocalDateTime start, LocalDateTime end);
-
-    List<Appointment> findByDoctorIdAndAppointmentDateTimeBetween(Long doctorId, LocalDateTime start,
+        List<Appointment> findByDoctorIdAndAppointmentDateTimeBetween(Long doctorId, LocalDateTime start,
             LocalDateTime end);
 
-    @Query("SELECT a FROM Appointment a WHERE a.patient.id = ?1 AND a.appointmentDateTime BETWEEN ?2 AND ?3")
-    List<Appointment> findByPatientIdAndDateRange(Long patientId, LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT a FROM Appointment a WHERE a.doctor.hospital.id = ?1 AND a.appointmentDateTime BETWEEN ?2 AND ?3")
-    List<Appointment> findByHospitalIdAndDateRange(Long hospitalId, LocalDateTime start, LocalDateTime end);
+    @Query("SELECT a FROM Appointment a WHERE a.doctor.id = ?1 AND a.appointmentDateTime BETWEEN ?2 AND ?3 AND a.status IN ?4")
+    List<Appointment> findByDoctorIdAndDateRangeAndStatusIn(Long doctorId, LocalDateTime start, LocalDateTime end, List<AppointmentStatus> statuses);
+
+    @Query("SELECT a FROM Appointment a WHERE a.patient.id = ?1 AND a.appointmentDateTime BETWEEN ?2 AND ?3 AND a.status IN ?4")
+    List<Appointment> findByPatientIdAndDateRangeAndStatusIn(Long patientId, LocalDateTime start, LocalDateTime end, List<AppointmentStatus> statuses);
+
+    @Query("SELECT a FROM Appointment a WHERE a.doctor.hospital.id = ?1 AND a.appointmentDateTime BETWEEN ?2 AND ?3 AND a.status IN ?4")
+    List<Appointment> findByHospitalIdAndDateRangeAndStatusIn(Long hospitalId, LocalDateTime start, LocalDateTime end, List<AppointmentStatus> statuses);
 
     @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.doctor.id = ?1 AND a.appointmentDateTime = ?2")
     boolean existsByDoctorAndDateTime(Long doctorId, LocalDateTime dateTime);
+
+    List<Appointment> findBySlot_IdAndStatusIn(Long slotId, List<AppointmentStatus> statuses);
 }

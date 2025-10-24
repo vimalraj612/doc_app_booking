@@ -52,12 +52,14 @@ public interface EntityMapper {
     @Mapping(target = "appointments", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "contact", source = "phoneNumber")
+    @Mapping(target = "profileImage", expression = "java(decodeBase64Image(request.getProfileImageBase64()))")
     Doctor toDoctor(CreateDoctorRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "appointments", ignore = true)
     @Mapping(target = "hospital", ignore = true)
     @Mapping(target = "contact", source = "phoneNumber")
+    @Mapping(target = "profileImage", expression = "java(decodeBase64Image(request.getProfileImageBase64()))")
     void updateDoctor(@MappingTarget Doctor doctor, UpdateDoctorRequest request);
 
     @Mapping(target = "appointments", ignore = true)
@@ -72,9 +74,10 @@ public interface EntityMapper {
     void updatePatient(@MappingTarget Patient patient, UpdatePatientRequest request);
 
     @Mapping(target = "doctorId", source = "doctor.id")
-    @Mapping(target = "doctorName", source = "doctor.name")
+    @Mapping(target = "doctorName", expression = "java(appointment.getDoctor() != null ? appointment.getDoctor().getFirstName() + \" \" + appointment.getDoctor().getLastName() : null)")
     @Mapping(target = "patientId", source = "patient.id")
     @Mapping(target = "patientName", expression = "java(appointment.getPatient() != null ? appointment.getPatient().getFirstName() + \" \" + appointment.getPatient().getLastName() : null)")
+    @Mapping(target = "appointmentType", source = "appointmentType")
     AppointmentDTO toAppointmentDTO(Appointment appointment);
 
     @Mapping(target = "doctor", ignore = true)
@@ -92,6 +95,7 @@ public interface EntityMapper {
     @Mapping(target = "doctor", ignore = true)
     @Mapping(target = "patient", ignore = true)
     @Mapping(target = "appointmentDateTime", source = "appointmentDateTime")
+    @Mapping(target = "appointmentType", source = "appointmentType")
     void updateAppointment(@MappingTarget Appointment appointment, UpdateAppointmentRequest request);
 
     @Mapping(target = "appointmentId", source = "appointment.id")
@@ -114,5 +118,28 @@ public interface EntityMapper {
     @Mapping(target = "recipient", ignore = true)
     @Mapping(target = "type", ignore = true)
     void updateNotification(@MappingTarget Notification notification, UpdateNotificationRequest request);
+
+    /**
+     * Helper method to decode base64 image string to byte array
+     */
+    default byte[] decodeBase64Image(String base64Image) {
+        if (base64Image == null || base64Image.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            // Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
+            String cleanBase64 = base64Image;
+            if (base64Image.startsWith("data:")) {
+                int commaIndex = base64Image.indexOf(',');
+                if (commaIndex > 0) {
+                    cleanBase64 = base64Image.substring(commaIndex + 1);
+                }
+            }
+            return java.util.Base64.getDecoder().decode(cleanBase64);
+        } catch (IllegalArgumentException e) {
+            // Invalid base64 string
+            return null;
+        }
+    }
 
 }

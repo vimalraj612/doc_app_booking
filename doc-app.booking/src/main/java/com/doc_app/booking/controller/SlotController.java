@@ -35,7 +35,15 @@ public class SlotController {
         } else {
             slots = slotService.getAllSlots(doctorId);
         }
-        return ResponseEntity.ok(ApiResponse.success(slots));
+        // Remove past slots (end time before now)
+        var now = java.time.LocalDateTime.now();
+        var filtered = new ArrayList<SlotDTO>();
+        for (SlotDTO slot : slots) {
+            if (slot.getEnd() != null && slot.getEnd().isAfter(now)) {
+                filtered.add(slot);
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.success(filtered));
     }
 
     @GetMapping("/doctor/{doctorId}/all")

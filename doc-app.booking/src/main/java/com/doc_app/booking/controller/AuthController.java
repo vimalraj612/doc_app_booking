@@ -49,19 +49,19 @@ public class AuthController {
                                          " found with this phone number"));
             }
             
-            // Generate and send OTP
-            String otp = otpService.generateAndSendOTP(request.getPhoneNumber(), request.getRole());
+            // TODO: Re-enable OTP generation and sending
+            // String otp = otpService.generateAndSendOTP(request.getPhoneNumber(), request.getRole());
             
-            log.info("OTP sent to {} for role {}", request.getPhoneNumber(), request.getRole());
+            log.info("OTP bypassed for {} with role {} (OTP verification disabled)", request.getPhoneNumber(), request.getRole());
             
             return ResponseEntity.ok(
                 ApiResponse.success(AuthResponse.otpSent(request.getPhoneNumber()))
             );
 
         } catch (Exception e) {
-            log.error("Error sending OTP", e);
+            log.error("Error in send OTP (OTP disabled)", e);
             return ResponseEntity.internalServerError()
-                .body(ApiResponse.error("Failed to send OTP"));
+                .body(ApiResponse.error("Failed to process login request"));
         }
     }
 
@@ -69,13 +69,16 @@ public class AuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<AuthResponse>> verifyOTP(@Valid @RequestBody VerifyOTPRequest request) {
         try {
-            // Validate OTP
-            boolean isValidOTP = otpService.validateOTP(request.getPhoneNumber(), request.getOtp());
+            // TODO: Re-enable OTP validation
+            // boolean isValidOTP = otpService.validateOTP(request.getPhoneNumber(), request.getOtp());
+            // 
+            // if (!isValidOTP) {
+            //     return ResponseEntity.badRequest()
+            //         .body(ApiResponse.error("Invalid or expired OTP"));
+            // }
             
-            if (!isValidOTP) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Invalid or expired OTP"));
-            }
+            // TEMPORARY: Accept any OTP for development (bypass validation)
+            log.info("OTP validation bypassed for {} (OTP verification disabled)", request.getPhoneNumber());
             
             // Find user and generate JWT token
             UserInfo userInfo = findUserByPhoneAndRole(request.getPhoneNumber(), request.getRole());
@@ -99,12 +102,12 @@ public class AuthController {
                 request.getPhoneNumber()
             );
             
-            log.info("User {} logged in successfully with role {}", request.getPhoneNumber(), request.getRole());
+            log.info("User {} logged in successfully with role {} (OTP bypassed)", request.getPhoneNumber(), request.getRole());
             
             return ResponseEntity.ok(ApiResponse.success(response));
 
         } catch (Exception e) {
-            log.error("Error verifying OTP", e);
+            log.error("Error in verify OTP (OTP disabled)", e);
             return ResponseEntity.internalServerError()
                 .body(ApiResponse.error("Login failed"));
         }
@@ -171,6 +174,50 @@ public class AuthController {
         request.setOtp(otp);
         request.setRole("HOSPITAL_ADMIN");
         return verifyOTP(request);
+    }
+
+    /**
+     * TEMPORARY ENDPOINT FOR DEVELOPMENT ONLY
+     * This endpoint bypasses all OTP verification and directly logs in users.
+     * TODO: Remove this endpoint before production deployment!
+     * Use this for testing purposes when OTP service is disabled.
+     */
+    @Operation(summary = "Direct login without OTP (development only - REMOVE BEFORE PRODUCTION)")
+    @PostMapping("/direct-login")
+    public ResponseEntity<ApiResponse<AuthResponse>> directLogin(
+            @RequestParam String phoneNumber, 
+            @RequestParam String role) {
+        try {
+            log.info("Direct login attempted for {} with role {} (OTP bypassed)", phoneNumber, role);
+            
+            // Validate user exists
+            boolean userExists = validateUserExists(phoneNumber, role);
+            if (!userExists) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("No " + role.toLowerCase() + " found with this phone number"));
+            }
+            
+            // Find user and generate JWT token
+            UserInfo userInfo = findUserByPhoneAndRole(phoneNumber, role);
+            if (userInfo == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not found"));
+            }
+            
+            // Generate JWT token
+            String token = jwtUtil.generateToken(phoneNumber, role, userInfo.getUserId());
+            
+            AuthResponse response = AuthResponse.success(token, role, userInfo.getUserId(), phoneNumber);
+            
+            log.info("Direct login successful for {} with role {} (OTP bypassed)", phoneNumber, role);
+            
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            log.error("Error in direct login", e);
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error("Login failed"));
+        }
     }
 
     private boolean validateUserExists(String phoneNumber, String role) {
