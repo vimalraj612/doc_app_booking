@@ -43,18 +43,22 @@ export async function getAppointments() {
   return apiFetch<any[]>('/api/appointments');
 }
 
-export async function bookAppointment(data: {
-  doctorId: string;
-  patientId: string;
-  date: string;
-  time: string;
+
+// Book an appointment (matches PatientDashboard payload)
+export async function bookAppointment(payload: {
+  doctorId: string | number;
+  patientPhone: string;
+  patientName: string;
+  appointmentDateTime: string;
+  slotId: string | number;
 }) {
-  // Replace with your backend endpoint
-  return apiFetch<any>(
-    '/api/appointments',
-    {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }
-  );
+  const token = window.localStorage.getItem('accessToken') || '';
+  return apiFetch('/api/v1/appointments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LoginPage } from './components/LoginPage';
-import { PatientDashboard } from './components/PatientDashboard';
+import { PatientDashboard } from './components/patient/PatientDashboard';
 import { DoctorDashboard } from './components/DoctorDashboard';
 import { HospitalDashboard } from './components/HospitalDashboard';
 import { SuperAdminDashboard } from './components/SuperAdminDashboard';

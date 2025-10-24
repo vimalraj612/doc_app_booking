@@ -32,3 +32,14 @@ export async function fetchDoctorByPhone(phoneNumber: string): Promise<DoctorDTO
     return null;
   }
 }
+
+// Search doctors by query (name, specialization, hospital, or mobile number)
+export async function searchDoctors(query: string): Promise<DoctorDTO[]> {
+  try {
+    const url = `/api/v1/doctors/search?query=${encodeURIComponent(query)}`;
+    const resp = await apiFetch<{ data: DoctorDTO[] }>(url);
+    return resp.data || [];
+  } catch (e) {
+    return [];
+  }
+}
