@@ -11,11 +11,9 @@ import java.math.BigDecimal;
 
 @Data
 public class CreatePatientRequest {
-    @NotBlank
     @Size(max = 100)
     private String firstName;
 
-    @NotBlank
     @Size(max = 100)
     private String lastName;
 

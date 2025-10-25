@@ -1,3 +1,5 @@
+//
+
 package com.doc_app.booking.service.impl;
 
 import com.doc_app.booking.dto.HospitalDTO;
@@ -111,5 +113,29 @@ public class HospitalServiceImpl implements HospitalService {
                         hospital.getAddress().toLowerCase().contains(keyword.toLowerCase()))
                 .map(mapper::toHospitalDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getHospitalCount() {
+        return hospitalRepository.count();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return hospitalRepository.findByPhoneNumber(phoneNumber).isPresent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.doc_app.booking.dto.UserInfoDTO findUserInfoByPhoneNumber(String phoneNumber) {
+        return hospitalRepository.findByPhoneNumber(phoneNumber)
+                .map(h -> new com.doc_app.booking.dto.UserInfoDTO(
+                        h.getId(),
+                        "HOSPITAL_ADMIN",
+                        h.getName() != null ? h.getName() : ""
+                ))
+                .orElse(null);
     }
 }

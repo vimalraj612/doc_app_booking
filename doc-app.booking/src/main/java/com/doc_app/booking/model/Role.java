@@ -6,7 +6,8 @@ package com.doc_app.booking.model;
 public enum Role {
     HOSPITAL_ADMIN("hospital_admin"),
     DOCTOR("doctor"),
-    PATIENT("patient");
+    PATIENT("patient"),
+    SUPERADMIN("superadmin");
 
     private final String value;
 

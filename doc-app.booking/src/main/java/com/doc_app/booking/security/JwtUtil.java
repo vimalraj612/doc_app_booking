@@ -24,7 +24,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String phoneNumber, String role, Long userId) {
+    public String generateToken(String phoneNumber, String role, Long userId, String name) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
@@ -32,10 +32,19 @@ public class JwtUtil {
                 .setSubject(phoneNumber)
                 .claim("role", role)
                 .claim("userId", userId)
+                .claim("name", name)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+    public String getNameFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("name", String.class);
     }
 
     public String getPhoneNumberFromToken(String token) {

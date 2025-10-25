@@ -5,10 +5,7 @@ import com.doc_app.booking.dto.ApiResponse;
 import com.doc_app.booking.dto.PageResponse;
 import com.doc_app.booking.dto.request.CreatePatientRequest;
 import com.doc_app.booking.dto.request.UpdatePatientRequest;
-import com.doc_app.booking.dto.response.AuthResponse;
-import com.doc_app.booking.service.OTPService;
 import com.doc_app.booking.service.PatientService;
-import com.doc_app.booking.security.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,80 +28,10 @@ import org.springframework.web.bind.annotation.*;
 public class PatientController {
 
     private final PatientService patientService;
-    private final OTPService otpService;
-    private final JwtUtil jwtUtil;
-
-    @PostMapping("/signup/send-otp")
-    @Operation(summary = "Send OTP for patient registration")
-    public ResponseEntity<ApiResponse<String>> sendSignupOTP(@RequestParam String phoneNumber) {
-        try {
-            // Check if patient already exists
-            try {
-                patientService.getPatientByPhoneNumber(phoneNumber);
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Patient with this phone number already exists"));
-            } catch (Exception e) {
-                // Patient doesn't exist, proceed with OTP
-            }
-            
-            // TODO: Re-enable OTP generation and sending
-            // otpService.generateAndSendOTP(phoneNumber, "PATIENT");
-            
-            return ResponseEntity.ok(
-                ApiResponse.success("OTP bypassed. Proceed to complete patient registration (OTP verification disabled).")
-            );
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                .body(ApiResponse.error("Failed to send OTP"));
-        }
-    }
-
-    @PostMapping("/signup/verify-otp")
-    @Operation(summary = "Verify OTP and complete patient registration")
-    public ResponseEntity<ApiResponse<AuthResponse>> verifySignupOTP(
-            @RequestParam String phoneNumber,
-            @RequestParam String otp,
-            @Valid @RequestBody CreatePatientRequest request) {
-        try {
-            // TODO: Re-enable OTP validation
-            // boolean isValidOTP = otpService.validateOTP(phoneNumber, otp);
-            // 
-            // if (!isValidOTP) {
-            //     return ResponseEntity.badRequest()
-            //         .body(ApiResponse.error("Invalid or expired OTP"));
-            // }
-            
-            // TEMPORARY: Accept any OTP for development (bypass validation)
-            log.info("OTP validation bypassed for patient signup: {} (OTP verification disabled)", phoneNumber);
-            
-            // Ensure phone number matches
-            if (!phoneNumber.equals(request.getPhoneNumber())) {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Phone number mismatch"));
-            }
-            
-            // Create patient
-            PatientDTO patientDTO = patientService.createPatient(request);
-            
-            // Generate JWT token for automatic login
-            String token = jwtUtil.generateToken(phoneNumber, "PATIENT", patientDTO.getId());
-            
-            AuthResponse authResponse = AuthResponse.success(token, "PATIENT", patientDTO.getId(), phoneNumber);
-            
-            return ResponseEntity.ok(
-                ApiResponse.success("Patient registered and logged in successfully", authResponse)
-            );
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                .body(ApiResponse.error("Registration failed: " + e.getMessage()));
-        }
-    }
 
     @PostMapping
     @Operation(summary = "Create patient - Hospital Admin only (for staff use)")
-    @PreAuthorize("hasRole('HOSPITAL_ADMIN')")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<PatientDTO>> createPatient(@Valid @RequestBody CreatePatientRequest request) {
         // This endpoint is for Hospital Admin to create patients directly
         PatientDTO patientDTO = patientService.createPatient(request);
@@ -114,7 +41,7 @@ public class PatientController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update patient - Patient themselves or Hospital Admin")
-    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or (hasRole('PATIENT') and @patientService.isPatientOwner(authentication.name, #id))")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('PATIENT') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<PatientDTO>> updatePatient(
             @PathVariable Long id,
             @Valid @RequestBody UpdatePatientRequest request,
@@ -136,7 +63,7 @@ public class PatientController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get patient details - Patient themselves, Doctor or Hospital Admin")
-    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('DOCTOR') or (hasRole('PATIENT') and @patientService.isPatientOwner(authentication.name, #id))")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('DOCTOR') or hasRole('PATIENT') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<PatientDTO>> getPatient(@PathVariable Long id, HttpServletRequest httpRequest) {
         
         // Get user details from JWT filter
@@ -155,7 +82,7 @@ public class PatientController {
 
     @GetMapping("/{id}/dashboard")
     @Operation(summary = "Get patient dashboard with last visited doctor - Patient themselves only")
-    @PreAuthorize("hasRole('PATIENT')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<PatientDTO>> getPatientDashboard(
             @PathVariable Long id, 
             HttpServletRequest httpRequest) {
@@ -198,7 +125,7 @@ public class PatientController {
 
     @GetMapping
     @Operation(summary = "Get all patients - Doctor and Hospital Admin only")
-    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('DOCTOR')")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('DOCTOR') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<PageResponse<PatientDTO>>> getAllPatients(
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize,

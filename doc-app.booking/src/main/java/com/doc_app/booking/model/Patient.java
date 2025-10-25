@@ -1,8 +1,6 @@
 package com.doc_app.booking.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
@@ -18,17 +16,16 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+
+    @Column(nullable = true)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     private String email;
 
-    @NotNull
-    @NotBlank
     @Column(nullable = false, unique = true)
     private String phoneNumber;
 
@@ -45,10 +42,10 @@ public class Patient {
     @Column(precision = 11, scale = 8)
     private BigDecimal longitude;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String dateOfBirth;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String gender;
 
     @ManyToOne(fetch = FetchType.LAZY)

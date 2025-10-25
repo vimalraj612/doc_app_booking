@@ -51,21 +51,21 @@ public class DoctorController {
             try {
                 doctorService.getDoctorByContact(phoneNumber);
                 return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Doctor with this phone number already exists"));
+                        .body(ApiResponse.error("Doctor with this phone number already exists"));
             } catch (Exception e) {
                 // Doctor doesn't exist, proceed with OTP
             }
-            
+
             // TODO: Re-enable OTP generation and sending
             // otpService.generateAndSendOTP(phoneNumber, "DOCTOR");
-            
+
             return ResponseEntity.ok(
-                ApiResponse.success("OTP bypassed. Proceed to complete doctor registration (OTP verification disabled).")
-            );
+                    ApiResponse.success(
+                            "OTP bypassed. Proceed to complete doctor registration (OTP verification disabled)."));
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                .body(ApiResponse.error("Failed to send OTP"));
+                    .body(ApiResponse.error("Failed to send OTP"));
         }
     }
 
@@ -78,36 +78,40 @@ public class DoctorController {
         try {
             // TODO: Re-enable OTP validation
             // boolean isValidOTP = otpService.validateOTP(phoneNumber, otp);
-            // 
+            //
             // if (!isValidOTP) {
-            //     return ResponseEntity.badRequest()
-            //         .body(ApiResponse.error("Invalid or expired OTP"));
+            // return ResponseEntity.badRequest()
+            // .body(ApiResponse.error("Invalid or expired OTP"));
             // }
-            
+
             // TEMPORARY: Accept any OTP for development (bypass validation)
             log.info("OTP validation bypassed for doctor signup: {} (OTP verification disabled)", phoneNumber);
-            
+
             // Ensure phone number matches (Doctor uses 'contact' field)
             if (!phoneNumber.equals(request.getPhoneNumber())) {
                 return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Phone number mismatch"));
+                        .body(ApiResponse.error("Phone number mismatch"));
             }
-            
+
             // Create doctor
             DoctorDTO doctorDTO = doctorService.createDoctor(request);
-            
+
             // Generate JWT token for automatic login as DOCTOR
-            String token = jwtUtil.generateToken(phoneNumber, "DOCTOR", doctorDTO.getId());
-            
-            AuthResponse authResponse = AuthResponse.success(token, "DOCTOR", doctorDTO.getId(), phoneNumber);
-            
+            String doctorName = (doctorDTO.getFirstName() != null && doctorDTO.getLastName() != null)
+                    ? doctorDTO.getFirstName() + " " + doctorDTO.getLastName()
+                    : (doctorDTO.getFirstName() != null ? doctorDTO.getFirstName()
+                            : (doctorDTO.getLastName() != null ? doctorDTO.getLastName() : ""));
+            String token = jwtUtil.generateToken(phoneNumber, "DOCTOR", doctorDTO.getId(), doctorName);
+
+            AuthResponse authResponse = AuthResponse.success(token, "DOCTOR", doctorDTO.getId(), phoneNumber,
+                    doctorName);
+
             return ResponseEntity.ok(
-                ApiResponse.success("Doctor registered and logged in successfully", authResponse)
-            );
+                    ApiResponse.success("Doctor registered and logged in successfully", authResponse));
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                .body(ApiResponse.error("Doctor registration failed: " + e.getMessage()));
+                    .body(ApiResponse.error("Doctor registration failed: " + e.getMessage()));
         }
     }
 
@@ -115,7 +119,7 @@ public class DoctorController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Doctor created successfully", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = DoctorDTO.class)))
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request body")
     @PostMapping
-    @PreAuthorize("hasRole('HOSPITAL_ADMIN')")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<DoctorDTO>> createDoctor(
             @Parameter(description = "Doctor creation request body", required = true) @Valid @RequestBody CreateDoctorRequest request) {
         DoctorDTO doctorDTO = doctorService.createDoctor(request);
@@ -126,22 +130,22 @@ public class DoctorController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Doctor updated successfully", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = DoctorDTO.class)))
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Doctor not found")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or (hasRole('DOCTOR') and @doctorService.isDoctorOwner(authentication.name, #id))")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('SUPERADMIN') or (hasRole('DOCTOR') and @doctorService.isDoctorOwner(authentication.name, #id))")
     public ResponseEntity<ApiResponse<DoctorDTO>> updateDoctor(
             @Parameter(description = "ID of the doctor to update", required = true) @PathVariable Long id,
             @Parameter(description = "Doctor update request body", required = true) @Valid @RequestBody UpdateDoctorRequest request,
             HttpServletRequest httpRequest) {
-        
+
         // Get user details from JWT filter
         Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
+
         // If doctor, ensure they can only update their own profile
         if ("DOCTOR".equals(userRole) && !userId.equals(id)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only update your own profile"));
+                    .body(ApiResponse.error("You can only update your own profile"));
         }
-        
+
         DoctorDTO doctorDTO = doctorService.updateDoctor(id, request);
         return ResponseEntity.ok(ApiResponse.success("Doctor updated successfully", doctorDTO));
     }
@@ -164,7 +168,7 @@ public class DoctorController {
             @Parameter(description = "Number of items per page", example = "10") @RequestParam(defaultValue = "10") int pageSize,
             @Parameter(description = "Field to sort by", example = "firstName") @RequestParam(defaultValue = "firstName") String sortBy,
             @Parameter(description = "Sort direction (asc/desc)", example = "asc") @RequestParam(defaultValue = "asc") String sortDir,
-            
+
             // Filter options
             @Parameter(description = "Search by name (first name or last name)", example = "John") @RequestParam(required = false) String name,
             @Parameter(description = "Filter by specialization", example = "Cardiology") @RequestParam(required = false) String specialization,
@@ -174,12 +178,11 @@ public class DoctorController {
             @Parameter(description = "Filter by maximum experience years", example = "20") @RequestParam(required = false) Integer maxExperience,
             @Parameter(description = "Search by email", example = "doctor@example.com") @RequestParam(required = false) String email,
             @Parameter(description = "Search by phone number", example = "+1234567890") @RequestParam(required = false) String phoneNumber) {
-        
+
         PageResponse<DoctorDTO> response = doctorService.getAllDoctors(
-            pageNo, pageSize, sortBy, sortDir,
-            name, specialization, department, hospitalId,
-            minExperience, maxExperience, email, phoneNumber
-        );
+                pageNo, pageSize, sortBy, sortDir,
+                name, specialization, department, hospitalId,
+                minExperience, maxExperience, email, phoneNumber);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -195,11 +198,10 @@ public class DoctorController {
             @Parameter(description = "Filter by maximum experience years", example = "20") @RequestParam(required = false) Integer maxExperience,
             @Parameter(description = "Search by email", example = "doctor@example.com") @RequestParam(required = false) String email,
             @Parameter(description = "Search by phone number", example = "+1234567890") @RequestParam(required = false) String phoneNumber) {
-        
+
         long count = doctorService.getDoctorCount(
-            name, specialization, department, hospitalId,
-            minExperience, maxExperience, email, phoneNumber
-        );
+                name, specialization, department, hospitalId,
+                minExperience, maxExperience, email, phoneNumber);
         return ResponseEntity.ok(ApiResponse.success("Doctor count retrieved successfully", count));
     }
 
@@ -246,8 +248,16 @@ public class DoctorController {
     @GetMapping("/{doctorId}/slot-templates")
     public ResponseEntity<ApiResponse<List<com.doc_app.booking.dto.SlotTemplateDTO>>> getDoctorSlotTemplates(
             @Parameter(description = "ID of the doctor", required = true) @PathVariable Long doctorId) {
-        
+
         List<com.doc_app.booking.dto.SlotTemplateDTO> templates = slotTemplateService.getSlotTemplateByDoctor(doctorId);
         return ResponseEntity.ok(ApiResponse.success("Slot templates retrieved successfully", templates));
+    }
+
+    @Operation(summary = "Get total count of all doctors", description = "Returns the total number of doctors in the system (no filters)")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Total doctor count retrieved successfully", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    @GetMapping("/all/count")
+    public ResponseEntity<ApiResponse<Long>> getAllDoctorCount() {
+        long count = doctorService.getDoctorCount(null, null, null, null, null, null, null, null);
+        return ResponseEntity.ok(ApiResponse.success("Total doctor count retrieved successfully", count));
     }
 }

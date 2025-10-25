@@ -23,4 +23,8 @@ public interface PatientService {
     void updateLastVisitedDoctor(Long patientId, Long doctorId);
 
     PatientDTO getPatientWithLastVisitedDoctor(Long patientId);
+
+    boolean existsByPhoneNumber(String phoneNumber);
+
+    com.doc_app.booking.dto.UserInfoDTO findUserInfoByPhoneNumber(String phoneNumber);
 }

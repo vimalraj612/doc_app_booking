@@ -1,3 +1,4 @@
+
 package com.doc_app.booking.service;
 
 import com.doc_app.booking.dto.HospitalDTO;
@@ -22,4 +23,10 @@ public interface HospitalService {
     HospitalDTO getHospitalByPhoneNumber(String phoneNumber);
 
     List<HospitalDTO> searchHospitals(String keyword);
+
+    long getHospitalCount();
+
+    boolean existsByPhoneNumber(String phoneNumber);
+
+    com.doc_app.booking.dto.UserInfoDTO findUserInfoByPhoneNumber(String phoneNumber);
 }

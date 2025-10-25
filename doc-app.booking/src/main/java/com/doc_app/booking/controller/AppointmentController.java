@@ -40,7 +40,7 @@ public class AppointmentController {
     @Operation(summary = "Create appointment - Patients can book for themselves, Hospital Admins can book for any patient")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Created", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppointmentDTO.class)))
     @PostMapping
-    @PreAuthorize("hasRole('PATIENT') or hasRole('HOSPITAL_ADMIN')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('HOSPITAL_ADMIN') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<AppointmentDTO>> createAppointment(
             @Valid @RequestBody CreateAppointmentRequest request,
             HttpServletRequest httpRequest) {
@@ -90,7 +90,7 @@ public class AppointmentController {
     @Operation(summary = "Update an appointment - Hospital Admins and Doctors can update appointments")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Updated", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppointmentDTO.class)))
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('DOCTOR')")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('DOCTOR') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long id,
             @Valid @RequestBody UpdateAppointmentRequest request) {
@@ -114,7 +114,7 @@ public class AppointmentController {
     @Operation(summary = "Get appointment by ID - All roles can view appointments with restrictions")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Found", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppointmentDTO.class)))
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('HOSPITAL_ADMIN')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('HOSPITAL_ADMIN') or hasRole('SUPERADMIN')")
     public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointment(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

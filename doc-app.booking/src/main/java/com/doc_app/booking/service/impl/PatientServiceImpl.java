@@ -30,11 +30,21 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public PatientDTO createPatient(CreatePatientRequest request) {
-        if (patientRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Patient with email " + request.getEmail() + " already exists");
+        if (patientRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
+            throw new IllegalArgumentException(
+                    "Patient with phone number " + request.getPhoneNumber() + " already exists");
         }
-
-        Patient patient = mapper.toPatient(request);
+        Patient patient = new Patient();
+        patient.setPhoneNumber(request.getPhoneNumber());
+        // All other fields are optional, set if present
+        patient.setFirstName(request.getFirstName());
+        patient.setLastName(request.getLastName());
+        patient.setEmail(request.getEmail());
+        patient.setAddress(request.getAddress());
+        patient.setDateOfBirth(request.getDateOfBirth());
+        patient.setGender(request.getGender());
+        patient.setLatitude(request.getLatitude());
+        patient.setLongitude(request.getLongitude());
         patient = patientRepository.save(patient);
         return mapper.toPatientDTO(patient);
     }
@@ -91,21 +101,26 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PatientDTO getPatientByPhoneNumber(String phoneNumber) {
-        Patient patient = patientRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with phone number: " + phoneNumber));
-        return mapper.toPatientDTO(patient);
+        return patientRepository.findByPhoneNumber(phoneNumber)
+            .map(mapper::toPatientDTO)
+            .orElseGet(() -> {
+                // Auto signup with phoneNumber only
+                Patient newPatient = new Patient();
+                newPatient.setPhoneNumber(phoneNumber);
+                Patient saved = patientRepository.save(newPatient);
+                return mapper.toPatientDTO(saved);
+            });
     }
 
     @Override
     public void updateLastVisitedDoctor(Long patientId, Long doctorId) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
-        
+
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + doctorId));
-        
+
         patient.setLastVisitedDoctor(doctor);
         patientRepository.save(patient);
     }
@@ -116,5 +131,24 @@ public class PatientServiceImpl implements PatientService {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
         return mapper.toPatientDTO(patient);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return patientRepository.findByPhoneNumber(phoneNumber).isPresent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.doc_app.booking.dto.UserInfoDTO findUserInfoByPhoneNumber(String phoneNumber) {
+        return patientRepository.findByPhoneNumber(phoneNumber)
+                .map(p -> new com.doc_app.booking.dto.UserInfoDTO(
+                        p.getId(),
+                        "PATIENT",
+                        (p.getFirstName() != null && p.getLastName() != null) ? p.getFirstName() + " " + p.getLastName()
+                                : (p.getFirstName() != null ? p.getFirstName()
+                                        : (p.getLastName() != null ? p.getLastName() : ""))))
+                .orElse(null);
     }
 }

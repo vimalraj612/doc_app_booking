@@ -42,14 +42,18 @@ public interface DoctorService {
 
     List<DoctorDTO> searchDoctors(String name, String specialization, Long hospitalId);
 
-    long getDoctorCount(
-            String name,
-            String specialization,
-            String department,
-            Long hospitalId,
-            Integer minExperience,
-            Integer maxExperience,
-            String email,
-            String phoneNumber
-    );
+        long getDoctorCount(
+                        String name,
+                        String specialization,
+                        String department,
+                        Long hospitalId,
+                        Integer minExperience,
+                        Integer maxExperience,
+                        String email,
+                        String phoneNumber
+        );
+
+        boolean existsByContact(String contact);
+
+        com.doc_app.booking.dto.UserInfoDTO findUserInfoByContact(String contact);
 }
