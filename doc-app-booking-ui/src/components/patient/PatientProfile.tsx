@@ -40,7 +40,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30">
-      <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar" style={{ marginTop: '115px', maxHeight: '420px', minHeight: '340px' }}>
+  <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar" style={{ marginTop: '115px', maxHeight: '500px', minHeight: '380px' }}>
         <div className="absolute top-2 right-2 flex gap-2">
           <button
             type="button"
@@ -55,8 +55,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
         </div>
         <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
         {loading && <div className="mb-2 text-blue-600">Loading...</div>}
-        {error && <div className="mb-2 text-red-600">{error}</div>}
-        {msg && <div className="mb-2 text-green-600">{msg}</div>}
+        {error
+          ? <div className="mb-2 text-red-600">{error}</div>
+          : msg && <div className="mb-2 text-green-600">{msg}</div>
+        }
         <form onSubmit={e => { e.preventDefault(); onSave(); }} className="w-full">
         <style>{`
           .no-scrollbar {

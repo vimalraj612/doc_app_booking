@@ -22,6 +22,7 @@ export async function verifyPatientOtp(phoneNumber: string, otp: string) {
     success: boolean;
     message: string;
     data: {
+      name: string;
       token: string;
       role: string;
       userId: number;

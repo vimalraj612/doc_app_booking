@@ -132,7 +132,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       {!appointmentsLoading &&
         !appointmentsError &&
         filteredAppointments.length === 0 && (
-          <div className="py-8 text-center text-gray-500 italic">
+          <div className="py-8 text-center text-gray-500 italic text-xs">
             No appointments found for{' '}
             <span className="font-semibold">{dateRange.start}</span> to{' '}
             <span className="font-semibold">{dateRange.end}</span>.

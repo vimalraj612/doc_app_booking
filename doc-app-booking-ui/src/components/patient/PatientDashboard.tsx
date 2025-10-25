@@ -10,16 +10,23 @@ import AvailableSlots from '../common/AvailableSlots';
 import PatientProfile from './PatientProfile';
 import { getPatientUserProfile, updatePatientProfile, PatientProfile as PatientProfileType } from '../../api/user';
 
-const mockUser = {
-  name: 'Jane Patient',
-  profileImage: '',
-};
-
 export interface PatientDashboardProps {
   onLogout: () => void;
 }
 
 export function PatientDashboard({ onLogout }: PatientDashboardProps) {
+  // Clear localStorage on logout
+  const handleLogout = () => {
+    // Remove only patient-related keys, not all localStorage
+    window.localStorage.removeItem('userId');
+    window.localStorage.removeItem('patientName');
+    window.localStorage.removeItem('name');
+    window.localStorage.removeItem('phoneNumber');
+    window.localStorage.removeItem('accessToken');
+    window.localStorage.removeItem('docPhoneNumber');
+    // Add more keys if needed
+    onLogout();
+  };
   // Profile modal state
   const [profileOpen, setProfileOpen] = useState(false);
   const [profile, setProfile] = useState<PatientProfileType | null>(null);
@@ -44,6 +51,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   };
 
   const handleProfileOpen = () => {
+    setProfileMsg(null);
     setProfileOpen(true);
     fetchProfile();
   };
@@ -66,6 +74,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     try {
       await updatePatientProfile(userId, profile);
       setProfileMsg('Profile updated successfully!');
+      setTimeout(() => setProfileMsg(null), 2000); // Clear after 2s
     } catch (e) {
       setProfileMsg('Failed to update profile');
     } finally {
@@ -73,7 +82,20 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     }
   };
 
-  const [user] = useState(mockUser);
+
+  // Get user name: prefer patientName, else phoneNumber, else 'Patient'
+  const getUserName = () => {
+    const patientName = window.localStorage.getItem('name');
+    if (patientName && patientName.trim()) return patientName;
+    const phone = window.localStorage.getItem('phoneNumber');
+    if (phone && phone.trim()) return phone;
+    return 'Patient';
+  };
+  const [user, setUser] = useState<{ name: string; profileImage?: string }>({ name: getUserName() });
+
+  useEffect(() => {
+    setUser({ name: getUserName() });
+  }, []);
 
   function getPhoneNumberFromQuery() {
     const params = new URLSearchParams(window.location.search);
@@ -136,7 +158,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     fetchPatientAppointmentsByDateRange({
       patientId,
       start: new Date(start).toISOString(),
-      end: new Date(new Date(end).setHours(23,59,59,999)).toISOString(),
+      end: new Date(new Date(end).setHours(23, 59, 59, 999)).toISOString(),
     })
       .then(resp => setAppointments(resp.data || []))
       .catch(() => setAppointmentsError('Failed to fetch appointments.'))
@@ -218,7 +240,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setConfirmOpen(false);
     try {
       const patientPhone = window.localStorage.getItem('phoneNumber') || '';
-      const patientName = window.localStorage.getItem('patientName') || 'Patient';
+      const patientName = window.localStorage.getItem('patientName') || patientPhone || 'Patient';
       const doctorId = pendingSlot.doctorId || (selectedDoctor && selectedDoctor.id);
       const appointmentDateTime = pendingSlot.start;
       const slotId = pendingSlot.slotId;
@@ -272,7 +294,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         {/* Header */}
         <Header
           user={user}
-          onLogout={onLogout}
+          onLogout={handleLogout}
           onProfileOpen={handleProfileOpen}
         />
         {profileOpen && (

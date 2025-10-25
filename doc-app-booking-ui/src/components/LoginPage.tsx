@@ -119,12 +119,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const res = await verifyPatientOtp(mobile, otp);
       if (res && res.data) {
-        const { token, role, userId, phoneNumber, message } = res.data;
+        const { token, role, userId, phoneNumber, message, name } = res.data;
         if (token) localStorage.setItem('accessToken', token);
         if (role) localStorage.setItem('role', role);
         if (userId) localStorage.setItem('userId', String(userId));
         if (phoneNumber) localStorage.setItem('phoneNumber', phoneNumber);
         if (message) localStorage.setItem('loginMessage', message);
+        if (name) localStorage.setItem('name', String(name));
       }
       // You may want to pass token/user to parent here
       onLogin(mobile, '', activeRole); // password is empty, not used

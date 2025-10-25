@@ -28,12 +28,15 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
             <CalendarPlus className="w-7 h-7 text-green-600" />
           </button>
           <div className="flex flex-col sm:flex-row gap-6">
-            <Avatar className="w-32 h-32 flex-shrink-0 mx-auto sm:mx-0">
-              <AvatarImage src={selectedDoctor.profileImage ? `data:${selectedDoctor.imageContentType};base64,${selectedDoctor.profileImage}` : undefined} alt={selectedDoctor.name} />
-              <AvatarFallback className="text-2xl">
-                {(selectedDoctor.firstName?.[0] || '') + (selectedDoctor.lastName?.[0] || '')}
-              </AvatarFallback>
-            </Avatar>
+            {/* Show avatar only on sm and up (web/tablet), hide on mobile */}
+            <div className="hidden sm:block">
+              <Avatar className="w-32 h-32 flex-shrink-0 mx-auto sm:mx-0">
+                <AvatarImage src={selectedDoctor.profileImage ? `data:${selectedDoctor.imageContentType};base64,${selectedDoctor.profileImage}` : undefined} alt={selectedDoctor.name} />
+                <AvatarFallback className="text-2xl">
+                  {(selectedDoctor.firstName?.[0] || '') + (selectedDoctor.lastName?.[0] || '')}
+                </AvatarFallback>
+              </Avatar>
+            </div>
             <div className="flex-1 space-y-4">
               <div className="flex items-center gap-2 mb-2">
                 <h2 className="text-2xl">{selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}</h2>
