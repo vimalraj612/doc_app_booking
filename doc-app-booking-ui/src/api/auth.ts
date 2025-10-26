@@ -38,6 +38,42 @@ export async function verifyPatientOtp(phoneNumber: string, otp: string) {
   );
 }
 
+// Step 1: Send OTP to doctor phone number
+export async function sendDoctorOtp(phoneNumber: string) {
+  // Calls /api/v1/auth/doctor/send-otp with phoneNumber as param
+  const params = new URLSearchParams({ phoneNumber });
+  return apiFetch<{ success: boolean }>(
+    `/api/v1/auth/doctor/send-otp?${params.toString()}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+// Step 2: Verify OTP for doctor
+export async function verifyDoctorOtp(phoneNumber: string, otp: string) {
+  // Calls /api/v1/auth/doctor/verify-otp with phoneNumber and otp as params
+  const params = new URLSearchParams({ phoneNumber, otp });
+  return apiFetch<{
+    success: boolean;
+    message: string;
+    data: {
+      name: string;
+      token: string;
+      role: string;
+      userId: number;
+      phoneNumber: string;
+      message: string;
+    };
+    timestamp: string;
+  }>(
+    `/api/v1/auth/doctor/verify-otp?${params.toString()}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
 export async function logout() {
   // Implement logout logic if needed
   return Promise.resolve();

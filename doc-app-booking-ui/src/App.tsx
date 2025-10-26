@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { LoginPage } from './components/LoginPage';
+import { DoctorLoginPage } from './components/doctor/DoctorLoginPage';
 import { PatientDashboard } from './components/patient/PatientDashboard';
-import { DoctorDashboard } from './components/DoctorDashboard';
+import { DoctorDashboard } from './components/doctor/DoctorDashboard';
 import { HospitalDashboard } from './components/HospitalDashboard';
 import { SuperAdminDashboard } from './components/SuperAdminDashboard';
 
@@ -75,17 +76,17 @@ export interface Appointment {
 function App() {
   // ...existing code...
 
-interface MedicalRecord {
-  id: string;
-  patientId: string;
-  patientName: string;
-  doctorId: string;
-  doctorName: string;
-  date: string;
-  diagnosis: string;
-  prescription: string;
-  notes: string;
-}
+  interface MedicalRecord {
+    id: string;
+    patientId: string;
+    patientName: string;
+    doctorId: string;
+    doctorName: string;
+    date: string;
+    diagnosis: string;
+    prescription: string;
+    notes: string;
+  }
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [docPhoneNumber, setDocPhoneNumber] = useState<string | null>(null);
@@ -142,13 +143,13 @@ interface MedicalRecord {
     { id: 's5', doctorId: 'd2', date: '2025-10-26', time: '10:00 AM', isBooked: false },
     { id: 's6', doctorId: 'd3', date: '2025-10-27', time: '11:00 AM', isBooked: false },
   ]);
-  
+
   const [timeSlotTemplates, setTimeSlotTemplates] = useState<TimeSlotTemplate[]>([]);
-  
+
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
 
   const handleLogin = (email: string, password: string, role: UserRole) => {
-  // Save token if present in localStorage (for real API, get from response)
+    // Save token if present in localStorage (for real API, get from response)
     if (role === 'patient') {
       setCurrentUser({ id: 'p1', name: 'John Doe', email, role });
     } else if (role === 'doctor') {
@@ -171,8 +172,8 @@ interface MedicalRecord {
 
   const handleBookAppointment = (appointment: Appointment) => {
     setAppointments([...appointments, appointment]);
-    setTimeSlots(timeSlots.map(slot => 
-      slot.id === appointment.id 
+    setTimeSlots(timeSlots.map(slot =>
+      slot.id === appointment.id
         ? { ...slot, isBooked: true, patientId: appointment.patientId, patientName: appointment.patientName }
         : slot
     ));
@@ -202,15 +203,15 @@ interface MedicalRecord {
   };
 
   const handleCancelAppointment = (appointmentId: string) => {
-    setAppointments(appointments.map(apt => 
+    setAppointments(appointments.map(apt =>
       apt.id === appointmentId ? { ...apt, status: 'cancelled' as const } : apt
     ));
     const appointment = appointments.find(a => a.id === appointmentId);
     if (appointment) {
-      setTimeSlots(timeSlots.map(slot => 
-        slot.doctorId === appointment.doctorId && 
-        slot.date === appointment.date && 
-        slot.time === appointment.time
+      setTimeSlots(timeSlots.map(slot =>
+        slot.doctorId === appointment.doctorId &&
+          slot.date === appointment.date &&
+          slot.time === appointment.time
           ? { ...slot, isBooked: false, patientId: undefined, patientName: undefined }
           : slot
       ));
@@ -218,13 +219,13 @@ interface MedicalRecord {
   };
 
   const handleUpdateAppointmentStatus = (appointmentId: string, status: Appointment['status']) => {
-    setAppointments(appointments.map(apt => 
+    setAppointments(appointments.map(apt =>
       apt.id === appointmentId ? { ...apt, status } : apt
     ));
   };
 
   const handleAddPrescription = (appointmentId: string, prescription: string, notes: string) => {
-    setAppointments(appointments.map(apt => 
+    setAppointments(appointments.map(apt =>
       apt.id === appointmentId ? { ...apt, prescription, notes, status: 'completed' as const } : apt
     ));
   };
@@ -234,7 +235,7 @@ interface MedicalRecord {
   };
 
   const handleRateDoctor = (appointmentId: string, rating: number, review: string) => {
-    setAppointments(appointments.map(apt => 
+    setAppointments(appointments.map(apt =>
       apt.id === appointmentId ? { ...apt, rating, review } : apt
     ));
   };
@@ -242,23 +243,23 @@ interface MedicalRecord {
   const handleRescheduleAppointment = (appointmentId: string, newSlotId: string) => {
     const appointment = appointments.find(a => a.id === appointmentId);
     const newSlot = timeSlots.find(s => s.id === newSlotId);
-    
+
     if (appointment && newSlot) {
       // Free up old slot
-      setTimeSlots(timeSlots.map(slot => 
-        slot.doctorId === appointment.doctorId && 
-        slot.date === appointment.date && 
-        slot.time === appointment.time
+      setTimeSlots(timeSlots.map(slot =>
+        slot.doctorId === appointment.doctorId &&
+          slot.date === appointment.date &&
+          slot.time === appointment.time
           ? { ...slot, isBooked: false, patientId: undefined, patientName: undefined }
           : slot.id === newSlotId
-          ? { ...slot, isBooked: true, patientId: appointment.patientId, patientName: appointment.patientName }
-          : slot
+            ? { ...slot, isBooked: true, patientId: appointment.patientId, patientName: appointment.patientName }
+            : slot
       ));
-      
+
       // Update appointment
-      setAppointments(appointments.map(apt => 
-        apt.id === appointmentId 
-          ? { ...apt, date: newSlot.date, time: newSlot.time } 
+      setAppointments(appointments.map(apt =>
+        apt.id === appointmentId
+          ? { ...apt, date: newSlot.date, time: newSlot.time }
           : apt
       ));
     }
@@ -275,28 +276,28 @@ interface MedicalRecord {
     const newSlots: TimeSlot[] = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     // Iterate through each day in the range
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       const dayOfWeek = d.getDay();
-      
+
       // Check if this day is in the template
       if (template.daysOfWeek.includes(dayOfWeek)) {
         const dateStr = d.toISOString().split('T')[0];
-        
+
         // Parse start and end times
         const [startHour, startMin] = template.startTime.split(':').map(Number);
         const [endHour, endMin] = template.endTime.split(':').map(Number);
-        
+
         // Generate slots for this day
         let currentTime = startHour * 60 + startMin;
         const endTime = endHour * 60 + endMin;
-        
+
         while (currentTime < endTime) {
           const hour = Math.floor(currentTime / 60);
           const min = currentTime % 60;
           const timeStr = `${hour > 12 ? hour - 12 : hour}:${min.toString().padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
-          
+
           newSlots.push({
             id: `s${timeSlots.length + newSlots.length + 1}`,
             doctorId: template.doctorId,
@@ -304,16 +305,34 @@ interface MedicalRecord {
             time: timeStr,
             isBooked: false
           });
-          
+
           currentTime += template.slotDuration;
         }
       }
     }
-    
+
     setTimeSlots([...timeSlots, ...newSlots]);
   };
 
+  useEffect(() => {
+    // Auto-login doctor if doctorLoggedIn flag is set
+    if (!currentUser && window.location.pathname === '/doctor/dashboard' && localStorage.getItem('doctorLoggedIn') === 'true') {
+      // Get doctor info from localStorage
+      const userId = localStorage.getItem('userId');
+      const name = localStorage.getItem('name');
+      const email = '';
+      if (userId && name) {
+        setCurrentUser({ id: userId, name, email, role: 'doctor' });
+      }
+    }
+  }, [currentUser]);
+
   if (!currentUser) {
+    // Simple routing for /login/doctor, /doctor/dashboard, and /doctor
+    const path = window.location.pathname;
+    if (path === '/login/doctor' || path === '/doctor/dashboard' || path === '/doctor') {
+      return <DoctorLoginPage />;
+    }
     return <LoginPage onLogin={handleLogin} />;
   }
 
@@ -323,7 +342,7 @@ interface MedicalRecord {
         <PatientDashboard onLogout={handleLogout} />
       )}
       {currentUser.role === 'doctor' && (
-        <DoctorDashboard 
+        <DoctorDashboard
           user={currentUser}
           doctor={doctors.find(d => d.id === currentUser.id) || doctors[0]}
           appointments={appointments.filter(a => a.doctorId === currentUser.id)}
@@ -332,11 +351,10 @@ interface MedicalRecord {
           onAddSlot={handleAddSlot}
           onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
           onAddPrescription={handleAddPrescription}
-          onAddMedicalRecord={handleAddMedicalRecord}
         />
       )}
       {currentUser.role === 'hospital' && (
-        <HospitalDashboard 
+        <HospitalDashboard
           user={currentUser}
           doctors={doctors.filter(d => d.hospitalId === currentUser.id)}
           appointments={appointments.filter(a => a.hospitalId === currentUser.id)}
@@ -347,7 +365,7 @@ interface MedicalRecord {
         />
       )}
       {currentUser.role === 'superadmin' && (
-        <SuperAdminDashboard 
+        <SuperAdminDashboard
           user={currentUser}
           hospitals={hospitals}
           doctors={doctors}

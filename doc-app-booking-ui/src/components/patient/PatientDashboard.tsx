@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchDoctorByPhone } from '../../api/doctor';
-import { fetchSlotsByDoctorId, fetchPatientAppointmentsByDateRange, cancelAppointmentApi } from '../../api/appointments';
+import { fetchSlotsByDoctorIdAndDate, fetchPatientAppointmentsByDateRange, cancelAppointmentApi } from '../../api/appointments';
 import { apiFetch } from '../../api/http';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import Header from '../common/Header';
@@ -196,8 +196,10 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setLoadingSlots(true);
     setSlotsError('');
     try {
-      const slotsResp = await fetchSlotsByDoctorId(selectedDoctor.id);
-      setSlots(slotsResp.data);
+  // Use selectedDate if set, otherwise default to today
+  const date = selectedDate || new Date().toISOString().slice(0, 10);
+  const slotsResp = await fetchSlotsByDoctorIdAndDate(selectedDoctor.id, date);
+  setSlots(slotsResp.data);
     } catch (e) {
       setSlotsError('Failed to fetch slots.');
     } finally {
@@ -366,12 +368,9 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         <AvailableSlots
           open={showSlots}
           onClose={() => setShowSlots(false)}
-          loadingSlots={loadingSlots}
-          slotsError={slotsError}
-          allDates={allDates}
+          doctorId={selectedDoctor ? selectedDoctor.id : ''}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
-          slotsByDate={slotsByDate}
           selectedSlot={selectedSlot}
           booking={booking}
           handleBookSlot={handleBookSlot}

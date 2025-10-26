@@ -1,3 +1,19 @@
+// Fetch doctor appointments by date range
+export async function fetchDoctorAppointmentsByDateRange({
+  doctorId,
+  start,
+  end,
+}: {
+  doctorId: string | number;
+  start: string; // ISO string
+  end: string;   // ISO string
+}) {
+  const token = window.localStorage.getItem('accessToken') || '';
+  const url = `/api/v1/appointments/doctor/${doctorId}/date-range?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+  return apiFetch<any[]>(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+}
 // Cancel appointment API
 export async function cancelAppointmentApi(id: number | string) {
   const token = window.localStorage.getItem('accessToken') || '';
@@ -29,14 +45,20 @@ export async function fetchPatientAppointmentsByDateRange({
 import { apiFetch } from './http';
 // Appointment API functions
 
-export async function fetchSlotsByDoctorId(doctorId: string | number) {
-  const token = window.localStorage.getItem('accessToken') || '';
-  return apiFetch<{ data: any[] }>(`/api/v1/slots/doctor/${doctorId}`,
-    {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    }
-  );
+export interface Slot {
+  slotId: string | number;
+  start: string;
+  end: string;
+  available: boolean;
 }
+
+export async function fetchSlotsByDoctorIdAndDate(doctorId: string | number, date: string) {
+  const token = window.localStorage.getItem('accessToken') || '';
+  return apiFetch<{ data: Slot[] }>(`/api/v1/slots/doctor/${doctorId}?date=${date}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+}
+
 
 export async function getAppointments() {
   // Replace with your backend endpoint

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ConfirmDialog from '../ui/ConfirmDialog';
+import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 
 interface Slot {
   slotId: string | number;
@@ -12,12 +13,9 @@ interface Slot {
 interface AvailableSlotsProps {
   open: boolean;
   onClose: () => void;
-  loadingSlots: boolean;
-  slotsError: string;
-  allDates: string[];
+  doctorId: string | number;
   selectedDate: string;
   setSelectedDate: (date: string) => void;
-  slotsByDate: { [date: string]: Slot[] };
   selectedSlot: Slot | null;
   booking: boolean;
   handleBookSlot: (slot: Slot) => void;
@@ -32,12 +30,9 @@ interface AvailableSlotsProps {
 const AvailableSlots: React.FC<AvailableSlotsProps> = ({
   open,
   onClose,
-  loadingSlots,
-  slotsError,
-  allDates,
+  doctorId,
   selectedDate,
   setSelectedDate,
-  slotsByDate,
   selectedSlot,
   booking,
   handleBookSlot,
@@ -48,21 +43,54 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
   successMsg,
   formatTime,
 }) => {
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [slotsError, setSlotsError] = useState('');
+
+  // Set default date to today when modal opens
+  useEffect(() => {
+    if (open && !selectedDate) {
+      setSelectedDate(new Date().toISOString().slice(0, 10));
+    }
+    // eslint-disable-next-line
+  }, [open]);
+
+
+
+
+  // Fetch slots and available dates whenever selectedDate changes
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    const loadSlots = async () => {
+      setLoadingSlots(true);
+      setSlotsError('');
+      try {
+        const res = await fetchSlotsByDoctorIdAndDate(doctorId, selectedDate);
+        setSlots(res.data);
+      } catch (err: any) {
+        setSlotsError(err.message || 'Failed to load slots');
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    loadSlots();
+  }, [selectedDate, doctorId]);
+
   if (!open) return null;
+
+  const slotsByDate = { [selectedDate]: slots };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div
         className="bg-white rounded-xl shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-hidden"
-        style={{
-          height: '92vh', // 💡 uses almost full screen on mobile
-          maxHeight: '92vh',
-          marginTop: '4vh',
-        }}
+        style={{ height: '86vh', maxHeight: '86vh', marginTop: '7vh' }}
       >
         {/* Close Button */}
         <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
           onClick={onClose}
         >
           &times;
@@ -70,52 +98,23 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
 
         <h3 className="text-lg font-bold mb-3 text-gray-800">Available Slots</h3>
 
-        {/* Scrollable Body */}
-        <div
-          className="overflow-y-auto flex-1 w-full pr-1 pb-2"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
+        <div className="overflow-y-auto flex-1 w-full pr-1 pb-2 no-scrollbar">
           {loadingSlots && <div>Loading...</div>}
           {slotsError && <div className="text-red-500">{slotsError}</div>}
 
           {!loadingSlots && !slotsError && (
             <>
-              {/* Dates */}
-              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-3 justify-center">
-                {allDates.length === 0 && (
-                  <span className="text-gray-500 italic text-xs">
-                    No slots available
-                  </span>
-                )}
-                {allDates.map((date) => (
-                  <button
-                    key={date}
-                    className={`px-3 py-1.5 rounded-lg border text-xs transition-all whitespace-nowrap font-semibold
-                      ${
-                        selectedDate === date
-                          ? 'bg-blue-100 border-blue-600 shadow-sm ring-2 ring-blue-500 ring-offset-2'
-                          : 'bg-white hover:bg-blue-50 text-gray-700 border-gray-300 font-medium'
-                      }`}
-                    onClick={() => setSelectedDate(date)}
-                    style={
-                      selectedDate === date ? { fontWeight: 700, color: '#2563eb' } : {}
-                    }
-                  >
-                    <span
-                      className={
-                        selectedDate === date
-                          ? 'text-blue-700 font-bold'
-                          : 'text-gray-700 font-medium'
-                      }
-                    >
-                      {new Date(date).toLocaleDateString(undefined, {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </span>
-                  </button>
-                ))}
+              {/* Date Picker */}
+              <div className="flex gap-2 items-center justify-center mb-3">
+                <input
+                  id="slot-date-picker"
+                  type="date"
+                  value={selectedDate}
+                  onChange={e => setSelectedDate(e.target.value)}
+                  className="border rounded px-2 py-1 text-xs w-32 sm:w-40 md:w-48 lg:w-56 focus:ring-2 focus:ring-blue-200 transition-all"
+                  min={new Date().toISOString().slice(0, 10)}
+                  style={{ fontSize: '13px', maxWidth: '100%' }}
+                />
               </div>
 
               {successMsg && (
@@ -137,22 +136,16 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
                         transition={{ duration: 0.2 }}
                         className="w-full"
                       >
-                        {slotsByDate[selectedDate]?.length === 0 ? (
+                        {(!slotsByDate[selectedDate] || slotsByDate[selectedDate].length === 0) ? (
                           <div className="text-gray-500 italic text-center py-2 text-xs">
                             No slots for this date
                           </div>
                         ) : (
                           <div
                             className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar"
-                            style={{
-                              maxHeight: '68vh',
-                              minHeight: '80px',
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              padding: '3px',
-                            }}
+                            style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}
                           >
-                            {slotsByDate[selectedDate].map((slot: any) => {
+                            {slotsByDate[selectedDate].map((slot) => {
                               const isSelected = selectedSlot?.slotId === slot.slotId;
                               const unavailable = !slot.available;
 
@@ -166,53 +159,25 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
                                     min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px]
                                     transition-all duration-200 ease-in-out text-center
                                     backdrop-blur-sm bg-white/70 shadow-sm
-                                    ${
-                                      unavailable
-                                        ? 'border-red-200 text-red-400 cursor-not-allowed opacity-60'
-                                        : isSelected
+                                    ${unavailable
+                                      ? 'border-red-200 text-red-400 cursor-not-allowed opacity-60'
+                                      : isSelected
                                         ? 'border-blue-400 text-blue-700 bg-blue-50/60 shadow-md scale-[1.05]'
                                         : 'border-green-200 text-green-700 bg-green-50 hover:bg-green-100 hover:shadow-md hover:scale-[1.02]'
-                                    }
-                                  `}
-                                >
-                                  <span
-                                    className={`font-semibold text-[5.5px] leading-tight ${
-                                      isSelected
-                                        ? 'text-blue-700'
-                                        : unavailable
-                                        ? 'text-red-400'
-                                        : 'text-green-700'
                                     }`}
-                                  >
+                                >
+                                  <span className={`font-semibold text-[5.5px] leading-tight ${isSelected ? 'text-blue-700' : unavailable ? 'text-red-400' : 'text-green-700'}`}>
                                     {formatTime(slot.start)}
                                   </span>
-                                  <span
-                                    className={`text-[4px] leading-tight ${
-                                      isSelected
-                                        ? 'text-blue-600'
-                                        : unavailable
-                                        ? 'text-red-400'
-                                        : 'text-green-600'
-                                    }`}
-                                  >
+                                  <span className={`text-[4px] leading-tight ${isSelected ? 'text-blue-600' : unavailable ? 'text-red-400' : 'text-green-600'}`}>
                                     {(() => {
                                       const start = new Date(slot.start);
                                       const end = new Date(slot.end);
-                                      const diff = Math.round(
-                                        (end.getTime() - start.getTime()) / 60000
-                                      );
+                                      const diff = Math.round((end.getTime() - start.getTime()) / 60000);
                                       return `${diff}m`;
                                     })()}
                                   </span>
-                                  <span
-                                    className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors ${
-                                      unavailable
-                                        ? 'text-red-600 bg-red-100/60'
-                                        : isSelected
-                                        ? 'text-blue-700 bg-blue-100/60'
-                                        : 'text-green-700 bg-green-100/60'
-                                    }`}
-                                  >
+                                  <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors ${unavailable ? 'text-red-600 bg-red-100/60' : isSelected ? 'text-blue-700 bg-blue-100/60' : 'text-green-700 bg-green-100/60'}`}>
                                     {unavailable ? 'X' : '✓'}
                                   </span>
 
@@ -234,13 +199,7 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
               <ConfirmDialog
                 open={confirmOpen}
                 title="Book Appointment"
-                message={
-                  pendingSlot
-                    ? `Book appointment for ${formatTime(pendingSlot.start)} - ${formatTime(
-                        pendingSlot.end
-                      )}?`
-                    : ''
-                }
+                message={pendingSlot ? `Book appointment for ${formatTime(pendingSlot.start)} - ${formatTime(pendingSlot.end)}?` : ''}
                 confirmText="Book"
                 cancelText="Cancel"
                 onConfirm={handleConfirmBook}

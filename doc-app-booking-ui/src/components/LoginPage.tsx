@@ -12,18 +12,6 @@ import {
   Check,
 } from "lucide-react";
 
-// Example: How to use the new login API
-// import { login } from '../api';
-//
-// async function handleLogin(email: string, password: string) {
-//   try {
-//     const result = await login(email, password);
-//     // result.token, result.user
-//   } catch (e) {
-//     // handle error
-//   }
-// }
-
 interface LoginPageProps {
   onLogin: (
     email: string,

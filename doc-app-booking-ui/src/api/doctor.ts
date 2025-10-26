@@ -20,8 +20,8 @@ export type DoctorDTO = {
 // Fetch doctor by phone using new endpoint
 export async function fetchDoctorByPhone(phoneNumber: string): Promise<DoctorDTO | null> {
   try {
-  const normalizedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
-  const url = `/api/v1/doctors/phone/${encodeURIComponent(normalizedPhone)}`;
+    const normalizedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+    const url = `/api/v1/doctors/phone/${encodeURIComponent(normalizedPhone)}`;
     const token = window.localStorage.getItem('accessToken') || '';
     console.log('Doctor API URL:', url, 'Bearer:', token ? '[present]' : '[missing]');
     const data = await apiFetch<{ data: DoctorDTO }>(url, {
@@ -42,4 +42,42 @@ export async function searchDoctors(query: string): Promise<DoctorDTO[]> {
   } catch (e) {
     return [];
   }
+}
+
+// Get today's appointment count for a doctor (authorization required)
+
+export async function getTodayAppointmentCount(doctorId?: string) {
+  const token = localStorage.getItem('accessToken');
+  let id = doctorId;
+  if (!id || id === 'd1') {
+    id = localStorage.getItem('userId') || '';
+  }
+  return apiFetch<number>(
+    `/api/v1/appointments/doctor/${id}/today/count`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+}
+
+// Get today's free slots count for a doctor (authorization required)
+
+export async function getTodayFreeSlotsCount(doctorId?: string) {
+  const token = localStorage.getItem('accessToken');
+  let id = doctorId;
+  if (!id || id === 'd1') {
+    id = localStorage.getItem('userId') || '';
+  }
+  return apiFetch<number>(
+    `/api/v1/slots/doctor/${id}/today/free-count`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 }
