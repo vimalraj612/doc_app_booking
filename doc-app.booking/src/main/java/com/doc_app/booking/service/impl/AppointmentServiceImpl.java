@@ -37,6 +37,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AppointmentServiceImpl implements AppointmentService {
 
+    @Override
+    @Transactional(readOnly = true)
+    public long countTodaysAppointmentsByDoctor(Long doctorId, AppointmentStatus status) {
+        LocalDateTime start = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+        if (status != null) {
+            return appointmentRepository.findByDoctorIdAndAppointmentDateTimeBetween(doctorId, start, end)
+                .stream().filter(a -> a.getStatus() == status).count();
+        } else {
+            return appointmentRepository.findByDoctorIdAndAppointmentDateTimeBetween(doctorId, start, end).size();
+        }
+    }
+
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
@@ -178,6 +191,18 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional(readOnly = true)
     public List<AppointmentDTO> getAppointmentsByDoctor(Long doctorId) {
         return appointmentRepository.findByDoctorId(doctorId).stream()
+                .map(mapper::toAppointmentDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AppointmentDTO> getAppointmentsByDoctor(Long doctorId, AppointmentStatus status) {
+        if (status == null) {
+            return getAppointmentsByDoctor(doctorId);
+        }
+        return appointmentRepository.findByDoctorId(doctorId).stream()
+                .filter(a -> a.getStatus() == status)
                 .map(mapper::toAppointmentDTO)
                 .collect(Collectors.toList());
     }

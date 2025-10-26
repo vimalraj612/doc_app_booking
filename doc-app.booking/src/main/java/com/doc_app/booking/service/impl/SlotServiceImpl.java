@@ -27,6 +27,15 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SlotServiceImpl implements SlotService {
 
+    @Override
+    public long countFreeSlotsToday(Long doctorId) {
+        LocalDate today = LocalDate.now();
+        List<SlotDTO> slots = getAvailableSlots(doctorId, today);
+        // A slot is free if available == true or status == "AVAILABLE"
+        return slots.stream().filter(slot -> slot.isAvailable()
+                || (slot.getStatus() != null && slot.getStatus().equalsIgnoreCase("AVAILABLE"))).count();
+    }
+
     private final DoctorRepository doctorRepository;
     private final SlotTemplateRepository slotTemplateRepository;
     private final SlotRepository slotRepository;
@@ -86,11 +95,12 @@ public class SlotServiceImpl implements SlotService {
 
         for (Appointment ap : appointments) {
             if (ap.getStatus() == com.doc_app.booking.model.AppointmentStatus.SCHEDULED
-                || ap.getStatus() == com.doc_app.booking.model.AppointmentStatus.COMPLETED) {
+                    || ap.getStatus() == com.doc_app.booking.model.AppointmentStatus.COMPLETED) {
                 for (Slot slot : created) {
                     LocalDateTime slotStart = LocalDateTime.of(slot.getDate(), slot.getStartTime());
                     LocalDateTime slotEnd = LocalDateTime.of(slot.getDate(), slot.getEndTime());
-                    if (!ap.getAppointmentDateTime().isBefore(slotStart) && ap.getAppointmentDateTime().isBefore(slotEnd)) {
+                    if (!ap.getAppointmentDateTime().isBefore(slotStart)
+                            && ap.getAppointmentDateTime().isBefore(slotEnd)) {
                         slot.setAvailable(false);
                         slotRepository.save(slot);
                     }
@@ -114,39 +124,35 @@ public class SlotServiceImpl implements SlotService {
             return generateSlotsForDoctor(doctorId, date);
         }
 
-    List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
-        com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
-        com.doc_app.booking.model.AppointmentStatus.COMPLETED
-    );
-    return slots.stream().map(s -> {
-    boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
-        return new SlotDTO(
-            s.getId(),
-            LocalDateTime.of(s.getDate(), s.getStartTime()),
-            LocalDateTime.of(s.getDate(), s.getEndTime()),
-            !booked,
-            booked ? "BOOKED" : "AVAILABLE"
-        );
-    }).collect(Collectors.toList());
+        List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
+                com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
+                com.doc_app.booking.model.AppointmentStatus.COMPLETED);
+        return slots.stream().map(s -> {
+            boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
+            return new SlotDTO(
+                    s.getId(),
+                    LocalDateTime.of(s.getDate(), s.getStartTime()),
+                    LocalDateTime.of(s.getDate(), s.getEndTime()),
+                    !booked,
+                    booked ? "BOOKED" : "AVAILABLE");
+        }).collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SlotDTO> getAllSlots(Long doctorId) {
         List<Slot> slots = slotRepository.findByDoctorId(doctorId);
-    List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
-        com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
-        com.doc_app.booking.model.AppointmentStatus.COMPLETED
-    );
-    return slots.stream().map(s -> {
-    boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
-        return new SlotDTO(
-            s.getId(),
-            LocalDateTime.of(s.getDate(), s.getStartTime()),
-            LocalDateTime.of(s.getDate(), s.getEndTime()),
-            !booked,
-            booked ? "BOOKED" : "AVAILABLE"
-        );
-    }).collect(Collectors.toList());
+        List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
+                com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
+                com.doc_app.booking.model.AppointmentStatus.COMPLETED);
+        return slots.stream().map(s -> {
+            boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
+            return new SlotDTO(
+                    s.getId(),
+                    LocalDateTime.of(s.getDate(), s.getStartTime()),
+                    LocalDateTime.of(s.getDate(), s.getEndTime()),
+                    !booked,
+                    booked ? "BOOKED" : "AVAILABLE");
+        }).collect(Collectors.toList());
     }
 }

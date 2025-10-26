@@ -4,5 +4,5 @@ import com.doc_app.booking.dto.DoctorDTO;
 import java.util.List;
 
 public interface CommonService {
-    List<DoctorDTO> searchDoctors(String query);
+    List<DoctorDTO> searchDoctors(String query, String specialization);
 }

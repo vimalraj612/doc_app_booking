@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AppointmentService {
+    /**
+     * Count today's appointments for a doctor (optionally by status)
+     */
+    long countTodaysAppointmentsByDoctor(Long doctorId, AppointmentStatus status);
     AppointmentDTO createAppointment(CreateAppointmentRequest request);
 
     AppointmentDTO updateAppointment(Long id, UpdateAppointmentRequest request);
@@ -23,6 +27,8 @@ public interface AppointmentService {
     void deleteAppointment(Long id);
 
     List<AppointmentDTO> getAppointmentsByDoctor(Long doctorId);
+
+    List<AppointmentDTO> getAppointmentsByDoctor(Long doctorId, AppointmentStatus status);
 
     List<AppointmentDTO> getAppointmentsByPatient(Long patientId);
 

@@ -25,6 +25,12 @@ public class SlotController {
     private final SlotService slotService;
     private final DoctorRepository doctorRepository;
 
+    @GetMapping("/doctor/{doctorId}/today/free-count")
+    public ResponseEntity<ApiResponse<Long>> getFreeSlotsCountToday(@PathVariable Long doctorId) {
+        long count = slotService.countFreeSlotsToday(doctorId);
+        return ResponseEntity.ok(ApiResponse.success(count));
+    }
+
     @GetMapping("/doctor/{doctorId}")
     public ResponseEntity<ApiResponse<List<SlotDTO>>> getSlotsByDoctorAndDate(
             @PathVariable Long doctorId,

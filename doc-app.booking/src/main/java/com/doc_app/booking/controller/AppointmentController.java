@@ -18,7 +18,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +33,25 @@ import java.util.List;
 @Tag(name = "Appointment Management", description = "APIs for managing appointments")
 @SecurityRequirement(name = "Bearer Authentication")
 public class AppointmentController {
+
+    @Operation(summary = "Get today's appointment count for a doctor")
+    @GetMapping("/doctor/{doctorId}/today/count")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('HOSPITAL_ADMIN')")
+    public ResponseEntity<ApiResponse<Long>> getTodaysAppointmentCountByDoctor(
+            @Parameter(description = "ID of the doctor", required = true) @PathVariable Long doctorId,
+            @RequestParam(value = "status", required = false) AppointmentStatus status,
+            HttpServletRequest httpRequest) {
+        // Get user details from JWT filter
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        String userRole = (String) httpRequest.getAttribute("userRole");
+        // If doctor, ensure they can only view their own appointments
+        if ("DOCTOR".equals(userRole) && !userId.equals(doctorId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error("You can only view your own appointments"));
+        }
+        long count = appointmentService.countTodaysAppointmentsByDoctor(doctorId, status);
+        return ResponseEntity.ok(ApiResponse.success(count));
+    }
 
     private final AppointmentService appointmentService;
 
@@ -204,19 +222,17 @@ public class AppointmentController {
     @PreAuthorize("hasRole('DOCTOR') or hasRole('HOSPITAL_ADMIN')")
     public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAppointmentsByDoctor(
             @Parameter(description = "ID of the doctor", required = true) @PathVariable Long doctorId,
+            @RequestParam(value = "status", required = false) AppointmentStatus status,
             HttpServletRequest httpRequest) {
-        
         // Get user details from JWT filter
         Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
         // If doctor, ensure they can only view their own appointments
         if ("DOCTOR".equals(userRole) && !userId.equals(doctorId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error("You can only view your own appointments"));
         }
-        
-        List<AppointmentDTO> appointments = appointmentService.getAppointmentsByDoctor(doctorId);
+        List<AppointmentDTO> appointments = appointmentService.getAppointmentsByDoctor(doctorId, status);
         return ResponseEntity.ok(ApiResponse.success(appointments));
     }
 

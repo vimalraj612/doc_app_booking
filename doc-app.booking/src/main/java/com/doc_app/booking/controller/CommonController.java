@@ -23,9 +23,10 @@ public class CommonController {
     @Operation(summary = "Search doctors by name, specialization, hospital or mobile number")
     @GetMapping("/search/doctors")
     public ResponseEntity<ApiResponse<List<DoctorDTO>>> searchDoctors(
-            @RequestParam String query) {
+            @RequestParam String query,
+            @RequestParam(required = false) String specialization) {
 
-        List<DoctorDTO> doctors = commonService.searchDoctors(query);
+        List<DoctorDTO> doctors = commonService.searchDoctors(query, specialization);
         return ResponseEntity.ok(ApiResponse.success(doctors));
     }
 }

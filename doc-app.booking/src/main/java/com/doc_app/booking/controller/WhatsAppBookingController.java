@@ -119,7 +119,7 @@ public class WhatsAppBookingController {
 
     private void showDoctorInfoAndDates(String patientPhone, String doctorPhone) {
         try {
-            List<DoctorDTO> doctors = commonService.searchDoctors(doctorPhone);
+            List<DoctorDTO> doctors = commonService.searchDoctors(doctorPhone, null);
             if (doctors.isEmpty()) {
                 whatsAppService.sendWhatsAppMessage(patientPhone,
                         "❌ Doctor not found in our system.");
@@ -152,7 +152,7 @@ public class WhatsAppBookingController {
 
     private void showAvailableSlots(String patientPhone, String doctorPhone, int dateNumber) {
         try {
-            List<DoctorDTO> doctors = commonService.searchDoctors(doctorPhone);
+            List<DoctorDTO> doctors = commonService.searchDoctors(doctorPhone, null);
             if (doctors.isEmpty())
                 return;
 
@@ -187,10 +187,11 @@ public class WhatsAppBookingController {
 
     private void searchForDoctors(String patientPhone, String query) {
         try {
-            List<DoctorDTO> doctors = commonService.searchDoctors(query);
+            // Pass null for specialization to search all
+            List<DoctorDTO> doctors = commonService.searchDoctors(query, null);
             if (doctors.isEmpty()) {
                 whatsAppService.sendWhatsAppMessage(patientPhone,
-                        "� No doctors found. Try different search term.");
+                        "❌ No doctors found. Try different search term.");
                 return;
             }
 
