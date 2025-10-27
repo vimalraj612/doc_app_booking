@@ -1,3 +1,4 @@
+
 package com.doc_app.booking.dto.request;
 
 import jakarta.validation.constraints.FutureOrPresent;
@@ -13,12 +14,12 @@ public class CreateAppointmentRequest {
     @Positive
     private Long doctorId;
 
-    // Patient identification by phone number (unique identifier)
-    @NotNull
+    // Patient identification by phone number (unique identifier, optional for
+    // reserved)
     @Size(min = 10, max = 15, message = "Phone number must be between 10-15 characters")
     private String patientPhone;
 
-    @NotNull
+    // Optional for reserved appointments
     @Size(min = 2, max = 150, message = "Patient name must be between 2-150 characters")
     private String patientName;
 
@@ -30,12 +31,12 @@ public class CreateAppointmentRequest {
     @Positive
     private Long slotId;
 
-    @Size(max = 500)
-    private String reason;
-
-    // Appointment type (consultation / follow-up / telemedicine etc.)
-    private com.doc_app.booking.model.AppointmentType appointmentType;
-
     @Size(max = 1000)
     private String notes;
+
+    private boolean reserved;
+
+    public boolean isReserved() {
+        return reserved || (patientPhone == null || patientPhone.isBlank());
+    }
 }

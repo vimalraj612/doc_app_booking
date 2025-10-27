@@ -17,9 +17,8 @@ public class Appointment {
     private Doctor doctor;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id", nullable = false)
+    @JoinColumn(name = "patient_id", nullable = true)
     private Patient patient;
-
 
     @Column(nullable = false)
     private LocalDateTime appointmentDateTime;
@@ -31,11 +30,6 @@ public class Appointment {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;
-
-    @Enumerated(EnumType.STRING)
-    private com.doc_app.booking.model.AppointmentType appointmentType;
-
-    private String reason;
 
     private String notes;
 

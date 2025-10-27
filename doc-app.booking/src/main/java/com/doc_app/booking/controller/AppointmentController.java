@@ -47,7 +47,7 @@ public class AppointmentController {
         // If doctor, ensure they can only view their own appointments
         if ("DOCTOR".equals(userRole) && !userId.equals(doctorId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only view your own appointments"));
+                    .body(ApiResponse.error("You can only view your own appointments"));
         }
         long count = appointmentService.countTodaysAppointmentsByDoctor(doctorId, status);
         return ResponseEntity.ok(ApiResponse.success(count));
@@ -62,18 +62,24 @@ public class AppointmentController {
     public ResponseEntity<ApiResponse<AppointmentDTO>> createAppointment(
             @Valid @RequestBody CreateAppointmentRequest request,
             HttpServletRequest httpRequest) {
-        
+
         // Get user details from JWT filter
-        Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
-        // If patient, ensure they can only book for themselves using their phone number
+
+        // If patient, ensure they can only book for themselves and not reserve
         if ("PATIENT".equals(userRole)) {
-            // Get patient's phone from JWT or session - for now, we'll delegate this check to the service
-            // The service will validate that the patient exists with the provided phone number
-            // TODO: Add phone number validation in JWT if needed for stricter authorization
+            if (request.isReserved()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Patients cannot create reserved appointments"));
+            }
+            String patientPhone = (String) httpRequest.getAttribute("sub");
+            if (patientPhone == null || request.getPatientPhone() == null
+                    || !patientPhone.equals(request.getPatientPhone())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("You can only book appointments for your own phone number"));
+            }
         }
-        
+
         AppointmentDTO appointmentDTO = appointmentService.createAppointment(request);
         return new ResponseEntity<>(ApiResponse.success("Appointment created successfully", appointmentDTO),
                 HttpStatus.CREATED);
@@ -86,18 +92,24 @@ public class AppointmentController {
             @PathVariable Long slotId,
             @Valid @RequestBody CreateAppointmentRequest request,
             HttpServletRequest httpRequest) {
-        
+
         // Get user details from JWT filter
-        Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
-        // If patient, ensure they can only book for themselves using their phone number
+
+        // If patient, ensure they can only book for themselves and not reserve
         if ("PATIENT".equals(userRole)) {
-            // Get patient's phone from JWT or session - for now, we'll delegate this check to the service
-            // The service will validate that the patient exists with the provided phone number
-            // TODO: Add phone number validation in JWT if needed for stricter authorization
+            if (request.isReserved()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("Patients cannot create reserved appointments"));
+            }
+            String patientPhone = (String) httpRequest.getAttribute("sub");
+            if (patientPhone == null || request.getPatientPhone() == null
+                    || !patientPhone.equals(request.getPatientPhone())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.error("You can only book appointments for your own phone number"));
+            }
         }
-        
+
         // Ensure slotId is set
         request.setSlotId(slotId);
         AppointmentDTO appointmentDTO = appointmentService.createAppointment(request);
@@ -112,7 +124,7 @@ public class AppointmentController {
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointment(
             @PathVariable Long id,
             @Valid @RequestBody UpdateAppointmentRequest request) {
-        
+
         AppointmentDTO appointmentDTO = appointmentService.updateAppointment(id, request);
         return ResponseEntity.ok(ApiResponse.success("Appointment updated successfully", appointmentDTO));
     }
@@ -124,7 +136,7 @@ public class AppointmentController {
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointmentStatus(
             @PathVariable Long id,
             @Valid @RequestBody AppointmentStatusUpdateRequest request) {
-        
+
         AppointmentDTO appointmentDTO = appointmentService.updateAppointmentStatus(id, request);
         return ResponseEntity.ok(ApiResponse.success("Appointment status updated successfully", appointmentDTO));
     }
@@ -136,19 +148,19 @@ public class AppointmentController {
     public ResponseEntity<ApiResponse<AppointmentDTO>> getAppointment(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {
-        
+
         // Get user details from JWT filter
         Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
+
         AppointmentDTO appointmentDTO = appointmentService.getAppointmentById(id);
-        
+
         // Additional authorization: Patients can only view their own appointments
         if ("PATIENT".equals(userRole) && !userId.equals(appointmentDTO.getPatientId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only view your own appointments"));
+                    .body(ApiResponse.error("You can only view your own appointments"));
         }
-        
+
         return ResponseEntity.ok(ApiResponse.success(appointmentDTO));
     }
 
@@ -184,10 +196,11 @@ public class AppointmentController {
         Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
         AppointmentDTO appointmentDTO = appointmentService.getAppointmentById(id);
-        // Only allow patient to cancel their own appointment, or hospital admin to cancel any
+        // Only allow patient to cancel their own appointment, or hospital admin to
+        // cancel any
         if ("PATIENT".equals(userRole) && !userId.equals(appointmentDTO.getPatientId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only cancel your own appointments"));
+                    .body(ApiResponse.error("You can only cancel your own appointments"));
         }
         AppointmentStatusUpdateRequest request = new AppointmentStatusUpdateRequest();
         request.setStatus(AppointmentStatus.CANCELLED);
@@ -202,17 +215,17 @@ public class AppointmentController {
     public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAppointmentsByPatient(
             @Parameter(description = "ID of the patient", required = true) @PathVariable Long patientId,
             HttpServletRequest httpRequest) {
-        
+
         // Get user details from JWT filter
         Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
+
         // If patient, ensure they can only view their own appointments
         if ("PATIENT".equals(userRole) && !userId.equals(patientId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only view your own appointments"));
+                    .body(ApiResponse.error("You can only view your own appointments"));
         }
-        
+
         List<AppointmentDTO> appointments = appointmentService.getAppointmentsByPatient(patientId);
         return ResponseEntity.ok(ApiResponse.success(appointments));
     }
@@ -230,7 +243,7 @@ public class AppointmentController {
         // If doctor, ensure they can only view their own appointments
         if ("DOCTOR".equals(userRole) && !userId.equals(doctorId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only view your own appointments"));
+                    .body(ApiResponse.error("You can only view your own appointments"));
         }
         List<AppointmentDTO> appointments = appointmentService.getAppointmentsByDoctor(doctorId, status);
         return ResponseEntity.ok(ApiResponse.success(appointments));
@@ -263,17 +276,17 @@ public class AppointmentController {
             @Parameter(description = "Start date and time (yyyy-MM-dd'T'HH:mm:ss)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
             @Parameter(description = "End date and time (yyyy-MM-dd'T'HH:mm:ss)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
             HttpServletRequest httpRequest) {
-        
+
         // Get user details from JWT filter
         Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
+
         // If doctor, ensure they can only view their own appointments
         if ("DOCTOR".equals(userRole) && !userId.equals(doctorId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only view your own appointments"));
+                    .body(ApiResponse.error("You can only view your own appointments"));
         }
-        
+
         List<AppointmentDTO> appointments = appointmentService.getAppointmentsByDoctorAndDateRange(doctorId, start,
                 end);
         return ResponseEntity.ok(ApiResponse.success(appointments));
@@ -287,17 +300,17 @@ public class AppointmentController {
             @Parameter(description = "Start date and time (yyyy-MM-dd'T'HH:mm:ss)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
             @Parameter(description = "End date and time (yyyy-MM-dd'T'HH:mm:ss)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
             HttpServletRequest httpRequest) {
-        
+
         // Get user details from JWT filter
         Long userId = (Long) httpRequest.getAttribute("userId");
         String userRole = (String) httpRequest.getAttribute("userRole");
-        
+
         // If patient, ensure they can only view their own appointments
         if ("PATIENT".equals(userRole) && !userId.equals(patientId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("You can only view your own appointments"));
+                    .body(ApiResponse.error("You can only view your own appointments"));
         }
-        
+
         List<AppointmentDTO> appointments = appointmentService.getAppointmentsByPatientAndDateRange(patientId, start,
                 end);
         return ResponseEntity.ok(ApiResponse.success(appointments));

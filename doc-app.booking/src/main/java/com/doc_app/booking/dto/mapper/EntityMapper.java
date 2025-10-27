@@ -77,7 +77,6 @@ public interface EntityMapper {
     @Mapping(target = "doctorName", expression = "java(appointment.getDoctor() != null ? appointment.getDoctor().getFirstName() + \" \" + appointment.getDoctor().getLastName() : null)")
     @Mapping(target = "patientId", source = "patient.id")
     @Mapping(target = "patientName", expression = "java(appointment.getPatient() != null ? appointment.getPatient().getFirstName() + \" \" + appointment.getPatient().getLastName() : null)")
-    @Mapping(target = "appointmentType", source = "appointmentType")
     AppointmentDTO toAppointmentDTO(Appointment appointment);
 
     @Mapping(target = "doctor", ignore = true)
@@ -95,7 +94,6 @@ public interface EntityMapper {
     @Mapping(target = "doctor", ignore = true)
     @Mapping(target = "patient", ignore = true)
     @Mapping(target = "appointmentDateTime", source = "appointmentDateTime")
-    @Mapping(target = "appointmentType", source = "appointmentType")
     void updateAppointment(@MappingTarget Appointment appointment, UpdateAppointmentRequest request);
 
     @Mapping(target = "appointmentId", source = "appointment.id")

@@ -124,9 +124,10 @@ public class SlotServiceImpl implements SlotService {
             return generateSlotsForDoctor(doctorId, date);
         }
 
-        List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
-                com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
-                com.doc_app.booking.model.AppointmentStatus.COMPLETED);
+    List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
+        com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
+        com.doc_app.booking.model.AppointmentStatus.COMPLETED,
+        com.doc_app.booking.model.AppointmentStatus.RESERVED);
         return slots.stream().map(s -> {
             boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
             return new SlotDTO(
@@ -142,9 +143,10 @@ public class SlotServiceImpl implements SlotService {
     @Transactional(readOnly = true)
     public List<SlotDTO> getAllSlots(Long doctorId) {
         List<Slot> slots = slotRepository.findByDoctorId(doctorId);
-        List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
-                com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
-                com.doc_app.booking.model.AppointmentStatus.COMPLETED);
+    List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
+        com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
+        com.doc_app.booking.model.AppointmentStatus.COMPLETED,
+        com.doc_app.booking.model.AppointmentStatus.RESERVED);
         return slots.stream().map(s -> {
             boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
             return new SlotDTO(
