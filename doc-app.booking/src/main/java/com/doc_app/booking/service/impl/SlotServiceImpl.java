@@ -124,37 +124,52 @@ public class SlotServiceImpl implements SlotService {
             return generateSlotsForDoctor(doctorId, date);
         }
 
-    List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
-        com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
-        com.doc_app.booking.model.AppointmentStatus.COMPLETED,
-        com.doc_app.booking.model.AppointmentStatus.RESERVED);
+        // Batch fetch all appointments for these slots to avoid N+1 queries
+        List<Long> slotIds = slots.stream().map(Slot::getId).collect(Collectors.toList());
+        List<Appointment> appointments = appointmentRepository.findBySlot_IdIn(slotIds);
+        // Map slotId -> appointment (only first if multiple)
+        java.util.Map<Long, Appointment> slotAppointmentMap = appointments.stream()
+            .collect(Collectors.toMap(a -> a.getSlot().getId(), a -> a, (a1, a2) -> a1));
+
+        List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
+                com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
+                com.doc_app.booking.model.AppointmentStatus.COMPLETED,
+                com.doc_app.booking.model.AppointmentStatus.RESERVED);
         return slots.stream().map(s -> {
-            boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
+            Appointment appt = slotAppointmentMap.get(s.getId());
+            boolean booked = appt != null && bookedStatuses.contains(appt.getStatus());
             return new SlotDTO(
                     s.getId(),
                     LocalDateTime.of(s.getDate(), s.getStartTime()),
                     LocalDateTime.of(s.getDate(), s.getEndTime()),
                     !booked,
-                    booked ? "BOOKED" : "AVAILABLE");
+                    booked ? "BOOKED" : "AVAILABLE",
+                    appt != null ? appt.getStatus() : null);
         }).collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SlotDTO> getAllSlots(Long doctorId) {
-        List<Slot> slots = slotRepository.findByDoctorId(doctorId);
+    List<Slot> slots = slotRepository.findByDoctorId(doctorId);
+    List<Long> slotIds = slots.stream().map(Slot::getId).collect(Collectors.toList());
+    List<Appointment> appointments = appointmentRepository.findBySlot_IdIn(slotIds);
+    java.util.Map<Long, Appointment> slotAppointmentMap = appointments.stream()
+        .collect(Collectors.toMap(a -> a.getSlot().getId(), a -> a, (a1, a2) -> a1));
     List<com.doc_app.booking.model.AppointmentStatus> bookedStatuses = List.of(
         com.doc_app.booking.model.AppointmentStatus.SCHEDULED,
         com.doc_app.booking.model.AppointmentStatus.COMPLETED,
         com.doc_app.booking.model.AppointmentStatus.RESERVED);
-        return slots.stream().map(s -> {
-            boolean booked = !appointmentRepository.findBySlot_IdAndStatusIn(s.getId(), bookedStatuses).isEmpty();
-            return new SlotDTO(
-                    s.getId(),
-                    LocalDateTime.of(s.getDate(), s.getStartTime()),
-                    LocalDateTime.of(s.getDate(), s.getEndTime()),
-                    !booked,
-                    booked ? "BOOKED" : "AVAILABLE");
-        }).collect(Collectors.toList());
+    return slots.stream().map(s -> {
+        Appointment appt = slotAppointmentMap.get(s.getId());
+        boolean booked = appt != null && bookedStatuses.contains(appt.getStatus());
+        return new SlotDTO(
+            s.getId(),
+            LocalDateTime.of(s.getDate(), s.getStartTime()),
+            LocalDateTime.of(s.getDate(), s.getEndTime()),
+            !booked,
+            booked ? "BOOKED" : "AVAILABLE",
+            appt != null ? appt.getStatus() : null);
+    }).collect(Collectors.toList());
     }
 }

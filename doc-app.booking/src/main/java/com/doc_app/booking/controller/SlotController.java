@@ -41,6 +41,7 @@ public class SlotController {
         } else {
             slots = slotService.getAllSlots(doctorId);
         }
+       
         // Remove past slots (end time before now)
         var now = java.time.LocalDateTime.now();
         var filtered = new ArrayList<SlotDTO>();
@@ -49,6 +50,7 @@ public class SlotController {
                 filtered.add(slot);
             }
         }
+        
         return ResponseEntity.ok(ApiResponse.success(filtered));
     }
 
