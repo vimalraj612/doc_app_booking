@@ -72,12 +72,6 @@ public class AppointmentController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(ApiResponse.error("Patients cannot create reserved appointments"));
             }
-            String patientPhone = (String) httpRequest.getAttribute("sub");
-            if (patientPhone == null || request.getPatientPhone() == null
-                    || !patientPhone.equals(request.getPatientPhone())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(ApiResponse.error("You can only book appointments for your own phone number"));
-            }
         }
 
         AppointmentDTO appointmentDTO = appointmentService.createAppointment(request);

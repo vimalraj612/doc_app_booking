@@ -27,6 +27,11 @@ public class Appointment {
     @JoinColumn(name = "slot_id")
     private Slot slot;
 
+    private String appointeeName;
+    private Integer appointeeAge;
+    private String appointeePhone;
+    private String appointeeGender;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status;

@@ -1,4 +1,3 @@
-
 package com.doc_app.booking.dto.request;
 
 import jakarta.validation.constraints.FutureOrPresent;
@@ -26,6 +25,11 @@ public class CreateAppointmentRequest {
     @NotNull
     @FutureOrPresent
     private LocalDateTime appointmentDateTime;
+
+    private String appointeeName;
+    private Integer appointeeAge;
+    private String appointeePhone;
+    private String appointeeGender;
 
     // optional: if provided, book this slot
     @Positive

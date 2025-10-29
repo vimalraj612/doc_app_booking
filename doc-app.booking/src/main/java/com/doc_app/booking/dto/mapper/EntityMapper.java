@@ -77,6 +77,10 @@ public interface EntityMapper {
     @Mapping(target = "doctorName", expression = "java(appointment.getDoctor() != null ? appointment.getDoctor().getFirstName() + \" \" + appointment.getDoctor().getLastName() : null)")
     @Mapping(target = "patientId", source = "patient.id")
     @Mapping(target = "patientName", expression = "java(appointment.getPatient() != null ? appointment.getPatient().getFirstName() + \" \" + appointment.getPatient().getLastName() : null)")
+    @Mapping(target = "appointeeName", source = "appointeeName")
+    @Mapping(target = "appointeeAge", source = "appointeeAge")
+    @Mapping(target = "appointeePhone", source = "appointeePhone")
+    @Mapping(target = "appointeeGender", source = "appointeeGender")
     AppointmentDTO toAppointmentDTO(Appointment appointment);
 
     @Mapping(target = "doctor", ignore = true)
@@ -86,6 +90,10 @@ public interface EntityMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "appointmentDateTime", source = "appointmentDateTime")
+    @Mapping(target = "appointeeName", source = "appointeeName")
+    @Mapping(target = "appointeeAge", source = "appointeeAge")
+    @Mapping(target = "appointeePhone", source = "appointeePhone")
+    @Mapping(target = "appointeeGender", source = "appointeeGender")
     Appointment toAppointment(CreateAppointmentRequest request);
 
     @Mapping(target = "id", ignore = true)

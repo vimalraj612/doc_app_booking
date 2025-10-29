@@ -9,7 +9,7 @@ public class SlotsGeneratorProperties {
     /**
      * How many days ahead to generate slots for each doctor. Default 7.
      */
-    private int daysAhead = 7;
+    private int daysAhead = 1;
 
     /**
      * Cron expression for daily generation. Default: every day at 02:00 AM.

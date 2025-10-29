@@ -1,3 +1,5 @@
+    // Appointee details (for reserved or external bookings)
+
 package com.doc_app.booking.dto;
 
 import com.doc_app.booking.model.AppointmentStatus;
@@ -13,8 +15,10 @@ public class AppointmentDTO {
     private String patientName;
     private LocalDateTime appointmentDateTime;
     private AppointmentStatus status;
-    private com.doc_app.booking.model.AppointmentType appointmentType;
-    private String reason;
+    private String appointeeName;
+    private Integer appointeeAge;
+    private String appointeePhone;
+    private String appointeeGender;
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
