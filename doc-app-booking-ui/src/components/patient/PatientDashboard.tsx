@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LogOut, User as UserIcon } from 'lucide-react';
 import { fetchDoctorByPhone } from '../../api/doctor';
 import { fetchSlotsByDoctorIdAndDate, fetchPatientAppointmentsByDateRange, cancelAppointmentApi } from '../../api/appointments';
 import { apiFetch } from '../../api/http';
@@ -17,15 +18,14 @@ export interface PatientDashboardProps {
 export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   // Clear localStorage on logout
   const handleLogout = () => {
-    // Remove only patient-related keys, not all localStorage
     window.localStorage.removeItem('userId');
     window.localStorage.removeItem('patientName');
     window.localStorage.removeItem('name');
     window.localStorage.removeItem('phoneNumber');
     window.localStorage.removeItem('accessToken');
     window.localStorage.removeItem('docPhoneNumber');
-    // Add more keys if needed
     onLogout();
+    window.location.href = '/login/patient';
   };
   // Profile modal state
   const [profileOpen, setProfileOpen] = useState(false);
@@ -291,14 +291,27 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   };
 
   return (
-    <div>
-      <div className="space-y-4">
-        {/* Header */}
-        <Header
-          user={user}
-          onLogout={handleLogout}
-          onProfileOpen={handleProfileOpen}
-        />
+    <div className="min-h-screen bg-white">
+      {/* Header Bar */}
+      <header className="border-b sticky top-0 bg-white z-10">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* Patient icon */}
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            <span className="font-semibold text-green-600">Patient Portal</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm">{user.name}</span>
+            <button onClick={handleLogout} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <LogOut className="w-5 h-5 text-gray-600" />
+            </button>
+            <button onClick={handleProfileOpen} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <UserIcon className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+        </div>
+      </header>
+      <div className="container mx-auto px-4 py-6">
         {profileOpen && (
           <PatientProfile
             profile={profile}

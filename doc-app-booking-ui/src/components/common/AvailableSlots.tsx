@@ -8,6 +8,7 @@ interface Slot {
   start: string;
   end: string;
   available: boolean;
+  status?: 'AVAILABLE' | 'SCHEDULED';
 }
 
 interface AvailableSlotsProps {
@@ -47,7 +48,19 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState('');
 
-  // Set default date to today when modal opens
+  // Reload slots only when appointment is booked successfully (avoid infinite reloads)
+  useEffect(() => {
+    if (successMsg && successMsg.toLowerCase().includes('booked')) {
+      const timeout = setTimeout(() => {
+        if (selectedDate) {
+          fetchSlotsByDoctorIdAndDate(doctorId, selectedDate).then(res => setSlots(res.data));
+        }
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [successMsg, doctorId, selectedDate]);
+
+  // Default date when modal opens
   useEffect(() => {
     if (open && !selectedDate) {
       setSelectedDate(new Date().toISOString().slice(0, 10));
@@ -55,10 +68,7 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
     // eslint-disable-next-line
   }, [open]);
 
-
-
-
-  // Fetch slots and available dates whenever selectedDate changes
+  // Fetch slots when date changes
   useEffect(() => {
     if (!selectedDate) return;
 
@@ -146,30 +156,35 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
                             style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}
                           >
                             {slotsByDate[selectedDate].map((slot) => {
+                              let status: 'AVAILABLE' | 'SCHEDULED' = slot.available ? 'AVAILABLE' : 'SCHEDULED';
+
+                              const statusMap = {
+                                AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
+                                SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
+                              };
+
                               const isSelected = selectedSlot?.slotId === slot.slotId;
-                              const unavailable = !slot.available;
+                              const statusInfo = statusMap[status];
 
                               return (
                                 <button
                                   key={slot.slotId}
-                                  disabled={unavailable || booking}
+                                  disabled={status !== 'AVAILABLE' || booking}
                                   onClick={() => handleBookSlot(slot)}
                                   className={`
                                     relative p-[1px] rounded-md border flex flex-col items-center justify-center
                                     min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px]
                                     transition-all duration-200 ease-in-out text-center
-                                    backdrop-blur-sm bg-white/70 shadow-sm
-                                    ${unavailable
-                                      ? 'border-red-200 text-red-400 cursor-not-allowed opacity-60'
-                                      : isSelected
-                                        ? 'border-blue-400 text-blue-700 bg-blue-50/60 shadow-md scale-[1.05]'
-                                        : 'border-green-200 text-green-700 bg-green-50 hover:bg-green-100 hover:shadow-md hover:scale-[1.02]'
-                                    }`}
+                                    backdrop-blur-sm shadow-sm
+                                    ${statusInfo.color}
+                                    ${isSelected ? 'ring-2 ring-blue-300/60 scale-[1.05]' : ''}
+                                    ${status !== 'AVAILABLE' ? 'cursor-not-allowed opacity-60' : 'hover:bg-green-100 hover:shadow-md hover:scale-[1.02]'}
+                                  `}
                                 >
-                                  <span className={`font-semibold text-[5.5px] leading-tight ${isSelected ? 'text-blue-700' : unavailable ? 'text-red-400' : 'text-green-700'}`}>
+                                  <span className={`font-semibold text-[5.5px] leading-tight ${isSelected ? 'text-blue-700' : statusInfo.text}`}>
                                     {formatTime(slot.start)}
                                   </span>
-                                  <span className={`text-[4px] leading-tight ${isSelected ? 'text-blue-600' : unavailable ? 'text-red-400' : 'text-green-600'}`}>
+                                  <span className={`text-[4px] leading-tight ${isSelected ? 'text-blue-600' : statusInfo.text}`}>
                                     {(() => {
                                       const start = new Date(slot.start);
                                       const end = new Date(slot.end);
@@ -177,10 +192,9 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
                                       return `${diff}m`;
                                     })()}
                                   </span>
-                                  <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors ${unavailable ? 'text-red-600 bg-red-100/60' : isSelected ? 'text-blue-700 bg-blue-100/60' : 'text-green-700 bg-green-100/60'}`}>
-                                    {unavailable ? 'X' : '✓'}
+                                  <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors ${statusInfo.text} ${isSelected ? 'bg-blue-100/60' : ''}`}>
+                                    {statusInfo.label}
                                   </span>
-
                                   {isSelected && (
                                     <span className="absolute inset-0 rounded-md ring-2 ring-blue-300/60 animate-pulse pointer-events-none" />
                                   )}
