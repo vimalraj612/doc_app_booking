@@ -50,7 +50,18 @@ public class SlotController {
                 filtered.add(slot);
             }
         }
-        
+        // Order slots by AM/PM, then by start time
+        filtered.sort((a, b) -> {
+            int aHour = a.getStart() != null ? a.getStart().getHour() : 0;
+            int bHour = b.getStart() != null ? b.getStart().getHour() : 0;
+            boolean aIsAM = aHour < 12;
+            boolean bIsAM = bHour < 12;
+            if (aIsAM != bIsAM) {
+                return aIsAM ? -1 : 1; // AM first, then PM
+            }
+            // If both are AM or both are PM, sort by start time
+            return a.getStart().compareTo(b.getStart());
+        });
         return ResponseEntity.ok(ApiResponse.success(filtered));
     }
 
