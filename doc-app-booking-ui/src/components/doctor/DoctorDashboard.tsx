@@ -264,6 +264,7 @@ export function DoctorDashboard({
               setCancelDialog={setCancelDialog}
               getStatusLabel={getStatusLabel}
               fetchAppointments={fetchAppointments}
+              isDoctor={true}
             />
           </TabsContent>
 

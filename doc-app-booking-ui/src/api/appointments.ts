@@ -1,3 +1,15 @@
+// Update appointment status (PATCH)
+export async function updateAppointmentStatusApi(id: number | string, status: string, notes?: string) {
+  const token = window.localStorage.getItem('accessToken') || '';
+  return apiFetch(`/api/v1/appointments/${id}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ status, notes }),
+  });
+}
 // Fetch doctor appointments by date range
 export async function fetchDoctorAppointmentsByDateRange({
   doctorId,

@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Button } from '../ui/button';
+import { updateAppointmentStatusApi } from '../../api/appointments';
 import ConfirmDialog from '../ui/ConfirmDialog';
 
 interface Appointment {
@@ -28,6 +30,7 @@ interface AppointmentsListProps {
   setCancelDialog: (dialog: { open: boolean; appt?: Appointment }) => void;
   getStatusLabel: (key: string) => string;
   fetchAppointments: (range: { start: string; end: string }) => void;
+  isDoctor?: boolean;
 }
 
 const AppointmentsList: React.FC<AppointmentsListProps> = ({
@@ -45,18 +48,47 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   setCancelDialog,
   getStatusLabel,
   fetchAppointments,
-}) => (
+  isDoctor,
+}) => {
+  const [completeDialog, setCompleteDialog] = useState<{ open: boolean; appt?: Appointment }>({ open: false });
+  const [completeNotes, setCompleteNotes] = useState('');
+  const [completeMsg, setCompleteMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [completing, setCompleting] = useState(false);
+
+  const handleComplete = async (appt: Appointment) => {
+    setCompleteDialog({ open: true, appt });
+    setCompleteNotes('');
+  };
+
+  const confirmComplete = async () => {
+    if (!completeDialog.appt) return;
+    setCompleting(true);
+    try {
+      await updateAppointmentStatusApi(completeDialog.appt.id, 'COMPLETED', completeNotes);
+      setCompleteMsg({ type: 'success', text: 'Appointment marked as completed.' });
+      setCompleteDialog({ open: false });
+      fetchAppointments(dateRange);
+    } catch (e: any) {
+      setCompleteMsg({ type: 'error', text: e?.message || 'Failed to complete appointment.' });
+      setCompleteDialog({ open: false });
+    } finally {
+      setCompleting(false);
+      setTimeout(() => setCompleteMsg(null), 2500);
+    }
+  };
+
+  return (
   <div className="max-w-3xl mx-auto">
     <div className="bg-white rounded-xl border shadow p-6">
 
-      {/* Cancel message */}
-      {cancelMsg && (
+      {/* Cancel/Complete message */}
+      {(cancelMsg || completeMsg) && (
         <div
           className={`mb-2 text-center text-sm font-semibold ${
-            cancelMsg.type === 'success' ? 'text-green-700' : 'text-red-600'
+            (cancelMsg?.type === 'success' || completeMsg?.type === 'success') ? 'text-green-600' : 'text-red-600'
           }`}
         >
-          {cancelMsg.text}
+          {cancelMsg?.text || completeMsg?.text}
         </div>
       )}
 
@@ -148,39 +180,29 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         !appointmentsError &&
         filteredAppointments.length > 0 && (
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {filteredAppointments.map((appt) => {
+            {filteredAppointments.map((appt: Appointment) => {
               const statusStyles: Record<
                 string,
                 { text: string; bg: string; dot: string }
               > = {
                 SCHEDULED: {
-                  text: 'text-blue-800',
-                  bg: 'bg-blue-100',
-                  dot: 'bg-blue-500',
+                  text: 'text-blue-900',
+                  bg: 'bg-blue-200',
+                  dot: 'bg-blue-600',
                 },
                 CANCELLED: {
-                  text: 'text-red-800',
-                  bg: 'bg-red-100',
-                  dot: 'bg-red-500',
+                  text: 'text-red-900',
+                  bg: 'bg-red-200',
+                  dot: 'bg-red-600',
                 },
                 COMPLETED: {
-                  text: 'text-green-800',
-                  bg: 'bg-green-100',
-                  dot: 'bg-green-500',
-                },
-                PENDING: {
-                  text: 'text-amber-800',
-                  bg: 'bg-amber-100',
-                  dot: 'bg-amber-500',
-                },
-                RESCHEDULED: {
-                  text: 'text-purple-800',
-                  bg: 'bg-purple-100',
-                  dot: 'bg-purple-500',
+                  text: 'text-green-900',
+                  bg: 'bg-green-200',
+                  dot: 'bg-green-600',
                 },
                 DEFAULT: {
                   text: 'text-gray-700',
-                  bg: 'bg-gray-100',
+                  bg: 'bg-gray-200',
                   dot: 'bg-gray-400',
                 },
               };
@@ -193,11 +215,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   key={appt.id}
                   className="bg-white rounded-xl border shadow p-4 flex flex-col gap-2 hover:shadow-md transition"
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-blue-700 text-sm">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-semibold text-blue-700 text-sm truncate max-w-[90px]">
                       {appt.doctorName}
                     </span>
-
                     <div className="flex items-center gap-2">
                       {/* Status Badge */}
                       <span
@@ -206,50 +227,48 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                         <span className={`inline-block w-2 h-2 rounded-full ${dot}`} />
                         {getStatusLabel(appt.status)}
                       </span>
-
-                      {/* Fixed-width cancel button container */}
-                      <div className="w-6 h-6 flex items-center justify-center">
-                        {appt.status === 'SCHEDULED' && (
-                          <button
-                            className="p-1 rounded-full hover:bg-red-100 text-red-600 transition"
-                            title="Cancel Appointment"
-                            onClick={() => setCancelDialog({ open: true, appt })}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="red"
-                              strokeWidth="2"
-                            >
-                              <line x1="18" y1="6" x2="6" y2="18" />
-                              <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Confirm Dialog */}
-                      <ConfirmDialog
-                        open={
-                          cancelDialog.open && cancelDialog.appt?.id === appt.id
-                        }
-                        title="Cancel Appointment"
-                        message={
-                          cancelDialog.appt
-                            ? `Are you sure you want to cancel your appointment with ${cancelDialog.appt.doctorName} on ${new Date(
-                                cancelDialog.appt.appointmentDateTime
-                              ).toLocaleString()}?`
-                            : ''
-                        }
-                        confirmText="Yes, Cancel"
-                        cancelText="No"
-                        onConfirm={() => onCancel(appt)}
-                        onCancel={() => setCancelDialog({ open: false })}
-                      />
+                      {/* Action Buttons */}
+                      {appt.status === 'SCHEDULED' && isDoctor && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="px-2 py-1 text-xs min-w-[60px]"
+                          onClick={() => handleComplete(appt)}
+                        >
+                          Complete
+                        </Button>
+                      )}
+                      {appt.status === 'SCHEDULED' && !isDoctor && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="px-2 py-1 text-xs min-w-[60px]"
+                          onClick={() => setCancelDialog({ open: true, appt })}
+                        >
+                          Cancel
+                        </Button>
+                      )}
                     </div>
                   </div>
+
+                  {/* Confirm Dialog */}
+                  <ConfirmDialog
+                    open={
+                      cancelDialog.open && cancelDialog.appt?.id === appt.id
+                    }
+                    title="Cancel Appointment"
+                    message={
+                      cancelDialog.appt
+                        ? `Are you sure you want to cancel your appointment with ${cancelDialog.appt.doctorName} on ${new Date(
+                            cancelDialog.appt.appointmentDateTime
+                          ).toLocaleString()}?`
+                        : ''
+                    }
+                    confirmText="Yes, Cancel"
+                    cancelText="No"
+                    onConfirm={() => onCancel(appt)}
+                    onCancel={() => setCancelDialog({ open: false })}
+                  />
 
                   {/* Appointment Date */}
                   <div className="text-xs text-gray-600 mb-1">
@@ -268,6 +287,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                     {appt.appointeePhone && (
                       <div><span className="font-medium">Phone:</span> {appt.appointeePhone}</div>
                     )}
+
                     {appt.appointeeGender && (
                       <div><span className="font-medium">Gender:</span> {appt.appointeeGender}</div>
                     )}
@@ -277,8 +297,46 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
             })}
           </div>
         )}
+
+      {/* Complete Dialog for Doctor */}
+      {completeDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-2 animate-fade-in">
+            <div className="flex flex-col items-center text-center">
+              <div className="text-lg font-bold mb-2 text-gray-800">Complete Appointment</div>
+              <div className="text-sm text-gray-600 mb-4">
+                Are you sure you want to mark the appointment with <span className="font-semibold text-blue-700">{completeDialog.appt?.doctorName}</span><br />
+                on <span className="font-semibold">{completeDialog.appt && new Date(completeDialog.appt.appointmentDateTime).toLocaleString()}</span> as <span className="font-semibold text-green-700">completed</span>?
+              </div>
+              <textarea
+                className="w-full border border-gray-300 rounded-lg p-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none transition"
+                rows={3}
+                placeholder="Add notes (optional)"
+                value={completeNotes}
+                onChange={e => setCompleteNotes(e.target.value)}
+                disabled={completing}
+              />
+              <div className="flex gap-3 justify-center w-full mt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setCompleteDialog({ open: false })}
+                  disabled={completing}
+                >Cancel</Button>
+                <Button
+                  variant="default"
+                  className="flex-1"
+                  onClick={confirmComplete}
+                  disabled={completing}
+                >{completing ? 'Completing...' : 'Complete'}</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   </div>
 );
+};
 
 export default AppointmentsList;

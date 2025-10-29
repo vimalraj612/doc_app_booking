@@ -21,15 +21,19 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
     ) : selectedDoctor ? (
       <Card>
         <CardContent className="p-6 relative">
-          <Button
-            className="absolute top-4 right-4"
-            variant="default"
-            size="sm"
-            onClick={onShowSlots}
-            title="Book Now"
-          >
-            Book Now
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}
+            </h2>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onShowSlots}
+              title="Book Now"
+            >
+              Book Now
+            </Button>
+          </div>
           <div className="flex flex-col sm:flex-row gap-6">
             {/* Show avatar only on sm and up (web/tablet), hide on mobile */}
             <div className="hidden sm:block">
@@ -41,9 +45,6 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
               </Avatar>
             </div>
             <div className="flex-1 space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-2xl">{selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}</h2>
-              </div>
               <div className="flex flex-col gap-2 text-sm text-gray-600">
                 <span className="flex items-center gap-2">
                   <Stethoscope className="w-4 h-4 text-blue-600" />
