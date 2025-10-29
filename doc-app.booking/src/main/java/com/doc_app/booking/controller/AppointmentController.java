@@ -125,7 +125,7 @@ public class AppointmentController {
 
     @Operation(summary = "Update appointment status - Hospital Admins and Doctors can update status")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Status updated", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = AppointmentDTO.class)))
-    @PatchMapping("/{id}/status")
+    @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('HOSPITAL_ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<ApiResponse<AppointmentDTO>> updateAppointmentStatus(
             @PathVariable Long id,
