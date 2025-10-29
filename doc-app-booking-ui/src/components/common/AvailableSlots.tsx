@@ -166,18 +166,21 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
                             className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar"
                             style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}
                           >
-                            {slotsByDate[selectedDate].map((slot) => {
-                              let status: 'AVAILABLE' | 'SCHEDULED' = slot.available ? 'AVAILABLE' : 'SCHEDULED';
+                            {slotsByDate[selectedDate]
+                              .slice()
+                              .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+                              .map((slot) => {
+                                let status: 'AVAILABLE' | 'SCHEDULED' = slot.available ? 'AVAILABLE' : 'SCHEDULED';
 
-                              const statusMap = {
-                                AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
-                                SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
-                              };
+                                const statusMap = {
+                                  AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
+                                  SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
+                                };
 
-                              const isSelected = selectedSlot?.slotId === slot.slotId;
-                              const statusInfo = statusMap[status];
+                                const isSelected = selectedSlot?.slotId === slot.slotId;
+                                const statusInfo = statusMap[status];
 
-                              return (
+                                return (
                                 <button
                                   key={slot.slotId}
                                   disabled={status !== 'AVAILABLE' || booking}
@@ -265,8 +268,8 @@ const AvailableSlots: React.FC<AvailableSlotsProps> = ({
                         if (!appointeePhone.trim()) {
                           setAppointeePhoneError('Phone is required.');
                           valid = false;
-                        } else if (!/^\d{7,}$/.test(appointeePhone)) {
-                          setAppointeePhoneError('Phone must be a valid number (at least 7 digits).');
+                        } else if (!/^\+\d{7,}$/.test(appointeePhone)) {
+                          setAppointeePhoneError('Phone must start with + and be a valid number (at least 7 digits).');
                           valid = false;
                         } else {
                           setAppointeePhoneError('');
