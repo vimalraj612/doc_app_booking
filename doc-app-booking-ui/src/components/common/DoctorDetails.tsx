@@ -1,7 +1,8 @@
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
-import { User as UserIcon, MapPin, Stethoscope, CalendarPlus } from 'lucide-react';
+import { User as UserIcon, MapPin, Stethoscope } from 'lucide-react';
 import React from 'react';
+import { Button } from '../ui/button';
 
 interface DoctorDetailsProps {
   selectedDoctor: any;
@@ -20,13 +21,15 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
     ) : selectedDoctor ? (
       <Card>
         <CardContent className="p-6 relative">
-          <button
-            className="absolute top-4 right-4 bg-white rounded-full shadow p-2 hover:bg-green-50 transition"
-            title="Show available slots"
+          <Button
+            className="absolute top-4 right-4"
+            variant="default"
+            size="sm"
             onClick={onShowSlots}
+            title="Book Now"
           >
-            <CalendarPlus className="w-7 h-7 text-green-600" />
-          </button>
+            Book Now
+          </Button>
           <div className="flex flex-col sm:flex-row gap-6">
             {/* Show avatar only on sm and up (web/tablet), hide on mobile */}
             <div className="hidden sm:block">

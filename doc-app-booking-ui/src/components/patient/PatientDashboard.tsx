@@ -235,7 +235,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setConfirmOpen(true);
   };
 
-  const handleConfirmBook = async () => {
+  const handleConfirmBook = async (appointeeData: { appointeeName: string; appointeeAge: string; appointeePhone: string; appointeeGender: string }) => {
     if (!pendingSlot) return;
     setBooking(true);
     setSuccessMsg('');
@@ -252,6 +252,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         patientName,
         appointmentDateTime,
         slotId,
+        ...appointeeData,
       };
       const token = window.localStorage.getItem('accessToken') || '';
       const rawResp = await apiFetch('/api/v1/appointments', {

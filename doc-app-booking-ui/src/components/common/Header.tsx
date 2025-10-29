@@ -14,6 +14,10 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onProfileOpen }) => (
       <span className="font-bold text-lg text-blue-700">Patient Dashboard</span>
     </div>
     <div className="flex items-center gap-3">
+      <LogOut
+        className="w-5 h-5 text-blue-500 cursor-pointer hover:text-blue-700 transition-colors"
+        onClick={onLogout}
+      />
       <button
         onClick={onProfileOpen}
         title="Profile"
@@ -25,12 +29,8 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onProfileOpen }) => (
           <AvatarFallback>{user.name?.[0]}</AvatarFallback>
         </Avatar>
         <span className="font-medium text-base whitespace-nowrap group-hover:text-blue-700 transition-colors">{user.name}</span>
-  <UserCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-800 transition-colors" />
+        <UserCircle className="w-5 h-5 text-blue-600 group-hover:text-blue-800 transition-colors" />
       </button>
-      <LogOut
-        className="w-5 h-5 text-blue-500 cursor-pointer hover:text-blue-700 transition-colors"
-        onClick={onLogout}
-      />
     </div>
   </div>
 );

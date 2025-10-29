@@ -6,6 +6,10 @@ interface Appointment {
   doctorName: string;
   appointmentDateTime: string;
   status: string;
+  appointeeName?: string;
+  appointeeAge?: string | number;
+  appointeePhone?: string;
+  appointeeGender?: string;
 }
 
 interface AppointmentsListProps {
@@ -251,6 +255,22 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   <div className="text-xs text-gray-600 mb-1">
                     <span className="font-medium">Date:</span>{' '}
                     {new Date(appt.appointmentDateTime).toLocaleString()}
+                  </div>
+
+                  {/* Appointee Details */}
+                  <div className="text-xs text-gray-700 mb-1 space-y-0.5">
+                    {appt.appointeeName && (
+                      <div><span className="font-medium">Name:</span> {appt.appointeeName}</div>
+                    )}
+                    {appt.appointeeAge && (
+                      <div><span className="font-medium">Age:</span> {appt.appointeeAge}</div>
+                    )}
+                    {appt.appointeePhone && (
+                      <div><span className="font-medium">Phone:</span> {appt.appointeePhone}</div>
+                    )}
+                    {appt.appointeeGender && (
+                      <div><span className="font-medium">Gender:</span> {appt.appointeeGender}</div>
+                    )}
                   </div>
                 </div>
               );
