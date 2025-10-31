@@ -45,6 +45,23 @@ export async function addDoctor(doctor: Partial<DoctorDTO>) {
     }
   ).then(res => res.data);
 }
+
+// Update an existing doctor by id
+export async function updateDoctor(id: string | number, doctor: Partial<DoctorDTO>) {
+  const token = window.localStorage.getItem('accessToken');
+  return apiFetch<{ data: DoctorDTO }>(
+    `/api/v1/doctors/${id}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(doctor),
+    }
+  ).then(res => res.data);
+}
+
 import { apiFetch } from './http';
 // DoctorDTO matches backend fields
 export type DoctorDTO = {

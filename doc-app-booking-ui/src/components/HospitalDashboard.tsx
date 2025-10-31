@@ -5,14 +5,18 @@ import { Card, CardContent } from './ui/card';
 import { LogOut, Plus, User as UserIcon, Stethoscope, Calendar, Building2, LayoutTemplate, CalendarDays, Trash2, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
+import SPECIALIZATION_OPTIONS from '../constants/specializations';
 import { Label } from './ui/label';
+import ConfirmDialog from './ui/ConfirmDialog';
+import { Alert, AlertTitle, AlertDescription } from './ui/alert';
+import { Skeleton } from './ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 
 import { useEffect } from 'react';
-import { fetchDoctorsByHospitalId, addDoctor, fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO } from '../api/doctor';
+import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO, DoctorDTO } from '../api/doctor';
 interface HospitalDashboardProps {
   user: User;
   appointments: Appointment[];
@@ -24,89 +28,251 @@ interface HospitalDashboardProps {
 // Inline AddDoctorForm component definition
 interface AddDoctorFormProps {
   onSuccess: () => void;
-  onAddDoctor: (doctor: Omit<Doctor, 'id'>) => Promise<void>;
+  onAddDoctor: (doctor: Partial<DoctorDTO>) => Promise<void>;
+  onUpdateDoctor?: (id: string, doctor: Partial<DoctorDTO>) => Promise<void>;
+  // initialDoctor may be a backend DTO or the simpler UI Doctor shape
+  initialDoctor?: Partial<DoctorDTO> | Partial<Doctor> | null;
   hospital?: Hospital;
   user: User;
 }
 
 
-function AddDoctorForm({ onSuccess, onAddDoctor, hospital, user }: AddDoctorFormProps) {
-  const [doctorName, setDoctorName] = useState('');
-  const [specialization, setSpecialization] = useState('');
+function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor = null, hospital, user }: AddDoctorFormProps) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [specialization, setSpecialization] = useState('');
+  const [department, setDepartment] = useState('');
+  const [experienceYears, setExperienceYears] = useState<number | ''>('');
+  const [qualifications, setQualifications] = useState('');
+  const [profileBase64, setProfileBase64] = useState<string | null>(null);
+  const [imageContentType, setImageContentType] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+  const namePattern = /^[a-zA-Z\s\-.']+$/;
+  // Specialization is selected from a canonical list; validate against that list instead of a regex
+  const departmentPattern = /^$|^[a-zA-Z\s\-.'&]+$/;
+  const phonePattern = /^[+]?([1-9]\d{1,14})$/;
+
+  const validate = () => {
+    const errs: { [k: string]: string } = {};
+    if (!firstName || !firstName.trim()) errs.firstName = 'First name is required';
+    else if (firstName.length > 100) errs.firstName = 'First name must not exceed 100 characters';
+    else if (!namePattern.test(firstName)) errs.firstName = 'First name contains invalid characters';
+
+    if (!lastName || !lastName.trim()) errs.lastName = 'Last name is required';
+    else if (lastName.length > 100) errs.lastName = 'Last name must not exceed 100 characters';
+    else if (!namePattern.test(lastName)) errs.lastName = 'Last name contains invalid characters';
+
+    if (!email || !email.trim()) errs.email = 'Email is required';
+    else if (email.length > 200) errs.email = 'Email must not exceed 200 characters';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Please provide a valid email address';
+
+    if (!phoneNumber || !phoneNumber.trim()) errs.phoneNumber = 'Phone number is required';
+    else if (phoneNumber.length > 20) errs.phoneNumber = 'Phone number must not exceed 20 characters';
+    else if (!phonePattern.test(phoneNumber)) errs.phoneNumber = 'Please provide a valid phone number';
+
+    if (!specialization || !specialization.trim()) errs.specialization = 'Specialization is required';
+    else if (specialization.length > 200) errs.specialization = 'Specialization must not exceed 200 characters';
+    else if (!SPECIALIZATION_OPTIONS.find(o => o.value === specialization)) errs.specialization = 'Please select a valid specialization';
+
+    if (department && department.length > 200) errs.department = 'Department must not exceed 200 characters';
+    else if (department && !departmentPattern.test(department)) errs.department = 'Department contains invalid characters';
+
+    if (experienceYears !== '' && (Number(experienceYears) < 0 || Number(experienceYears) > 70)) errs.experienceYears = 'Experience must be between 0 and 70';
+
+    if (qualifications && qualifications.length > 1000) errs.qualifications = 'Qualifications must not exceed 1000 characters';
+
+    if (imageContentType && imageContentType.length > 100) errs.imageContentType = 'Image content type must not exceed 100 characters';
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleImage = (file?: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // result is data:<mime>;base64,...
+      const parts = result.split(',');
+      const meta = parts[0] || '';
+      const base64 = parts[1] || '';
+      const m = meta.match(/data:(.*);base64/);
+      setImageContentType(m ? m[1] : null);
+      setProfileBase64(base64 || null);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!doctorName || !specialization || !email) return;
+    if (!validate()) return;
     setSubmitting(true);
-    await onAddDoctor({
-      name: doctorName,
-      specialization,
+    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
+    const doctorPayload: any = {
+      name,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      specialization: specialization.trim(),
+      department: department.trim() || undefined,
+      experienceYears: experienceYears === '' ? undefined : Number(experienceYears),
+      qualifications: qualifications.trim() || undefined,
       hospitalId: user.id,
       hospitalName: hospital?.name || user.name,
-      email,
-      photo: 'https://images.unsplash.com/photo-1615177393114-bd2917a4f74a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkb2N0b3IlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NjEwMzMzMTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    });
-    setDoctorName('');
-    setSpecialization('');
-    setEmail('');
-    setSubmitting(false);
-    onSuccess();
+      email: email.trim(),
+      phoneNumber: phoneNumber.trim(),
+    };
+    if (profileBase64) {
+      doctorPayload.profileImage = profileBase64;
+      doctorPayload.imageContentType = imageContentType;
+    }
+    try {
+      if (initialDoctor && 'id' in initialDoctor && initialDoctor.id && onUpdateDoctor) {
+        await onUpdateDoctor(String((initialDoctor as any).id), doctorPayload);
+      } else {
+        await onAddDoctor(doctorPayload);
+      }
+      // reset
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setPhoneNumber('');
+      setSpecialization('');
+      setDepartment('');
+      setExperienceYears('');
+      setQualifications('');
+      setProfileBase64(null);
+      setImageContentType(null);
+      setErrors({});
+      onSuccess();
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  // Prefill when editing
+  useEffect(() => {
+    if (!initialDoctor) return;
+    // Narrow union type: check for backend DTO fields first
+    const isDTO = (d: any): d is Partial<DoctorDTO> => d && (typeof d.firstName !== 'undefined' || typeof d.profileImage !== 'undefined' || typeof d.imageContentType !== 'undefined');
+
+    if (isDTO(initialDoctor)) {
+      setFirstName(initialDoctor.firstName || initialDoctor.name?.split(' ')?.[0] || '');
+      setLastName(initialDoctor.lastName || (initialDoctor.name ? initialDoctor.name.split(' ').slice(1).join(' ') : ''));
+      setEmail(initialDoctor.email || '');
+      setPhoneNumber(initialDoctor.phoneNumber || '');
+      setSpecialization(initialDoctor.specialization || '');
+      setDepartment(initialDoctor.department || '');
+      setExperienceYears(initialDoctor.experienceYears ?? '');
+      setQualifications(initialDoctor.qualifications || '');
+      if (initialDoctor.profileImage && initialDoctor.imageContentType) {
+        setProfileBase64(initialDoctor.profileImage as string);
+        setImageContentType(initialDoctor.imageContentType as string);
+      }
+    } else {
+      // Assume UI Doctor shape
+      const ui = initialDoctor as Partial<Doctor>;
+      setFirstName(ui.name?.split(' ')?.[0] || '');
+      setLastName(ui.name ? ui.name.split(' ').slice(1).join(' ') : '');
+      setEmail(ui.email || '');
+      setPhoneNumber(ui.phoneNumber || '');
+      setSpecialization(ui.specialization || '');
+      setDepartment('');
+      setExperienceYears('');
+      setQualifications(ui.qualifications || '');
+      setProfileBase64(null);
+      setImageContentType(null);
+    }
+  }, [initialDoctor]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="doctorName">Name</Label>
-        <Input
-          id="doctorName"
-          value={doctorName}
-          onChange={e => setDoctorName(e.target.value)}
-          placeholder="Doctor's name"
-          required
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="firstName">First name</Label>
+          <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name" />
+          {errors.firstName && <div className="text-red-500 text-xs mt-1">{errors.firstName}</div>}
+        </div>
+        <div>
+          <Label htmlFor="lastName">Last name</Label>
+          <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last name" />
+          {errors.lastName && <div className="text-red-500 text-xs mt-1">{errors.lastName}</div>}
+        </div>
       </div>
-      <div>
-        <Label htmlFor="specialization">Specialization</Label>
-        <Input
-          id="specialization"
-          value={specialization}
-          onChange={e => setSpecialization(e.target.value)}
-          placeholder="Specialization"
-          required
-        />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" />
+          {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
+        </div>
+        <div>
+          <Label htmlFor="phone">Phone</Label>
+          <Input id="phone" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="E.164, e.g. +919876543210" />
+          {errors.phoneNumber && <div className="text-red-500 text-xs mt-1">{errors.phoneNumber}</div>}
+        </div>
       </div>
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          placeholder="Email address"
-          required
-        />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="specialization">Specialization</Label>
+          <select id="specialization" className="form-input w-full border rounded px-2 py-1" value={specialization} onChange={e => setSpecialization(e.target.value)}>
+            <option value="">Select specialization</option>
+            {SPECIALIZATION_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          {errors.specialization && <div className="text-red-500 text-xs mt-1">{errors.specialization}</div>}
+        </div>
+        <div>
+          <Label htmlFor="department">Department (optional)</Label>
+          <Input id="department" value={department} onChange={e => setDepartment(e.target.value)} placeholder="Department" />
+          {errors.department && <div className="text-red-500 text-xs mt-1">{errors.department}</div>}
+        </div>
       </div>
-      <button
-        type="submit"
-        className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
-        disabled={submitting}
-      >
-        {submitting ? 'Adding...' : 'Add Doctor'}
-      </button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="experience">Experience (years)</Label>
+          <Input id="experience" type="number" min={0} max={70} value={experienceYears} onChange={e => setExperienceYears(e.target.value === '' ? '' : Number(e.target.value))} />
+          {errors.experienceYears && <div className="text-red-500 text-xs mt-1">{errors.experienceYears}</div>}
+        </div>
+        <div>
+          <Label htmlFor="qualifications">Qualifications (optional)</Label>
+          <Input id="qualifications" value={qualifications} onChange={e => setQualifications(e.target.value)} placeholder="e.g. MBBS, MD" />
+          {errors.qualifications && <div className="text-red-500 text-xs mt-1">{errors.qualifications}</div>}
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="profile">Profile image (optional)</Label>
+        <input id="profile" type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) handleImage(f); }} />
+        {imageContentType && <div className="text-xs text-gray-600 mt-1">Detected: {imageContentType}</div>}
+        {errors.imageContentType && <div className="text-red-500 text-xs mt-1">{errors.imageContentType}</div>}
+      </div>
+
+      <div className="flex gap-2">
+        <Button type="button" variant="outline" onClick={() => {
+          setFirstName(''); setLastName(''); setEmail(''); setPhoneNumber(''); setSpecialization(''); setDepartment(''); setExperienceYears(''); setQualifications(''); setProfileBase64(null); setImageContentType(null); setErrors({});
+        }}>Reset</Button>
+        <Button type="submit" disabled={submitting}>{submitting ? (initialDoctor ? 'Updating...' : 'Adding...') : (initialDoctor ? 'Update Doctor' : 'Add Doctor')}</Button>
+      </div>
     </form>
   );
 }
 
-export function HospitalDashboard({ 
-  user, 
-  appointments, 
+export function HospitalDashboard({
+  user,
+  appointments,
   hospitals,
-  onLogout, 
-  onDeleteDoctor 
+  onLogout,
+  onDeleteDoctor
 }: HospitalDashboardProps) {
   const [isAddDoctorOpen, setIsAddDoctorOpen] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState<Partial<DoctorDTO> | Partial<Doctor> | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const hospital = hospitals.find(h => h.id === user.id);
   // Slot template modal state (ensure Slot Templates button works)
@@ -114,6 +280,7 @@ export function HospitalDashboard({
   const [slotTemplatesDoctor, setSlotTemplatesDoctor] = useState<string | null>(null);
   const [slotTemplatesLoading, setSlotTemplatesLoading] = useState(false);
   const [slotTemplatesError, setSlotTemplatesError] = useState('');
+  const [slotDialogOpen, setSlotDialogOpen] = useState(false);
   const [lastClickedDoctor, setLastClickedDoctor] = useState<string | null>(null);
   const lastRequestAtRef = useRef<number | null>(null);
 
@@ -159,6 +326,9 @@ export function HospitalDashboard({
 
   const [templateErrors, setTemplateErrors] = useState<{ [k: string]: string }>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Confirm dialog state for delete
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTargetId, setConfirmTargetId] = useState<number | null>(null);
 
   const validateTemplateForm = () => {
     const errs: { [k: string]: string } = {};
@@ -205,10 +375,10 @@ export function HospitalDashboard({
       // refresh list
       const data = await fetchSlotTemplatesByDoctorId(docId);
       setSlotTemplates(data);
-  resetTemplateForm();
-  setTemplateErrors({});
-  setSuccessMessage('Slot template saved');
-  window.setTimeout(() => setSuccessMessage(null), 3500);
+      resetTemplateForm();
+      setTemplateErrors({});
+      setSuccessMessage('Slot template saved');
+      window.setTimeout(() => setSuccessMessage(null), 3500);
     } catch (e: any) {
       console.error('Failed to save slot template', e);
       setSlotTemplatesError(extractErrorMessage(e) || 'Failed to save slot template');
@@ -218,10 +388,19 @@ export function HospitalDashboard({
   };
 
   const handleDeleteTemplate = async (templateId?: number) => {
+    // legacy helper kept for compatibility; prefer using confirm dialog
     if (!templateId) return;
-    if (!window.confirm('Delete this slot template?')) return;
+    setConfirmTargetId(templateId);
+    setConfirmOpen(true);
+  };
+
+  const confirmDeleteTemplate = async () => {
+    const templateId = confirmTargetId;
+    if (!templateId) return setConfirmOpen(false);
     if (!slotTemplatesDoctor) {
       setSlotTemplatesError('No doctor selected for slot template');
+      setConfirmOpen(false);
+      setConfirmTargetId(null);
       return;
     }
     setSlotTemplatesLoading(true);
@@ -237,6 +416,8 @@ export function HospitalDashboard({
       setSlotTemplatesError(extractErrorMessage(e) || 'Failed to delete slot template');
     } finally {
       setSlotTemplatesLoading(false);
+      setConfirmOpen(false);
+      setConfirmTargetId(null);
     }
   };
 
@@ -263,6 +444,8 @@ export function HospitalDashboard({
   const handleSlotTemplateClick = async (doctorId: string) => {
     setLastClickedDoctor(doctorId);
     console.log('HospitalDashboard (top-level): fetching slot templates for doctor', doctorId);
+    // open dialog immediately for consistent UX on all viewports
+    setSlotDialogOpen(true);
     setSlotTemplatesLoading(true);
     setSlotTemplatesError('');
     setSlotTemplatesDoctor(doctorId);
@@ -285,11 +468,20 @@ export function HospitalDashboard({
   }, [user?.id]);
 
   // Add doctor handler for the form
-  const handleAddDoctor = async (doctor: Omit<Doctor, 'id'>) => {
+  const handleAddDoctor = async (doctor: Partial<DoctorDTO>) => {
     await addDoctor({
       ...doctor,
       hospitalId: Number(doctor.hospitalId),
     });
+    await fetchDoctors();
+  };
+
+  const handleUpdateDoctor = async (id: string, doctor: Partial<DoctorDTO>) => {
+    // call API
+    await updateDoctor(id, {
+      ...doctor,
+      hospitalId: Number(doctor.hospitalId),
+    } as any);
     await fetchDoctors();
   };
 
@@ -364,15 +556,17 @@ export function HospitalDashboard({
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Add New Doctor</DialogTitle>
-                  <DialogDescription>Add a new doctor to your hospital</DialogDescription>
+                  <DialogTitle>{editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}</DialogTitle>
+                  <DialogDescription>{editingDoctor ? 'Edit doctor details' : 'Add a new doctor to your hospital'}</DialogDescription>
                 </DialogHeader>
-                <AddDoctorForm 
-                  onSuccess={() => setIsAddDoctorOpen(false)} 
-                  onAddDoctor={handleAddDoctor}
-                  hospital={hospital}
-                  user={user}
-                />
+                  <AddDoctorForm 
+                    onSuccess={() => { setIsAddDoctorOpen(false); setEditingDoctor(null); }} 
+                    onAddDoctor={handleAddDoctor}
+                    onUpdateDoctor={handleUpdateDoctor}
+                    initialDoctor={editingDoctor}
+                    hospital={hospital}
+                    user={user}
+                  />
               </DialogContent>
             </Dialog>
             {doctors.length === 0 ? (
@@ -385,14 +579,14 @@ export function HospitalDashboard({
               doctors.map(doctor => (
                 <Card key={doctor.id}>
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
                         <Avatar className="w-12 h-12 flex-shrink-0">
                           <AvatarImage src={doctor.photo} alt={doctor.name} />
                           <AvatarFallback>{doctor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="truncate font-semibold text-base">{doctor.name}</h3>
+                          <h3 className="font-semibold text-base md:truncate">{doctor.name}</h3>
                           <div className="flex flex-col gap-1 mt-1 text-sm">
                             <span className="text-gray-600"><span className="font-medium">Specialization:</span> {doctor.specialization}</span>
                             {doctor.qualifications && (
@@ -405,7 +599,7 @@ export function HospitalDashboard({
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-row gap-2 items-center">
+                      <div className="flex flex-row sm:flex-col gap-2 items-center">
                         <Button
                           variant="outline"
                           size="sm"
@@ -424,6 +618,10 @@ export function HospitalDashboard({
                           <span className="sm:hidden"><CalendarDays className="w-5 h-5" /></span>
                           <span className="hidden sm:inline">Slots</span>
                         </Button>
+                        <Button variant="outline" size="sm" className="flex items-center justify-center" title="Edit" onClick={() => { setEditingDoctor(doctor); setIsAddDoctorOpen(true); }}>
+                          <span className="sm:hidden"><Edit className="w-5 h-5" /></span>
+                          <span className="hidden sm:inline">Edit</span>
+                        </Button>
                         <Button variant="destructive" size="sm" onClick={() => onDeleteDoctor(doctor.id)} className="flex items-center justify-center" title="Delete">
                           <span className="sm:hidden"><Trash2 className="w-5 h-5" /></span>
                           <span className="hidden sm:inline">Delete</span>
@@ -435,30 +633,56 @@ export function HospitalDashboard({
               ))
             )}
             {/* Slot Templates Modal/Section (Dialog for consistent UX) */}
-            <Dialog open={slotTemplates !== null || slotTemplatesLoading || !!slotTemplatesError} onOpenChange={(open) => { if (!open) { setSlotTemplates(null); setSlotTemplatesError(''); resetTemplateForm(); } }}>
-              <DialogContent className="max-w-2xl">
+            <Dialog open={slotDialogOpen} onOpenChange={(open) => { setSlotDialogOpen(open); if (!open) { setSlotTemplates(null); setSlotTemplatesError(''); resetTemplateForm(); } }}>
+              <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Slot Templates</DialogTitle>
                   <DialogDescription>Manage recurring slot templates for the selected doctor.</DialogDescription>
                 </DialogHeader>
 
                 {slotTemplatesLoading && (
-                  <div className="p-6 flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold">Loading slot templates...</span>
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <div className="space-y-1">
+                          <Skeleton className="w-40 h-4" />
+                          <Skeleton className="w-24 h-3" />
+                        </div>
+                      </div>
+                      <div className="w-24">
+                        <Skeleton className="w-full h-8 rounded" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Skeleton className="h-8 rounded col-span-1" />
+                      <Skeleton className="h-8 rounded col-span-1" />
+                      <Skeleton className="h-8 rounded col-span-1" />
+                      <Skeleton className="h-8 rounded col-span-1" />
+                    </div>
                   </div>
                 )}
 
                 {slotTemplatesError && (
-                  <div className="p-4">
-                    <div className="text-red-600 font-semibold mb-2">{slotTemplatesError}</div>
-                    <div className="flex gap-2 justify-end">
-                      <Button variant="outline" onClick={() => setSlotTemplatesError('')}>Close</Button>
+                  <div className="p-2">
+                    <Alert variant="destructive">
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{slotTemplatesError}</AlertDescription>
+                    </Alert>
+                    <div className="flex gap-2 justify-end mt-3">
+                      <Button variant="outline" onClick={() => setSlotTemplatesError('')}>Dismiss</Button>
                     </div>
                   </div>
                 )}
 
                 {slotTemplates !== null && !slotTemplatesLoading && (
                   <div className="space-y-4 p-2">
+                    {successMessage && (
+                      <Alert>
+                        <AlertTitle>Success</AlertTitle>
+                        <AlertDescription>{successMessage}</AlertDescription>
+                      </Alert>
+                    )}
                     {/* Add / Edit form */}
                     <div className="mb-1 border rounded p-3 bg-gray-50">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
@@ -501,55 +725,106 @@ export function HospitalDashboard({
                     </div>
 
                     {slotTemplates.length === 0 ? (
-                      <div className="text-gray-500 italic">No slot templates found.</div>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm border">
-                          <thead>
-                            <tr className="bg-blue-50">
-                              <th className="p-2 border">Day</th>
-                              <th className="p-2 border">Start</th>
-                              <th className="p-2 border">End</th>
-                              <th className="p-2 border">Duration (min)</th>
-                              <th className="p-2 border">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {slotTemplates.map(tpl => (
-                              <tr key={tpl.id} className="border-b">
-                                <td className="p-2 border">{tpl.dayOfWeek}</td>
-                                <td className="p-2 border">{tpl.startTime}</td>
-                                <td className="p-2 border">{tpl.endTime}</td>
-                                <td className="p-2 border text-center">{tpl.slotDurationMinutes}</td>
-                                <td className="p-2 border text-center">
-                                  <div className="flex items-center gap-2 justify-center">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="p-2"
-                                      title="Edit template"
-                                      aria-label={`Edit template ${tpl.id}`}
-                                      onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
-                                    >
-                                      <Edit className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                      variant="destructive"
-                                      size="sm"
-                                      className="p-2"
-                                      title="Delete template"
-                                      aria-label={`Delete template ${tpl.id}`}
-                                      onClick={() => handleDeleteTemplate(tpl.id)}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className="p-6 text-center text-gray-600">
+                        <div className="flex flex-col items-center gap-3">
+                          <LayoutTemplate className="w-12 h-12 text-blue-500" />
+                          <p className="font-medium">No slot templates yet</p>
+                          <p className="text-sm">Create a recurring availability template to let patients book predictable slots.</p>
+                          <div className="mt-3">
+                            <Button onClick={() => { resetTemplateForm(); }}><Plus className="w-4 h-4 mr-2" />Create template</Button>
+                          </div>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        {/* Desktop & tablet: table view (md and up) */}
+                        <div className="hidden md:block overflow-x-auto">
+                          <table className="w-full text-sm border">
+                            <thead>
+                              <tr className="bg-blue-50">
+                                <th className="p-2 border">Day</th>
+                                <th className="p-2 border">Start</th>
+                                <th className="p-2 border">End</th>
+                                <th className="p-2 border">Duration (min)</th>
+                                <th className="p-2 border">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {slotTemplates.map(tpl => (
+                                <tr key={tpl.id} className="border-b">
+                                  <td className="p-2 border">{tpl.dayOfWeek}</td>
+                                  <td className="p-2 border">{tpl.startTime}</td>
+                                  <td className="p-2 border">{tpl.endTime}</td>
+                                  <td className="p-2 border text-center">{tpl.slotDurationMinutes}</td>
+                                  <td className="p-2 border text-center">
+                                    <div className="flex items-center gap-2 justify-center">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="p-2"
+                                        title="Edit template"
+                                        aria-label={`Edit template ${tpl.id}`}
+                                        onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
+                                      >
+                                        <Edit className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        className="p-2"
+                                        title="Delete template"
+                                        aria-label={`Delete template ${tpl.id}`}
+                                        onClick={() => handleDeleteTemplate(tpl.id)}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Mobile & small tablet: stacked cards (below md) */}
+                        <div className="block md:hidden space-y-3">
+                          {slotTemplates.map(tpl => (
+                            <div key={`mobile-${tpl.id}`} className="border rounded p-3 bg-white shadow-sm">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <div className="text-sm font-medium">{tpl.dayOfWeek}</div>
+                                  <div className="text-xs text-gray-600">{tpl.startTime} – {tpl.endTime}</div>
+                                  <div className="text-xs text-gray-600 mt-1">Duration: {tpl.slotDurationMinutes} min</div>
+                                </div>
+                                <div className="flex flex-col items-end gap-2 w-28">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full flex items-center justify-center"
+                                    title="Edit template"
+                                    aria-label={`Edit template ${tpl.id}`}
+                                    onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    <span className="text-sm">Edit</span>
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="w-full flex items-center justify-center"
+                                    title="Delete template"
+                                    aria-label={`Delete template ${tpl.id}`}
+                                    onClick={() => handleDeleteTemplate(tpl.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    <span className="text-sm">Delete</span>
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -603,6 +878,18 @@ export function HospitalDashboard({
           </TabsContent>
         </Tabs>
       </div>
+      {/* Global ConfirmDialog so it overlays above other dialogs */}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete slot template"
+        message={"Are you sure you want to delete this slot template? This action cannot be undone."}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={() => { void confirmDeleteTemplate(); }}
+        onCancel={() => { setConfirmOpen(false); setConfirmTargetId(null); }}
+      />
     </div>
   );
 }
+
+
