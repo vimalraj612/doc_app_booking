@@ -86,7 +86,8 @@ export async function bookAppointment(payload: {
   patientName: string;
   appointmentDateTime: string;
   slotId: string | number;
-  reserved?: boolean; // optional flag to mark reservations created by hospital/admin
+  patientAge?: string | number;
+  patientGender?: string;
 }) {
   const token = window.localStorage.getItem('accessToken') || '';
   return apiFetch('/api/v1/appointments', {

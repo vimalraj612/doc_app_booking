@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
+import { Button } from '../ui/button';
 
 interface Slot {
   slotId: string | number;
@@ -10,7 +12,7 @@ interface Slot {
   status?: 'AVAILABLE' | 'SCHEDULED';
 }
 
-interface AvailableSlotsProps {
+interface PatientAvailableSlotsProps {
   open: boolean;
   onClose: () => void;
   doctorId: string | number;
@@ -27,7 +29,7 @@ interface AvailableSlotsProps {
   formatTime: (time: string) => string;
 }
 
-const PatientAvailableSlots: React.FC<AvailableSlotsProps> = ({
+const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   open,
   onClose,
   doctorId,
@@ -103,7 +105,7 @@ const PatientAvailableSlots: React.FC<AvailableSlotsProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30">
       <div
-        className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100"
+        className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar"
         style={{ marginTop: '115px', maxHeight: '500px', minHeight: '380px' }}
       >
         {/* Close & Title */}
@@ -168,51 +170,78 @@ const PatientAvailableSlots: React.FC<AvailableSlotsProps> = ({
                               .slice()
                               .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
                               .map((slot) => {
-                                let status: 'AVAILABLE' | 'SCHEDULED' = slot.available ? 'AVAILABLE' : 'SCHEDULED';
+                                const anySlot: any = slot as any;
+                                const appointmentStatus = anySlot.hasOwnProperty('appointmentStatus') ? anySlot.appointmentStatus : undefined;
 
-                                const statusMap = {
+                                let statusValue: string;
+                                if (appointmentStatus !== undefined) {
+                                  statusValue = appointmentStatus === null ? 'AVAILABLE' : String(appointmentStatus);
+                                } else if (slot.available) {
+                                  statusValue = 'AVAILABLE';
+                                } else if (anySlot.status) {
+                                  statusValue = String(anySlot.status);
+                                } else {
+                                  statusValue = 'SCHEDULED';
+                                }
+
+                                const isReserved = statusValue === 'RESERVED' || anySlot.reserved === true || anySlot.isReserved === true || !!anySlot.reservedBy;
+
+                                let status: string;
+                                switch (String(statusValue).toUpperCase()) {
+                                  case 'AVAILABLE':
+                                    status = 'AVAILABLE';
+                                    break;
+                                  case 'RESERVED':
+                                    status = 'RESERVED';
+                                    break;
+                                  case 'SCHEDULED':
+                                    status = 'SCHEDULED';
+                                    break;
+                                  case 'COMPLETED':
+                                    status = 'COMPLETED';
+                                    break;
+                                  case 'CANCELLED':
+                                    status = 'AVAILABLE';
+                                    break;
+                                  default:
+                                    status = slot.available ? 'AVAILABLE' : 'SCHEDULED';
+                                }
+
+                                if (isReserved) status = 'RESERVED';
+
+                                const statusMap: any = {
                                   AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
                                   SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
+                                  RESERVED: { color: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Reserved' },
+                                  COMPLETED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Completed' },
+                                  CANCELLED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Cancelled' },
                                 };
+                                const statusInfo = statusMap[status] || statusMap['SCHEDULED'];
+                                const isClickable = status === 'AVAILABLE' && !booking;
 
-                                const isSelected = selectedSlot?.slotId === slot.slotId;
-                                const statusInfo = statusMap[status];
+                                const colorHexMap: Record<string, { bg: string; border: string; text: string }> = {
+                                  AVAILABLE: { bg: '#ecfdf5', border: '#bbf7d0', text: '#166534' },
+                                  SCHEDULED: { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af' },
+                                  RESERVED: { bg: '#fff7ed', border: '#fed7aa', text: '#b45309' },
+                                  COMPLETED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
+                                  CANCELLED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
+                                };
+                                const hex = colorHexMap[status] || colorHexMap['SCHEDULED'];
 
                                 return (
-                                <button
-                                  key={slot.slotId}
-                                  disabled={status !== 'AVAILABLE' || booking}
-                                  onClick={() => handleBookSlot(slot)}
-                                  className={`
-                                    relative p-[1px] rounded-md border flex flex-col items-center justify-center
-                                    min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px]
-                                    transition-all duration-200 ease-in-out text-center
-                                    backdrop-blur-sm shadow-sm
-                                    ${statusInfo.color}
-                                    ${isSelected ? 'ring-2 ring-blue-300/60 scale-[1.05]' : ''}
-                                    ${status !== 'AVAILABLE' ? 'cursor-not-allowed opacity-60' : 'hover:bg-green-100 hover:shadow-md hover:scale-[1.02]'}
-                                  `}
-                                >
-                                  <span className={`font-semibold text-[5.5px] leading-tight ${isSelected ? 'text-blue-700' : statusInfo.text}`}>
-                                    {formatTime(slot.start)}
-                                  </span>
-                                  <span className={`text-[4px] leading-tight ${isSelected ? 'text-blue-600' : statusInfo.text}`}>
-                                    {(() => {
-                                      const start = new Date(slot.start);
-                                      const end = new Date(slot.end);
-                                      const diff = Math.round((end.getTime() - start.getTime()) / 60000);
-                                      return `${diff}m`;
-                                    })()}
-                                  </span>
-                                  <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors ${statusInfo.text} ${isSelected ? 'bg-blue-100/60' : ''}`}>
-                                    {statusInfo.label}
-                                  </span>
-                                  {isSelected && (
-                                    <span className="absolute inset-0 rounded-md ring-2 ring-blue-300/60 animate-pulse pointer-events-none" />
-                                  )}
-                                </button>
-                              );
-                            })}
+                                  <button
+                                    key={String(slot.slotId)}
+                                    disabled={!isClickable}
+                                    onClick={() => isClickable && handleBookSlot(slot)}
+                                    className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
+                                    style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
+                                  >
+                                    <span className={`font-semibold text-[5.5px] leading-tight`} style={{ color: hex.text }}>{formatTime(slot.start)}</span>
+                                    <span className={`text-[4px] leading-tight`} style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
+                                    <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors`} style={{ color: hex.text }}>{statusInfo.label}</span>
+                                  </button>
+                                );
+                              })}
                           </div>
                         )}
                       </motion.div>
@@ -221,10 +250,177 @@ const PatientAvailableSlots: React.FC<AvailableSlotsProps> = ({
                 </div>
               </div>
 
-              {/* ...rest of the code for confirm dialog and styles... */}
+              {confirmOpen && (
+                <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30">
+                  <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar" style={{ marginTop: '115px', maxHeight: '500px', minHeight: '380px' }}>
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <button
+                        className="text-gray-500 hover:text-gray-800 p-1 text-xl"
+                        onClick={() => {
+                          setAppointeeNameError('');
+                          setAppointeeAgeError('');
+                          setAppointeePhoneError('');
+                          setAppointeeGenderError('');
+                          handleCancelBook();
+                        }}
+                        title="Close"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                    <h2 className="text-xl font-bold mb-4">Book Appointment</h2>
+                    <form
+                      className="w-full"
+                      onSubmit={e => {
+                        e.preventDefault();
+                        let valid = true;
+                        if (!appointeeName.trim()) {
+                          setAppointeeNameError('Name is required.');
+                          valid = false;
+                        } else {
+                          setAppointeeNameError('');
+                        }
+                        if (!appointeeAge.trim()) {
+                          setAppointeeAgeError('Age is required.');
+                          valid = false;
+                        } else {
+                          const ageNum = Number(appointeeAge);
+                          if (!Number.isInteger(ageNum) || ageNum <= 0) {
+                            setAppointeeAgeError('Age must be a positive integer.');
+                            valid = false;
+                          } else {
+                            setAppointeeAgeError('');
+                          }
+                        }
+                        if (!appointeePhone.trim()) {
+                          setAppointeePhoneError('Phone is required.');
+                          valid = false;
+                        } else if (!/^\+\d{7,}$/.test(appointeePhone)) {
+                          setAppointeePhoneError('Phone must start with + and be a valid number (at least 7 digits).');
+                          valid = false;
+                        } else {
+                          setAppointeePhoneError('');
+                        }
+                        if (!appointeeGender.trim()) {
+                          setAppointeeGenderError('Gender is required.');
+                          valid = false;
+                        } else if (!['Male', 'Female', 'Other'].includes(appointeeGender)) {
+                          setAppointeeGenderError('Please select a valid gender.');
+                          valid = false;
+                        } else {
+                          setAppointeeGenderError('');
+                        }
+                        if (!valid) return;
+                        handleConfirmBook({
+                          appointeeName,
+                          appointeeAge,
+                          appointeePhone,
+                          appointeeGender,
+                        });
+                      }}
+                    >
+                      <div className="mb-2 text-center text-sm text-gray-700">
+                        {pendingSlot ? `Book appointment for ${formatTime(pendingSlot.start)} - ${formatTime(pendingSlot.end)}?` : ''}
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-sm font-medium">Appointee Name</label>
+                        <input
+                          type="text"
+                          className="w-full border rounded px-2 py-1"
+                          placeholder="Example: John Doe"
+                          value={appointeeName}
+                          onChange={e => {
+                            setAppointeeName(e.target.value);
+                            if (appointeeNameError) setAppointeeNameError('');
+                          }}
+                          // required removed to prevent browser popup
+                        />
+                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeNameError || '\u00A0'}</div>
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-sm font-medium">Appointee Age</label>
+                        <input
+                          type="number"
+                          className="w-full border rounded px-2 py-1"
+                          placeholder="Example: 30"
+                          value={appointeeAge}
+                          onChange={e => {
+                            setAppointeeAge(e.target.value);
+                            if (appointeeAgeError) setAppointeeAgeError('');
+                          }}
+                          min={0}
+                          // required removed to prevent browser popup
+                        />
+                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeAgeError || '\u00A0'}</div>
+                      </div>
+                      <div className="mb-2">
+                        <label className="block text-sm font-medium">Appointee Phone</label>
+                        <input
+                          type="tel"
+                          className="w-full border rounded px-2 py-1"
+                          placeholder="Example: +9876543210"
+                          value={appointeePhone}
+                          onChange={e => {
+                            setAppointeePhone(e.target.value);
+                            if (appointeePhoneError) setAppointeePhoneError('');
+                          }}
+                          // required removed to prevent browser popup
+                        />
+                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeePhoneError || '\u00A0'}</div>
+                      </div>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium">Appointee Gender</label>
+                        <select
+                          className="w-full border rounded px-2 py-1"
+                          value={appointeeGender}
+                          onChange={e => {
+                            setAppointeeGender(e.target.value);
+                            if (appointeeGenderError) setAppointeeGenderError('');
+                          }}
+                          // required removed to prevent browser popup
+                        >
+                          <option value="">Example: Select gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeGenderError || '\u00A0'}</div>
+                      </div>
+                      <div className="flex justify-end gap-2 mt-2">
+                       <Button type="button" variant="secondary"
+                          onClick={() => {
+                            setAppointeeNameError('');
+                            setAppointeeAgeError('');
+                            setAppointeePhoneError('');
+                            setAppointeeGenderError('');
+                            handleCancelBook();
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          className="secondary"
+                        >
+                          Book
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              <style>{`
+                .no-scrollbar {
+                  scrollbar-width: none;
+                  -ms-overflow-style: none;
+                }
+                .no-scrollbar::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
             </>
           )}
-
         </div>
       </div>
     </div>
