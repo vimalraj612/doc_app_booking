@@ -1,3 +1,38 @@
+// Fetch slot templates for a doctor (with authorization)
+export async function fetchSlotTemplatesByDoctorId(doctorId: string | number) {
+  const token = window.localStorage.getItem('accessToken');
+  return apiFetch<{ data: SlotTemplateDTO[] }>(
+    `/api/v1/slot-templates/doctor/${doctorId}`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  ).then(res => res.data || []);
+}
+
+// SlotTemplateDTO type for slot template response
+export type SlotTemplateDTO = {
+  id: number;
+  doctorId: number;
+  dayOfWeek: string; // e.g., 'MONDAY'
+  startTime: string; // e.g., '09:00'
+  endTime: string;   // e.g., '17:00'
+  slotDurationMinutes: number;
+};
+// Add a new doctor (with authorization)
+export async function addDoctor(doctor: Partial<DoctorDTO>) {
+  const token = window.localStorage.getItem('accessToken');
+  return apiFetch<{ data: DoctorDTO }>(
+    '/api/v1/doctors',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(doctor),
+    }
+  ).then(res => res.data);
+}
 import { apiFetch } from './http';
 // DoctorDTO matches backend fields
 export type DoctorDTO = {
@@ -80,4 +115,15 @@ export async function getTodayFreeSlotsCount(doctorId?: string) {
       },
     }
   );
+}
+
+// Fetch doctors by hospitalId (with authorization)
+export async function fetchDoctorsByHospitalId(hospitalId: string | number) {
+  const token = window.localStorage.getItem('accessToken');
+  return apiFetch<{ data: DoctorDTO[] }>(
+    `/api/v1/doctors/hospital/${hospitalId}`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  ).then(res => res.data || []);
 }

@@ -5,6 +5,7 @@ import { PatientDashboard } from './components/patient/PatientDashboard';
 import { DoctorDashboard } from './components/doctor/DoctorDashboard';
 import { HospitalDashboard } from './components/HospitalDashboard';
 import { SuperAdminDashboard } from './components/SuperAdminDashboard';
+import { HospitalLoginPage } from './components/hospital/HospitalLoginPage';
 
 export type UserRole = 'patient' | 'doctor' | 'hospital' | 'superadmin' | null;
 
@@ -24,6 +25,8 @@ export interface Doctor {
   hospitalName: string;
   email: string;
   photo: string;
+  qualifications?: string;
+  phoneNumber?: string;
 }
 
 export interface Hospital {
@@ -164,10 +167,22 @@ function App() {
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    // Remove all possible session keys for hospital
     localStorage.removeItem('token');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('hospitalPhoneNumber');
+    localStorage.removeItem('loginMessage');
+    localStorage.removeItem('name');
+    localStorage.removeItem('hospitalLoggedIn');
     localStorage.removeItem('docPhoneNumber');
+    setCurrentUser(null);
     setDocPhoneNumber(null);
+    // Redirect to hospital login if on hospital dashboard
+    if (window.location.pathname.startsWith('/hospital')) {
+      window.location.href = '/login/hospital';
+    }
   };
 
   const handleBookAppointment = (appointment: Appointment) => {
@@ -325,13 +340,25 @@ function App() {
         setCurrentUser({ id: userId, name, email, role: 'doctor' });
       }
     }
+    // Auto-login hospital if hospitalLoggedIn flag is set
+    if (!currentUser && window.location.pathname === '/hospital/dashboard' && localStorage.getItem('hospitalLoggedIn') === 'true') {
+      const userId = localStorage.getItem('userId');
+      const name = localStorage.getItem('name');
+      const email = '';
+      if (userId && name) {
+        setCurrentUser({ id: userId, name, email, role: 'hospital' });
+      }
+    }
   }, [currentUser]);
 
   if (!currentUser) {
-    // Simple routing for /login/doctor, /doctor/dashboard, and /doctor
+    // Simple routing for /login/doctor, /doctor/dashboard, /doctor, /login/hospital
     const path = window.location.pathname;
     if (path === '/login/doctor' || path === '/doctor/dashboard' || path === '/doctor') {
       return <DoctorLoginPage />;
+    }
+    if (path === '/login/hospital' || path === '/hospital/dashboard' || path === '/hospital') {
+      return <HospitalLoginPage />;
     }
     return <LoginPage onLogin={handleLogin} />;
   }
@@ -356,11 +383,9 @@ function App() {
       {currentUser.role === 'hospital' && (
         <HospitalDashboard
           user={currentUser}
-          doctors={doctors.filter(d => d.hospitalId === currentUser.id)}
           appointments={appointments.filter(a => a.hospitalId === currentUser.id)}
           hospitals={hospitals}
           onLogout={handleLogout}
-          onAddDoctor={handleAddDoctor}
           onDeleteDoctor={handleDeleteDoctor}
         />
       )}

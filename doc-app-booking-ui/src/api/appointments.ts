@@ -66,6 +66,7 @@ export interface Slot {
 
 export async function fetchSlotsByDoctorIdAndDate(doctorId: string | number, date: string) {
   const token = window.localStorage.getItem('accessToken') || '';
+  // Use the passed doctorId directly (for AvailableSlots)
   return apiFetch<{ data: Slot[] }>(`/api/v1/slots/doctor/${doctorId}?date=${date}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });

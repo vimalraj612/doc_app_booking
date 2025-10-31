@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import Header from '../common/Header';
 import DoctorDetails from '../common/DoctorDetails';
 import AppointmentsList from '../common/AppointmentsList';
-import AvailableSlots from '../common/AvailableSlots';
+import PatientAvailableSlots from './PatientAvailableSlots';
 import PatientProfile from './PatientProfile';
 import { getPatientUserProfile, updatePatientProfile, PatientProfile as PatientProfileType } from '../../api/user';
 
@@ -379,7 +379,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
           </TabsContent>
         </Tabs>
         {/* Book Appointment Modal/Section */}
-        <AvailableSlots
+        <PatientAvailableSlots
           open={showSlots}
           onClose={() => setShowSlots(false)}
           doctorId={selectedDoctor ? selectedDoctor.id : ''}

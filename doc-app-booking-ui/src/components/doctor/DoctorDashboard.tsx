@@ -4,6 +4,7 @@ import { getTodayAppointmentCount, getTodayFreeSlotsCount } from '../../api/doct
 import { fetchDoctorAppointmentsByDateRange } from '../../api/appointments';
 import AppointmentsList from '../common/AppointmentsList';
 import { Card, CardContent } from '../ui/card';
+import DoctorAvailableSlot from './DoctorAvailableSlots';
 import { Calendar as CalendarIcon, Clock, LogOut, Plus, User as UserIcon, Stethoscope, FileText, Check, UserCheck, Activity } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Input } from '../ui/input';
@@ -269,46 +270,18 @@ export function DoctorDashboard({
           </TabsContent>
 
           <TabsContent value="slots" className="space-y-3 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {timeSlots.filter(slot => !slot.isBooked).length === 0 ? (
-                <Card className="col-span-full">
-                  <CardContent className="p-6 text-center text-gray-500">
-                    No available slots
-                  </CardContent>
-                </Card>
-              ) : (
-                timeSlots
-                  .filter(slot => !slot.isBooked)
-                  .sort((a, b) => {
-                    const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
-                    if (dateCompare !== 0) return dateCompare;
-                    return a.time.localeCompare(b.time);
-                  })
-                  .map(slot => (
-                    <Card key={slot.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="default">Available</Badge>
-                            </div>
-                            <div className="flex flex-col gap-1 text-sm">
-                              <div className="flex items-center gap-1">
-                                <CalendarIcon className="w-4 h-4 text-gray-500" />
-                                <span>{slot.date}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4 text-gray-500" />
-                                <span>{slot.time}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-              )}
-            </div>
+            <DoctorAvailableSlot
+              doctorId={doctor.id}
+              selectedSlot={null}
+              booking={false}
+              handleBookSlot={() => {}}
+              confirmOpen={false}
+              pendingSlot={null}
+              handleConfirmBook={() => {}}
+              handleCancelBook={() => {}}
+              successMsg={''}
+              formatTime={(t) => t.slice(11, 16)}
+            />
           </TabsContent>
         </Tabs>
       </div>
