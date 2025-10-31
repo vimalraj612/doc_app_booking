@@ -22,7 +22,7 @@ public class Doctor {
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
-    @Column(nullable = false, unique = false, length = 200)
+    @Column(nullable = false, length = 200)
     private String email;
 
     @NotNull
