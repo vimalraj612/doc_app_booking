@@ -405,6 +405,7 @@ function App() {
           onGenerateSlotsFromTemplate={handleGenerateSlotsFromTemplate}
         />
       )}
+  {/* Global toaster removed per preference; success messages shown inline */}
     </div>
   );
 }

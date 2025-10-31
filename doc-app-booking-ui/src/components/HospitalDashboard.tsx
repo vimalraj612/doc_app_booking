@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRef } from 'react';
 import { User, Doctor, Appointment, Hospital } from '../App';
 import { Card, CardContent } from './ui/card';
-import { LogOut, Plus, User as UserIcon, Stethoscope, Calendar, Building2, LayoutTemplate, CalendarDays, Trash2 } from 'lucide-react';
+import { LogOut, Plus, User as UserIcon, Stethoscope, Calendar, Building2, LayoutTemplate, CalendarDays, Trash2, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -12,8 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 
 import { useEffect } from 'react';
-import { fetchDoctorsByHospitalId, addDoctor, fetchSlotTemplatesByDoctorId, SlotTemplateDTO } from '../api/doctor';
-
+import { fetchDoctorsByHospitalId, addDoctor, fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO } from '../api/doctor';
 interface HospitalDashboardProps {
   user: User;
   appointments: Appointment[];
@@ -118,6 +117,129 @@ export function HospitalDashboard({
   const [lastClickedDoctor, setLastClickedDoctor] = useState<string | null>(null);
   const lastRequestAtRef = useRef<number | null>(null);
 
+  const extractErrorMessage = (err: any) => {
+    // err may be an Error whose message is a JSON string or plain text
+    try {
+      if (!err) return 'Unknown error';
+      const m = err?.message || err;
+      if (!m) return 'Unknown error';
+      // try parse JSON
+      try {
+        const parsed = JSON.parse(m);
+        if (parsed && parsed.message) return String(parsed.message);
+      } catch (_) {
+        // not JSON
+      }
+      // if it's already an object
+      if (typeof m === 'object' && m.message) return String(m.message);
+      return String(m);
+    } catch (_e) {
+      return 'Unknown error';
+    }
+  };
+
+  // Form state for creating/updating a slot template
+  const [templateForm, setTemplateForm] = useState<{
+    id?: number | null;
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    slotDurationMinutes: number;
+    active: boolean;
+  }>({
+    id: null,
+    dayOfWeek: 'MONDAY',
+    startTime: '09:00',
+    endTime: '17:00',
+    slotDurationMinutes: 15,
+    active: true,
+  });
+
+  const resetTemplateForm = () => setTemplateForm({ id: null, dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '17:00', slotDurationMinutes: 15, active: true });
+
+  const [templateErrors, setTemplateErrors] = useState<{ [k: string]: string }>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const validateTemplateForm = () => {
+    const errs: { [k: string]: string } = {};
+    const toMinutes = (t: string) => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
+    if (!templateForm.startTime) errs.startTime = 'Start time is required';
+    if (!templateForm.endTime) errs.endTime = 'End time is required';
+    if (templateForm.startTime && templateForm.endTime) {
+      const s = toMinutes(templateForm.startTime);
+      const e = toMinutes(templateForm.endTime);
+      if (e <= s) errs.endTime = 'End time must be after start time';
+      if (e - s < templateForm.slotDurationMinutes) errs.endTime = 'Slot duration must fit within start/end range';
+    }
+    if (!templateForm.slotDurationMinutes || templateForm.slotDurationMinutes < 5) errs.slotDurationMinutes = 'Duration must be at least 5 minutes';
+    setTemplateErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const saveSlotTemplate = async (doctorId?: string) => {
+    const docId = doctorId || slotTemplatesDoctor;
+    if (!docId) {
+      setSlotTemplatesError('No doctor selected for slot template');
+      return;
+    }
+    setSlotTemplatesLoading(true);
+    setSlotTemplatesError('');
+    // validate first
+    if (!validateTemplateForm()) {
+      setSlotTemplatesLoading(false);
+      return;
+    }
+    try {
+      const payload: Partial<SlotTemplateDTO> = {
+        id: templateForm.id ?? undefined as any,
+        doctorId: Number(docId),
+        dayOfWeek: templateForm.dayOfWeek,
+        startTime: templateForm.startTime,
+        endTime: templateForm.endTime,
+        slotDurationMinutes: Number(templateForm.slotDurationMinutes),
+      };
+      await createOrUpdateSlotTemplate(docId, payload);
+      // refresh list
+      const data = await fetchSlotTemplatesByDoctorId(docId);
+      setSlotTemplates(data);
+  resetTemplateForm();
+  setTemplateErrors({});
+  setSuccessMessage('Slot template saved');
+  window.setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (e: any) {
+      console.error('Failed to save slot template', e);
+      setSlotTemplatesError(extractErrorMessage(e) || 'Failed to save slot template');
+    } finally {
+      setSlotTemplatesLoading(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId?: number) => {
+    if (!templateId) return;
+    if (!window.confirm('Delete this slot template?')) return;
+    if (!slotTemplatesDoctor) {
+      setSlotTemplatesError('No doctor selected for slot template');
+      return;
+    }
+    setSlotTemplatesLoading(true);
+    setSlotTemplatesError('');
+    try {
+      await deleteSlotTemplate(templateId);
+      const data = await fetchSlotTemplatesByDoctorId(slotTemplatesDoctor);
+      setSlotTemplates(data);
+      setSuccessMessage('Slot template deleted');
+      window.setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (e: any) {
+      console.error('Failed to delete slot template', e);
+      setSlotTemplatesError(extractErrorMessage(e) || 'Failed to delete slot template');
+    } finally {
+      setSlotTemplatesLoading(false);
+    }
+  };
+
   const fetchDoctors = async () => {
     if (!user?.id) return;
     try {
@@ -150,7 +272,7 @@ export function HospitalDashboard({
       setSlotTemplates(data);
     } catch (e: any) {
       console.error('HospitalDashboard (top-level): failed to fetch slot templates', e);
-      setSlotTemplatesError(e?.message || 'Failed to load slot templates');
+      setSlotTemplatesError(extractErrorMessage(e) || 'Failed to load slot templates');
       setSlotTemplates(null);
     } finally {
       setSlotTemplatesLoading(false);
@@ -312,54 +434,127 @@ export function HospitalDashboard({
                 </Card>
               ))
             )}
-            {/* Slot Templates Modal/Section */}
-            {slotTemplatesLoading && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                <div className="bg-white rounded-lg shadow-lg p-6 min-w-[320px] min-h-[120px] flex flex-col items-center">
-                  <span className="text-blue-600 font-semibold">Loading slot templates...</span>
-                </div>
-              </div>
-            )}
-            {slotTemplates !== null && !slotTemplatesLoading && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                <div className="bg-white rounded-lg shadow-lg p-6 min-w-[340px] max-w-lg max-h-[80vh] overflow-y-auto relative">
-                  <button className="absolute top-2 right-2 text-2xl text-gray-400 hover:text-gray-700" onClick={() => setSlotTemplates(null)}>&times;</button>
-                  <h2 className="text-lg font-bold mb-3 text-blue-700">Slot Templates</h2>
-                  {slotTemplates.length === 0 ? (
-                    <div className="text-gray-500 italic">No slot templates found.</div>
-                  ) : (
-                    <table className="w-full text-sm border">
-                      <thead>
-                        <tr className="bg-blue-50">
-                          <th className="p-2 border">Day</th>
-                          <th className="p-2 border">Start</th>
-                          <th className="p-2 border">End</th>
-                          <th className="p-2 border">Duration (min)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {slotTemplates.map(tpl => (
-                          <tr key={tpl.id} className="border-b">
-                            <td className="p-2 border">{tpl.dayOfWeek}</td>
-                            <td className="p-2 border">{tpl.startTime}</td>
-                            <td className="p-2 border">{tpl.endTime}</td>
-                            <td className="p-2 border text-center">{tpl.slotDurationMinutes}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              </div>
-            )}
-            {slotTemplatesError && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                <div className="bg-white rounded-lg shadow-lg p-6 min-w-[320px] min-h-[120px] flex flex-col items-center">
-                  <span className="text-red-600 font-semibold">{slotTemplatesError}</span>
-                  <button className="mt-4 px-4 py-2 bg-gray-200 rounded" onClick={() => setSlotTemplatesError('')}>Close</button>
-                </div>
-              </div>
-            )}
+            {/* Slot Templates Modal/Section (Dialog for consistent UX) */}
+            <Dialog open={slotTemplates !== null || slotTemplatesLoading || !!slotTemplatesError} onOpenChange={(open) => { if (!open) { setSlotTemplates(null); setSlotTemplatesError(''); resetTemplateForm(); } }}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Slot Templates</DialogTitle>
+                  <DialogDescription>Manage recurring slot templates for the selected doctor.</DialogDescription>
+                </DialogHeader>
+
+                {slotTemplatesLoading && (
+                  <div className="p-6 flex items-center justify-center">
+                    <span className="text-blue-600 font-semibold">Loading slot templates...</span>
+                  </div>
+                )}
+
+                {slotTemplatesError && (
+                  <div className="p-4">
+                    <div className="text-red-600 font-semibold mb-2">{slotTemplatesError}</div>
+                    <div className="flex gap-2 justify-end">
+                      <Button variant="outline" onClick={() => setSlotTemplatesError('')}>Close</Button>
+                    </div>
+                  </div>
+                )}
+
+                {slotTemplates !== null && !slotTemplatesLoading && (
+                  <div className="space-y-4 p-2">
+                    {/* Add / Edit form */}
+                    <div className="mb-1 border rounded p-3 bg-gray-50">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                        <div>
+                          <Label>Day of Week</Label>
+                          <select className="form-input w-full border rounded px-2 py-1" value={templateForm.dayOfWeek} onChange={e => setTemplateForm(f => ({ ...f, dayOfWeek: e.target.value }))}>
+                            <option>MONDAY</option>
+                            <option>TUESDAY</option>
+                            <option>WEDNESDAY</option>
+                            <option>THURSDAY</option>
+                            <option>FRIDAY</option>
+                            <option>SATURDAY</option>
+                            <option>SUNDAY</option>
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Start Time</Label>
+                          <Input type="time" value={templateForm.startTime} onChange={e => setTemplateForm(f => ({ ...f, startTime: e.target.value }))} />
+                          {templateErrors.startTime && <div className="text-red-500 text-xs mt-1">{templateErrors.startTime}</div>}
+                        </div>
+                        <div>
+                          <Label>End Time</Label>
+                          <Input type="time" value={templateForm.endTime} onChange={e => setTemplateForm(f => ({ ...f, endTime: e.target.value }))} />
+                          {templateErrors.endTime && <div className="text-red-500 text-xs mt-1">{templateErrors.endTime}</div>}
+                        </div>
+                        <div>
+                          <Label>Duration (min)</Label>
+                          <Input type="number" min={5} value={templateForm.slotDurationMinutes} onChange={e => setTemplateForm(f => ({ ...f, slotDurationMinutes: Number(e.target.value || 0) }))} />
+                          {templateErrors.slotDurationMinutes && <div className="text-red-500 text-xs mt-1">{templateErrors.slotDurationMinutes}</div>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input id="tpl-active" type="checkbox" checked={templateForm.active} onChange={e => setTemplateForm(f => ({ ...f, active: e.target.checked }))} />
+                          <label htmlFor="tpl-active" className="text-sm">Active</label>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="outline" onClick={() => resetTemplateForm()}>Reset</Button>
+                          <Button onClick={() => saveSlotTemplate()}>{templateForm.id ? 'Update' : 'Create'}</Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {slotTemplates.length === 0 ? (
+                      <div className="text-gray-500 italic">No slot templates found.</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm border">
+                          <thead>
+                            <tr className="bg-blue-50">
+                              <th className="p-2 border">Day</th>
+                              <th className="p-2 border">Start</th>
+                              <th className="p-2 border">End</th>
+                              <th className="p-2 border">Duration (min)</th>
+                              <th className="p-2 border">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {slotTemplates.map(tpl => (
+                              <tr key={tpl.id} className="border-b">
+                                <td className="p-2 border">{tpl.dayOfWeek}</td>
+                                <td className="p-2 border">{tpl.startTime}</td>
+                                <td className="p-2 border">{tpl.endTime}</td>
+                                <td className="p-2 border text-center">{tpl.slotDurationMinutes}</td>
+                                <td className="p-2 border text-center">
+                                  <div className="flex items-center gap-2 justify-center">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="p-2"
+                                      title="Edit template"
+                                      aria-label={`Edit template ${tpl.id}`}
+                                      onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="p-2"
+                                      title="Delete template"
+                                      aria-label={`Delete template ${tpl.id}`}
+                                      onClick={() => handleDeleteTemplate(tpl.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
 

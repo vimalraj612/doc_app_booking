@@ -18,6 +18,18 @@ export type SlotTemplateDTO = {
   endTime: string;   // e.g., '17:00'
   slotDurationMinutes: number;
 };
+// Create or update a slot template for a doctor (authorization required)
+export async function createOrUpdateSlotTemplate(doctorId: string | number, payload: Partial<SlotTemplateDTO>) {
+  const token = window.localStorage.getItem('accessToken');
+  return apiFetch<{ data: SlotTemplateDTO }>(
+    `/api/v1/slot-templates/doctor/${doctorId}`,
+    {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: JSON.stringify(payload),
+    }
+  ).then(res => res.data);
+}
 // Add a new doctor (with authorization)
 export async function addDoctor(doctor: Partial<DoctorDTO>) {
   const token = window.localStorage.getItem('accessToken');
@@ -126,4 +138,16 @@ export async function fetchDoctorsByHospitalId(hospitalId: string | number) {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     }
   ).then(res => res.data || []);
+}
+
+// Delete a slot template by id (authorization required)
+export async function deleteSlotTemplate(slotTemplateId: string | number) {
+  const token = window.localStorage.getItem('accessToken');
+  return apiFetch<void>(
+    `/api/v1/slot-templates/${slotTemplateId}`,
+    {
+      method: 'DELETE',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  );
 }
