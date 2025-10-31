@@ -3,7 +3,7 @@ import { LoginPage } from './components/LoginPage';
 import { DoctorLoginPage } from './components/doctor/DoctorLoginPage';
 import { PatientDashboard } from './components/patient/PatientDashboard';
 import { DoctorDashboard } from './components/doctor/DoctorDashboard';
-import { HospitalDashboard } from './components/HospitalDashboard';
+import { HospitalDashboard } from './components/hospital/HospitalDashboard';
 import { SuperAdminDashboard } from './components/SuperAdminDashboard';
 import { HospitalLoginPage } from './components/hospital/HospitalLoginPage';
 
