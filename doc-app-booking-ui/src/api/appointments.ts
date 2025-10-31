@@ -86,6 +86,25 @@ export async function bookAppointment(payload: {
   patientName: string;
   appointmentDateTime: string;
   slotId: string | number;
+  reserved?: boolean; // optional flag to mark reservations created by hospital/admin
+}) {
+  const token = window.localStorage.getItem('accessToken') || '';
+  return apiFetch('/api/v1/appointments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+// Reserve an appointment (matches PatientDashboard payload)
+export async function reserveAppointment(payload: {
+  doctorId: string | number;
+  appointmentDateTime: string;
+  slotId: string | number;
+  reserved?: boolean; // optional flag to mark reservations created by hospital/admin
 }) {
   const token = window.localStorage.getItem('accessToken') || '';
   return apiFetch('/api/v1/appointments', {
