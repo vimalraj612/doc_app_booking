@@ -21,14 +21,15 @@ export type SlotTemplateDTO = {
 // Create or update a slot template for a doctor (authorization required)
 export async function createOrUpdateSlotTemplate(doctorId: string | number, payload: Partial<SlotTemplateDTO>) {
   const token = window.localStorage.getItem('accessToken');
-  return apiFetch<{ data: SlotTemplateDTO }>(
+  // Return full response so callers can inspect message/data
+  return apiFetch<{ data: SlotTemplateDTO; message?: string }>(
     `/api/v1/slot-templates/doctor/${doctorId}`,
     {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       body: JSON.stringify(payload),
     }
-  ).then(res => res.data);
+  );
 }
 // Add a new doctor (with authorization)
 export async function addDoctor(doctor: Partial<DoctorDTO>) {
@@ -160,7 +161,8 @@ export async function fetchDoctorsByHospitalId(hospitalId: string | number) {
 // Delete a slot template by id (authorization required)
 export async function deleteSlotTemplate(slotTemplateId: string | number) {
   const token = window.localStorage.getItem('accessToken');
-  return apiFetch<void>(
+  // Return full response so callers can show server-provided messages
+  return apiFetch<{ message?: string }>(
     `/api/v1/slot-templates/${slotTemplateId}`,
     {
       method: 'DELETE',

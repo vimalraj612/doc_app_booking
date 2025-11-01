@@ -192,7 +192,7 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
   }, [initialDoctor]);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label htmlFor="firstName">First name</Label>
@@ -257,7 +257,7 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
         {errors.imageContentType && <div className="text-red-500 text-xs mt-1">{errors.imageContentType}</div>}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-row sm:flex-col gap-2 justify-center sm:justify-end items-center sm:items-end">
         <Button type="button" variant="outline" onClick={() => {
           setFirstName(''); setLastName(''); setEmail(''); setPhoneNumber(''); setSpecialization(''); setDepartment(''); setExperienceYears(''); setQualifications(''); setProfileBase64(null); setImageContentType(null); setErrors({});
         }}>Reset</Button>
@@ -398,6 +398,7 @@ export function HospitalDashboard({
     const docId = doctorId || slotTemplatesDoctor;
     if (!docId) {
       setSlotTemplatesError('No doctor selected for slot template');
+      window.setTimeout(() => setSlotTemplatesError(''), 3500);
       return;
     }
     setSlotTemplatesLoading(true);
@@ -416,17 +417,19 @@ export function HospitalDashboard({
         endTime: templateForm.endTime,
         slotDurationMinutes: Number(templateForm.slotDurationMinutes),
       };
-      await createOrUpdateSlotTemplate(docId, payload);
+      const resp: any = await createOrUpdateSlotTemplate(docId, payload);
       // refresh list
       const data = await fetchSlotTemplatesByDoctorId(docId);
       setSlotTemplates(data);
       resetTemplateForm();
       setTemplateErrors({});
-      setSuccessMessage('Slot template saved');
+      const msg = (resp && (resp.message || (resp.data && (resp.data.message || undefined)))) || 'Slot template saved';
+      setSuccessMessage(msg);
       window.setTimeout(() => setSuccessMessage(null), 3500);
     } catch (e: any) {
       console.error('Failed to save slot template', e);
       setSlotTemplatesError(extractErrorMessage(e) || 'Failed to save slot template');
+      window.setTimeout(() => setSlotTemplatesError(''), 3500);
     } finally {
       setSlotTemplatesLoading(false);
     }
@@ -444,6 +447,7 @@ export function HospitalDashboard({
     if (!templateId) return setConfirmOpen(false);
     if (!slotTemplatesDoctor) {
       setSlotTemplatesError('No doctor selected for slot template');
+      window.setTimeout(() => setSlotTemplatesError(''), 3500);
       setConfirmOpen(false);
       setConfirmTargetId(null);
       return;
@@ -451,14 +455,16 @@ export function HospitalDashboard({
     setSlotTemplatesLoading(true);
     setSlotTemplatesError('');
     try {
-      await deleteSlotTemplate(templateId);
+      const resp: any = await deleteSlotTemplate(templateId);
       const data = await fetchSlotTemplatesByDoctorId(slotTemplatesDoctor);
       setSlotTemplates(data);
-      setSuccessMessage('Slot template deleted');
+      const msg = (resp && resp.message) || 'Slot template deleted';
+      setSuccessMessage(msg);
       window.setTimeout(() => setSuccessMessage(null), 3500);
     } catch (e: any) {
       console.error('Failed to delete slot template', e);
       setSlotTemplatesError(extractErrorMessage(e) || 'Failed to delete slot template');
+      window.setTimeout(() => setSlotTemplatesError(''), 3500);
     } finally {
       setSlotTemplatesLoading(false);
       setConfirmOpen(false);
@@ -501,6 +507,7 @@ export function HospitalDashboard({
     } catch (e: any) {
       console.error('HospitalDashboard (top-level): failed to fetch slot templates', e);
       setSlotTemplatesError(extractErrorMessage(e) || 'Failed to load slot templates');
+      window.setTimeout(() => setSlotTemplatesError(''), 3500);
       setSlotTemplates(null);
     } finally {
       setSlotTemplatesLoading(false);
@@ -718,7 +725,7 @@ export function HospitalDashboard({
                             <span className="hidden sm:inline">Slots</span>
                           </Button>
                         <Button variant="outline" size="sm" className="flex items-center justify-center" title="View appointments" onClick={() => { setSelectedDoctorFilter(doctor.name); setActiveTab('appointments'); }}>
-                          <span className="sm:hidden"><CalendarDays className="w-5 h-5" /></span>
+                          <span className="sm:hidden"><Calendar className="w-5 h-5" /></span>
                           <span className="hidden sm:inline">Appointments</span>
                         </Button>
                         <Button variant="outline" size="sm" className="flex items-center justify-center" title="Edit" onClick={() => { setEditingDoctor(doctor); setIsAddDoctorOpen(true); }}>
@@ -788,7 +795,7 @@ export function HospitalDashboard({
                     )}
                     {/* Add / Edit form */}
                     <div className="mb-1 border rounded p-3 bg-gray-50">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                         <div>
                           <Label>Day of Week</Label>
                           <select className="form-input w-full border rounded px-2 py-1" value={templateForm.dayOfWeek} onChange={e => setTemplateForm(f => ({ ...f, dayOfWeek: e.target.value }))}>
@@ -816,13 +823,15 @@ export function HospitalDashboard({
                           <Input type="number" min={5} value={templateForm.slotDurationMinutes} onChange={e => setTemplateForm(f => ({ ...f, slotDurationMinutes: Number(e.target.value || 0) }))} />
                           {templateErrors.slotDurationMinutes && <div className="text-red-500 text-xs mt-1">{templateErrors.slotDurationMinutes}</div>}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <input id="tpl-active" type="checkbox" checked={templateForm.active} onChange={e => setTemplateForm(f => ({ ...f, active: e.target.checked }))} />
-                          <label htmlFor="tpl-active" className="text-sm">Active</label>
-                        </div>
-                        <div className="flex gap-2 justify-end">
-                          <Button variant="outline" onClick={() => resetTemplateForm()}>Reset</Button>
-                          <Button onClick={() => saveSlotTemplate()}>{templateForm.id ? 'Update' : 'Create'}</Button>
+                        <div className="flex flex-col items-end gap-2 md:col-span-1">
+                          <div className="flex items-center gap-2">
+                            <input id="tpl-active" type="checkbox" checked={templateForm.active} onChange={e => setTemplateForm(f => ({ ...f, active: e.target.checked }))} />
+                            <label htmlFor="tpl-active" className="text-sm">Active</label>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => resetTemplateForm()}>Reset</Button>
+                            <Button onClick={() => saveSlotTemplate()}>{templateForm.id ? 'Update' : 'Create'}</Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -844,46 +853,46 @@ export function HospitalDashboard({
                         <div className="hidden md:block overflow-x-auto">
                           <table className="w-full text-sm border">
                             <thead>
-                              <tr className="bg-blue-50">
-                                <th className="p-2 border">Day</th>
-                                <th className="p-2 border">Start</th>
-                                <th className="p-2 border">End</th>
-                                <th className="p-2 border">Duration (min)</th>
-                                <th className="p-2 border">Actions</th>
-                              </tr>
+                                      <tr className="bg-blue-50">
+                                        <th className="p-2 border">Day</th>
+                                        <th className="p-2 border">Start</th>
+                                        <th className="p-2 border">End</th>
+                                        <th className="p-2 border">Duration (min)</th>
+                                        <th className="p-2 border text-right">Actions</th>
+                                      </tr>
                             </thead>
                             <tbody>
                               {slotTemplates.map(tpl => (
                                 <tr key={tpl.id} className="border-b">
-                                  <td className="p-2 border">{tpl.dayOfWeek}</td>
-                                  <td className="p-2 border">{tpl.startTime}</td>
-                                  <td className="p-2 border">{tpl.endTime}</td>
-                                  <td className="p-2 border text-center">{tpl.slotDurationMinutes}</td>
-                                  <td className="p-2 border text-center">
-                                    <div className="flex items-center gap-2 justify-center">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="p-2"
-                                        title="Edit template"
-                                        aria-label={`Edit template ${tpl.id}`}
-                                        onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
-                                      >
-                                        <Edit className="w-4 h-4" />
-                                      </Button>
-                                      <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        className="p-2"
-                                        title="Delete template"
-                                        aria-label={`Delete template ${tpl.id}`}
-                                        onClick={() => handleDeleteTemplate(tpl.id)}
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </Button>
-                                    </div>
-                                  </td>
-                                </tr>
+                                    <td className="p-2 border">{tpl.dayOfWeek}</td>
+                                    <td className="p-2 border">{tpl.startTime}</td>
+                                    <td className="p-2 border">{tpl.endTime}</td>
+                                    <td className="p-2 border text-center">{tpl.slotDurationMinutes}</td>
+                                    <td className="p-2 border text-right">
+                                      <div className="flex items-center gap-2 justify-end">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="p-2"
+                                          title="Edit template"
+                                          aria-label={`Edit template ${tpl.id}`}
+                                          onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
+                                        >
+                                          <Edit className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                          variant="destructive"
+                                          size="sm"
+                                          className="p-2"
+                                          title="Delete template"
+                                          aria-label={`Delete template ${tpl.id}`}
+                                          onClick={() => handleDeleteTemplate(tpl.id)}
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
                               ))}
                             </tbody>
                           </table>
