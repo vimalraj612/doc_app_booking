@@ -227,27 +227,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                         <span className={`inline-block w-2 h-2 rounded-full ${dot}`} />
                         {getStatusLabel(appt.status)}
                       </span>
-                      {/* Action Buttons */}
-                      {appt.status === 'SCHEDULED' && isDoctor && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="px-2 py-1 text-xs min-w-[60px]"
-                          onClick={() => handleComplete(appt)}
-                        >
-                          Complete
-                        </Button>
-                      )}
-                      {appt.status === 'SCHEDULED' && !isDoctor && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="px-2 py-1 text-xs min-w-[60px]"
-                          onClick={() => setCancelDialog({ open: true, appt })}
-                        >
-                          Cancel
-                        </Button>
-                      )}
                     </div>
                   </div>
 
@@ -290,6 +269,29 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
                     {appt.appointeeGender && (
                       <div><span className="font-medium">Gender:</span> {appt.appointeeGender}</div>
+                    )}
+                  </div>
+                  {/* Action buttons fixed to bottom-left of the card */}
+                  <div className="mt-2 flex items-center justify-start gap-2">
+                    {appt.status === 'SCHEDULED' && isDoctor && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="px-2 py-1 text-xs min-w-[80px]"
+                        onClick={() => handleComplete(appt)}
+                      >
+                        Complete
+                      </Button>
+                    )}
+                    {appt.status === 'SCHEDULED' && !isDoctor && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="px-2 py-1 text-xs min-w-[80px]"
+                        onClick={() => setCancelDialog({ open: true, appt })}
+                      >
+                        Cancel
+                      </Button>
                     )}
                   </div>
                 </div>

@@ -20,31 +20,23 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
       <div className="text-red-500">{error}</div>
     ) : selectedDoctor ? (
       <Card>
-        <CardContent className="p-6 relative">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">
-              {selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}
-            </h2>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onShowSlots}
-              title="Book Now"
-            >
-              Book Now
-            </Button>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-6">
-            {/* Show avatar only on sm and up (web/tablet), hide on mobile */}
-            <div className="hidden sm:block">
-              <Avatar className="w-32 h-32 flex-shrink-0 mx-auto sm:mx-0">
-                <AvatarImage src={selectedDoctor.profileImage ? `data:${selectedDoctor.imageContentType};base64,${selectedDoctor.profileImage}` : undefined} alt={selectedDoctor.name} />
-                <AvatarFallback className="text-2xl">
+        <CardContent className="p-6 relative flex flex-col">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex flex-col items-start gap-2 w-full">
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
+                <AvatarImage src={selectedDoctor.profileImage ? `data:${selectedDoctor.imageContentType};base64,${selectedDoctor.profileImage}` : undefined} alt={selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`} />
+                <AvatarFallback className="text-base sm:text-xl">
                   {(selectedDoctor.firstName?.[0] || '') + (selectedDoctor.lastName?.[0] || '')}
                 </AvatarFallback>
               </Avatar>
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mt-1">
+                {selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}
+              </h2>
             </div>
-            <div className="flex-1 space-y-4">
+          </div>
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-6">
+              <div className="flex-1 space-y-4">
               <div className="flex flex-col gap-2 text-sm text-gray-600">
                 <span className="flex items-center gap-2">
                   <Stethoscope className="w-4 h-4 text-blue-600" />
@@ -71,6 +63,21 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                   <p className="text-sm text-gray-600">Phone: +{docPhoneNumber}</p>
                 </div>
               </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer with Book Now button aligned to bottom-left */}
+          <div className="mt-4">
+            <div className="flex items-center justify-start">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={onShowSlots}
+                title="Book Now"
+              >
+                Book Now
+              </Button>
             </div>
           </div>
         </CardContent>

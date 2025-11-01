@@ -208,8 +208,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                                                                 status = 'COMPLETED';
                                                                 break;
                                                             case 'CANCELLED':
-                                                                // Treat cancelled slots as available (re-bookable)
-                                                                status = 'AVAILABLE';
+                                                                status = 'CANCELLED';
                                                                 break;
                                                             default:
                                                                 // Fallback to available flag or scheduled

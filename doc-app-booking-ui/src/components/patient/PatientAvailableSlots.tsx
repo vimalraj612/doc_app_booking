@@ -201,7 +201,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                                     status = 'COMPLETED';
                                     break;
                                   case 'CANCELLED':
-                                    status = 'AVAILABLE';
+                                    status = 'CANCELLED';
                                     break;
                                   default:
                                     status = slot.available ? 'AVAILABLE' : 'SCHEDULED';
