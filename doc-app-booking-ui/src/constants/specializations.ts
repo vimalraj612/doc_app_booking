@@ -1,7 +1,7 @@
 // Reusable list of doctor specializations (key/value pairs)
 // Keep this small and canonical so other components can reuse it.
 export const SPECIALIZATION_OPTIONS: { value: string; label: string }[] = [
-  { value: 'GENERAL_PRACTITIONER', label: 'General Practitioner' },
+  { value: 'GENERALPRACTITIONER', label: 'General Practitioner' },
   { value: 'CARDIOLOGY', label: 'Cardiology' },
   { value: 'DERMATOLOGY', label: 'Dermatology' },
   { value: 'PEDIATRICS', label: 'Pediatrics' },

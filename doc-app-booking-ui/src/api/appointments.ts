@@ -54,6 +54,42 @@ export async function fetchPatientAppointmentsByDateRange({
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 }
+
+// Fetch hospital appointments by date range (hospital admin)
+export async function fetchHospitalAppointmentsByDateRange({
+  hospitalId,
+  start,
+  end,
+  status,
+}: {
+  hospitalId: string | number;
+  start: string;
+  end: string;
+  status?: string;
+}) {
+  const token = window.localStorage.getItem('accessToken') || '';
+  let url = `/api/v1/appointments/hospital/${hospitalId}/date-range?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+  if (status) url += `&status=${encodeURIComponent(status)}`;
+  return apiFetch<{ data: any[] }>(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+}
+
+// Fetch today's appointment count for a hospital (optional status filter)
+export async function fetchHospitalTodaysAppointmentCount({
+  hospitalId,
+  status,
+}: {
+  hospitalId: string | number;
+  status?: string;
+}) {
+  const token = window.localStorage.getItem('accessToken') || '';
+  let url = `/api/v1/appointments/hospital/${hospitalId}/today/count`;
+  if (status) url += `?status=${encodeURIComponent(status)}`;
+  return apiFetch<{ data: number }>(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+}
 import { apiFetch } from './http';
 // Appointment API functions
 

@@ -121,9 +121,11 @@ export function DoctorDashboard({
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => {
     const today = new Date();
     const start = new Date(today);
-    start.setDate(today.getDate() - 7);
+    // default start = today
+    start.setDate(today.getDate());
     const end = new Date(today);
-    end.setDate(today.getDate() + 7);
+    // default end = today + 2 days
+    end.setDate(today.getDate() + 2);
     return {
       start: start.toISOString().slice(0, 10),
       end: end.toISOString().slice(0, 10),

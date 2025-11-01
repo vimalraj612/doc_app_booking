@@ -253,10 +253,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   <div className="text-xs text-gray-600 mb-1">
                     <span className="font-medium">Date:</span>{' '}
                     {new Date(appt.appointmentDateTime).toLocaleString()}
-                  </div>
 
-                  {/* Appointee Details */}
-                  <div className="text-xs text-gray-700 mb-1 space-y-0.5">
                     {appt.appointeeName && (
                       <div><span className="font-medium">Name:</span> {appt.appointeeName}</div>
                     )}

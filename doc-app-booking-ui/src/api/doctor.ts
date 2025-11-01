@@ -168,3 +168,15 @@ export async function deleteSlotTemplate(slotTemplateId: string | number) {
     }
   );
 }
+
+// Delete a doctor by id
+export async function deleteDoctor(doctorId: string | number) {
+  const token = window.localStorage.getItem('accessToken');
+  return apiFetch<void>(
+    `/api/v1/doctors/${doctorId}`,
+    {
+      method: 'DELETE',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }
+  );
+}

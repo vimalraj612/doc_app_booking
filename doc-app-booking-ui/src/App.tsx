@@ -4,6 +4,7 @@ import { DoctorLoginPage } from './components/doctor/DoctorLoginPage';
 import { PatientDashboard } from './components/patient/PatientDashboard';
 import { DoctorDashboard } from './components/doctor/DoctorDashboard';
 import { HospitalDashboard } from './components/hospital/HospitalDashboard';
+import { deleteDoctor as apiDeleteDoctor } from './api/doctor';
 import { SuperAdminDashboard } from './components/SuperAdminDashboard';
 import { HospitalLoginPage } from './components/hospital/HospitalLoginPage';
 
@@ -206,10 +207,18 @@ function App() {
     setHospitals([...hospitals, { ...hospital, id: `h${hospitals.length + 1}` }]);
   };
 
-  const handleDeleteDoctor = (doctorId: string) => {
-    setDoctors(doctors.filter(d => d.id !== doctorId));
-    setTimeSlots(timeSlots.filter(s => s.doctorId !== doctorId));
-    setAppointments(appointments.filter(a => a.doctorId !== doctorId));
+  const handleDeleteDoctor = async (doctorId: string) => {
+    try {
+      // Attempt backend delete if API available
+      await apiDeleteDoctor(doctorId);
+    } catch (e) {
+      // If backend delete fails, log and continue to update local state
+      console.error('Backend delete failed, falling back to local state update', e);
+    }
+    // Remove from local state
+    setDoctors(prev => prev.filter(d => d.id !== doctorId));
+    setTimeSlots(prev => prev.filter(s => s.doctorId !== doctorId));
+    setAppointments(prev => prev.filter(a => a.doctorId !== doctorId));
   };
 
   const handleDeleteHospital = (hospitalId: string) => {

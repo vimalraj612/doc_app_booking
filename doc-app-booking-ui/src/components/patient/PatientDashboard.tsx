@@ -134,11 +134,11 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   };
   const [dateRange, setDateRange] = useState(() => {
     const today = new Date();
-    const next7 = new Date();
-    next7.setDate(today.getDate() + 7);
+    const next2 = new Date();
+    next2.setDate(today.getDate() + 2);
     return {
       start: today.toISOString().slice(0, 10),
-      end: next7.toISOString().slice(0, 10),
+      end: next2.toISOString().slice(0, 10),
     };
   });
   const [cancelDialog, setCancelDialog] = useState<{ open: boolean; appt?: any }>({ open: false });

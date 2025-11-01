@@ -116,66 +116,77 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
                           .slice()
                           .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
                           .map((slot) => {
-                            let status: 'AVAILABLE' | 'SCHEDULED' = slot.available ? 'AVAILABLE' : 'SCHEDULED';
-                            const statusMap = {
-                              AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
-                              SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
+                            const anySlot: any = slot as any;
+
+                            const appointmentStatus = anySlot.hasOwnProperty('appointmentStatus') ? anySlot.appointmentStatus : undefined;
+
+                            let statusValue: string;
+                            if (appointmentStatus !== undefined) {
+                              statusValue = appointmentStatus === null ? 'AVAILABLE' : String(appointmentStatus);
+                            } else if (slot.available) {
+                              statusValue = 'AVAILABLE';
+                            } else if (anySlot.status) {
+                              statusValue = String(anySlot.status);
+                            } else {
+                              statusValue = 'SCHEDULED';
+                            }
+
+                            const isReserved = statusValue === 'RESERVED' || anySlot.reserved === true || anySlot.isReserved === true || !!anySlot.reservedBy;
+
+                            let status: string;
+                            switch (String(statusValue).toUpperCase()) {
+                              case 'AVAILABLE':
+                                status = 'AVAILABLE';
+                                break;
+                              case 'RESERVED':
+                                status = 'RESERVED';
+                                break;
+                              case 'SCHEDULED':
+                                status = 'SCHEDULED';
+                                break;
+                              case 'COMPLETED':
+                                status = 'COMPLETED';
+                                break;
+                              case 'CANCELLED':
+                                status = 'CANCELLED';
+                                break;
+                              default:
+                                status = slot.available ? 'AVAILABLE' : 'SCHEDULED';
+                            }
+
+                            if (isReserved) status = 'RESERVED';
+
+                            const statusMap: any = {
+                              AVAILABLE: { label: 'Available' },
+                              SCHEDULED: { label: 'Scheduled' },
+                              RESERVED: { label: 'Reserved' },
+                              COMPLETED: { label: 'Completed' },
+                              CANCELLED: { label: 'Cancelled' },
                             };
-                            const isSelected = typeof selectedSlot !== 'undefined' && selectedSlot !== null && selectedSlot.slotId === slot.slotId;
-                            const statusInfo = statusMap[status];
+
+                            const colorHexMap: Record<string, { bg: string; border: string; text: string }> = {
+                              AVAILABLE: { bg: '#ecfdf5', border: '#bbf7d0', text: '#166534' },
+                              SCHEDULED: { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af' },
+                              RESERVED: { bg: '#fff7ed', border: '#fed7aa', text: '#b45309' },
+                              COMPLETED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
+                              CANCELLED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
+                            };
+                            const hex = colorHexMap[status] || colorHexMap['SCHEDULED'];
+
+                            const isClickable = status === 'AVAILABLE' && !booking;
+
                             return (
-                              <div key={slot.slotId} className="relative flex flex-col items-center group">
-                                <button
-                                  disabled={status !== 'AVAILABLE' || booking}
-                                  onClick={() => handleBookSlot(slot)}
-                                  className={[
-                                    'relative', 'p-[1px]', 'rounded-md', 'border', 'flex', 'flex-col', 'items-center', 'justify-center',
-                                    'min-w-[20px]', 'min-h-[14px]', 'max-w-[26px]', 'max-h-[16px]',
-                                    'transition-all', 'duration-200', 'ease-in-out', 'text-center',
-                                    'backdrop-blur-sm', 'shadow-sm',
-                                    statusInfo.color,
-                                    isSelected ? 'ring-2 ring-blue-300/60 scale-[1.05]' : '',
-                                    status !== 'AVAILABLE' ? 'cursor-not-allowed opacity-60' : 'hover:bg-green-100 hover:shadow-md hover:scale-[1.02]'
-                                  ].join(' ')}
-                                >
-                                  <LayoutTemplate className="w-3 h-3 mb-0.5 text-blue-400" />
-                                  <span className={[
-                                    'font-semibold', 'text-[5.5px]', 'leading-tight',
-                                    isSelected ? 'text-blue-700' : statusInfo.text
-                                  ].join(' ')}>
-                                    {formatTime(slot.start)}
-                                  </span>
-                                  <span className={[
-                                    'text-[4px]', 'leading-tight',
-                                    isSelected ? 'text-blue-600' : statusInfo.text
-                                  ].join(' ')}>
-                                    {(() => {
-                                      const start = new Date(slot.start);
-                                      const end = new Date(slot.end);
-                                      const diff = Math.round((end.getTime() - start.getTime()) / 60000);
-                                      return `${diff}m`;
-                                    })()}
-                                  </span>
-                                  <span className={[
-                                    'mt-[0.5px]', 'text-[3.5px]', 'font-medium', 'rounded-full', 'px-[1px]', 'py-[0.5px]', 'transition-colors',
-                                    statusInfo.text,
-                                    isSelected ? 'bg-blue-100/60' : ''
-                                  ].join(' ')}>
-                                    {statusInfo.label}
-                                  </span>
-                                  {isSelected && (
-                                    <span className="absolute inset-0 rounded-md ring-2 ring-blue-300/60 animate-pulse pointer-events-none" />
-                                  )}
-                                </button>
-                                {/* Delete icon for slot (visible on hover or always, as needed) */}
-                                <button
-                                  className="absolute -top-2 -right-2 bg-white rounded-full p-0.5 shadow hover:bg-red-100"
-                                  title="Delete Slot"
-                                  // onClick={() => handleDeleteSlot(slot)} // Implement this handler as needed
-                                >
-                                  <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                </button>
-                              </div>
+                              <button
+                                key={String(slot.slotId)}
+                                disabled={!isClickable}
+                                onClick={() => isClickable && handleBookSlot(slot)}
+                                className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
+                                style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
+                              >
+                                <span className={`font-semibold text-[5.5px] leading-tight`} style={{ color: hex.text }}>{formatTime(slot.start)}</span>
+                                <span className={`text-[4px] leading-tight`} style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
+                                <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors`} style={{ color: hex.text }}>{statusMap[status].label}</span>
+                              </button>
                             );
                           })}
                       </div>

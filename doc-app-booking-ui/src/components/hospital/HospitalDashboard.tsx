@@ -17,6 +17,8 @@ import { Button } from '../ui/button';
 
 import { useEffect } from 'react';
 import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO, DoctorDTO } from '../../api/doctor';
+import { fetchHospitalAppointmentsByDateRange, cancelAppointmentApi, fetchHospitalTodaysAppointmentCount } from '../../api/appointments';
+import AppointmentsList from '../common/AppointmentsList';
 import DoctorAvailableSlot from './DoctorAvailableSlot';
 interface HospitalDashboardProps {
   user: User;
@@ -275,6 +277,8 @@ export function HospitalDashboard({
   const [isAddDoctorOpen, setIsAddDoctorOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Partial<DoctorDTO> | Partial<Doctor> | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [activeTab, setActiveTab] = useState<'doctors' | 'appointments'>('doctors');
+  const [selectedDoctorFilter, setSelectedDoctorFilter] = useState<string | null>(null);
   const hospital = hospitals.find(h => h.id === user.id);
   // Slot template modal state (ensure Slot Templates button works)
   const [slotTemplates, setSlotTemplates] = useState<SlotTemplateDTO[] | null>(null);
@@ -282,6 +286,43 @@ export function HospitalDashboard({
   const [slotTemplatesLoading, setSlotTemplatesLoading] = useState(false);
   const [slotTemplatesError, setSlotTemplatesError] = useState('');
   const [slotDialogOpen, setSlotDialogOpen] = useState(false);
+  const [hospitalAppointments, setHospitalAppointments] = useState<any[]>([]);
+  const [hospitalAppointmentsLoading, setHospitalAppointmentsLoading] = useState(false);
+  const [hospitalAppointmentsError, setHospitalAppointmentsError] = useState('');
+  // Today's appointments count (use hospital-specific endpoint)
+  const [hospitalTodayCount, setHospitalTodayCount] = useState<number | null>(null);
+  const [hospitalTodayLoading, setHospitalTodayLoading] = useState(false);
+  const [hospitalTodayError, setHospitalTodayError] = useState('');
+  // AppointmentsList state (to match other pages)
+  const [filteredAppointments, setFilteredAppointments] = useState<any[]>([]);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => {
+    const today = new Date();
+    const start = new Date(today);
+    // default start = today
+    start.setDate(today.getDate());
+    const end = new Date(today);
+    // default end = today + 2 days
+    end.setDate(today.getDate() + 2);
+    return {
+      start: start.toISOString().slice(0, 10),
+      end: end.toISOString().slice(0, 10),
+    };
+  });
+  const statusOptions = [
+    { key: 'ALL', label: 'All' },
+    { key: 'SCHEDULED', label: 'Scheduled' },
+    { key: 'COMPLETED', label: 'Completed' },
+    { key: 'CANCELLED', label: 'Cancelled' },
+    { key: 'RESCHEDULED', label: 'Rescheduled' },
+    { key: 'PENDING', label: 'Pending' },
+  ];
+  const [cancelMsg, setCancelMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [cancelDialog, setCancelDialog] = useState<{ open: boolean; appt?: any }>({ open: false });
+  const [appointmentsFetched, setAppointmentsFetched] = useState(false);
+  // Doctor delete confirmation
+  const [doctorConfirmOpen, setDoctorConfirmOpen] = useState(false);
+  const [doctorToDelete, setDoctorToDelete] = useState<string | null>(null);
   // Doctor slots modal state
   const [doctorSlotsOpen, setDoctorSlotsOpen] = useState(false);
   const [slotsDoctorId, setSlotsDoctorId] = useState<string | number | null>(null);
@@ -471,6 +512,57 @@ export function HospitalDashboard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // Fetch hospital appointments when Appointments tab is selected
+  useEffect(() => {
+    const loadAppointments = async () => {
+      if (activeTab !== 'appointments') return;
+      if (!user?.id) return;
+      // Use fetchAppointments below to keep consistent behaviour with dateRange/status
+      await fetchAppointments();
+    };
+    void loadAppointments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, user?.id]);
+
+  // Fetch today's count for Total Appts stat
+  useEffect(() => {
+    const loadTodayCount = async () => {
+      if (!user?.id) return;
+      setHospitalTodayLoading(true);
+      setHospitalTodayError('');
+      try {
+        const resp = await fetchHospitalTodaysAppointmentCount({ hospitalId: user.id });
+        const count = resp && typeof resp === 'object' && 'data' in resp ? resp.data : (typeof resp === 'number' ? resp : 0);
+        setHospitalTodayCount(Number(count || 0));
+      } catch (e: any) {
+        setHospitalTodayError(extractErrorMessage(e) || 'Failed to load today\'s count');
+        setHospitalTodayCount(null);
+      } finally {
+        setHospitalTodayLoading(false);
+      }
+    };
+    void loadTodayCount();
+  }, [user?.id]);
+
+  // Fetch hospital appointments for given date range
+  const fetchAppointments = async (customRange?: { start: string; end: string }) => {
+    setHospitalAppointmentsLoading(true);
+    setHospitalAppointmentsError('');
+    const start = (customRange?.start || dateRange.start) + 'T00:00:00';
+    const end = (customRange?.end || dateRange.end) + 'T23:59:59';
+    try {
+      const resp = await fetchHospitalAppointmentsByDateRange({ hospitalId: user.id, start, end });
+      const appts = Array.isArray(resp) ? resp : (resp && typeof resp === 'object' && 'data' in resp ? resp.data : []);
+      setHospitalAppointments(appts || []);
+      setAppointmentsFetched(true);
+    } catch (e: any) {
+      setHospitalAppointmentsError(extractErrorMessage(e) || 'Failed to load appointments');
+      setHospitalAppointments([]);
+    } finally {
+      setHospitalAppointmentsLoading(false);
+    }
+  };
+
   // Add doctor handler for the form
   const handleAddDoctor = async (doctor: Partial<DoctorDTO>) => {
     await addDoctor({
@@ -519,7 +611,7 @@ export function HospitalDashboard({
 
       <div className="container mx-auto px-4 py-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 flex flex-col items-center justify-center">
               <Stethoscope className="w-8 h-8 text-green-500 mb-2" />
@@ -529,22 +621,15 @@ export function HospitalDashboard({
           </Card>
           <Card>
             <CardContent className="p-4 flex flex-col items-center justify-center">
-              <Calendar className="w-8 h-8 text-blue-500 mb-2" />
-              <p className="text-2xl">{appointments.filter(a => a.status === 'scheduled').length}</p>
-              <p className="text-xs text-gray-500">Scheduled</p>
-            </CardContent>
-          </Card>
-          <Card className="col-span-2 sm:col-span-1">
-            <CardContent className="p-4 flex flex-col items-center justify-center">
               <UserIcon className="w-8 h-8 text-purple-500 mb-2" />
-              <p className="text-2xl">{appointments.length}</p>
+              <p className="text-2xl">{hospitalTodayLoading ? '...' : (hospitalTodayCount !== null ? hospitalTodayCount : appointments.length)}</p>
               <p className="text-xs text-gray-500">Total Appts</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Add Doctor Button inside Doctors Tab */}
-        <Tabs defaultValue="doctors" className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="doctors">Doctors</TabsTrigger>
             <TabsTrigger value="appointments">Appointments</TabsTrigger>
@@ -553,12 +638,12 @@ export function HospitalDashboard({
           <TabsContent value="doctors" className="space-y-3 mt-4">
             <Dialog open={isAddDoctorOpen} onOpenChange={setIsAddDoctorOpen}>
               <DialogTrigger asChild>
-                <button className="mb-4 bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                <button className="mb-4 w-full sm:w-auto bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
                   <Plus className="w-5 h-5" />
                   Add New Doctor
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-3xl w-full sm:rounded-lg">
                 <DialogHeader>
                   <DialogTitle>{editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}</DialogTitle>
                   <DialogDescription>{editingDoctor ? 'Edit doctor details' : 'Add a new doctor to your hospital'}</DialogDescription>
@@ -632,11 +717,15 @@ export function HospitalDashboard({
                             <span className="sm:hidden"><CalendarDays className="w-5 h-5" /></span>
                             <span className="hidden sm:inline">Slots</span>
                           </Button>
+                        <Button variant="outline" size="sm" className="flex items-center justify-center" title="View appointments" onClick={() => { setSelectedDoctorFilter(doctor.name); setActiveTab('appointments'); }}>
+                          <span className="sm:hidden"><CalendarDays className="w-5 h-5" /></span>
+                          <span className="hidden sm:inline">Appointments</span>
+                        </Button>
                         <Button variant="outline" size="sm" className="flex items-center justify-center" title="Edit" onClick={() => { setEditingDoctor(doctor); setIsAddDoctorOpen(true); }}>
                           <span className="sm:hidden"><Edit className="w-5 h-5" /></span>
                           <span className="hidden sm:inline">Edit</span>
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => onDeleteDoctor(doctor.id)} className="flex items-center justify-center" title="Delete">
+                        <Button variant="destructive" size="sm" onClick={() => { setDoctorToDelete(doctor.id); setDoctorConfirmOpen(true); }} className="flex items-center justify-center" title="Delete">
                           <span className="sm:hidden"><Trash2 className="w-5 h-5" /></span>
                           <span className="hidden sm:inline">Delete</span>
                         </Button>
@@ -848,47 +937,48 @@ export function HospitalDashboard({
 
 
           <TabsContent value="appointments" className="space-y-3 mt-4">
-            {appointments.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center text-gray-500">
-                  No appointments yet
-                </CardContent>
-              </Card>
-            ) : (
-              appointments
-                .sort((a, b) => {
-                  if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
-                  if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
-                  return new Date(b.date).getTime() - new Date(a.date).getTime();
-                })
-                .map(appointment => (
-                  <Card key={appointment.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="truncate">{appointment.patientName}</h3>
-                            <Badge variant={appointment.status === 'scheduled' ? 'default' : 'secondary'}>
-                              {appointment.status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            with {appointment.doctorName}
-                          </p>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-2 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              <span>{appointment.date}</span>
-                            </div>
-                            <span className="hidden sm:inline">•</span>
-                            <span>{appointment.time}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+            {/* Show a header when appointments are filtered by a doctor */}
+            {selectedDoctorFilter && (
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-700">Showing appointments for <span className="font-semibold">{selectedDoctorFilter}</span></div>
+                <div>
+                  <Button variant="outline" size="sm" onClick={() => setSelectedDoctorFilter(null)}>Clear filter</Button>
+                </div>
+              </div>
             )}
+
+            <AppointmentsList
+              appointments={hospitalAppointments}
+              filteredAppointments={(statusFilter === 'ALL' ? (selectedDoctorFilter ? hospitalAppointments.filter(a => String(a.doctorName) === selectedDoctorFilter) : hospitalAppointments) : hospitalAppointments.filter(a => a.status === statusFilter && (selectedDoctorFilter ? String(a.doctorName) === selectedDoctorFilter : true)))}
+              statusOptions={statusOptions}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              appointmentsLoading={hospitalAppointmentsLoading}
+              appointmentsError={hospitalAppointmentsError}
+              cancelMsg={cancelMsg}
+              onCancel={async (appt) => {
+                try {
+                  await cancelAppointmentApi(appt.id);
+                  setCancelMsg({ type: 'success', text: 'Appointment cancelled successfully.' });
+                  setCancelDialog({ open: false });
+                  await fetchAppointments({ start: dateRange.start, end: dateRange.end });
+                } catch (e: any) {
+                  setCancelMsg({ type: 'error', text: e?.message || 'Failed to cancel appointment.' });
+                  setCancelDialog({ open: false });
+                }
+                setTimeout(() => setCancelMsg(null), 2500);
+              }}
+              cancelDialog={cancelDialog}
+              setCancelDialog={setCancelDialog}
+              getStatusLabel={(key: string) => {
+                const found = statusOptions.find((opt) => opt.key === key);
+                return found ? found.label : key;
+              }}
+              fetchAppointments={fetchAppointments}
+              isDoctor={false}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -904,6 +994,33 @@ export function HospitalDashboard({
         cancelText="Cancel"
         onConfirm={() => { void confirmDeleteTemplate(); }}
         onCancel={() => { setConfirmOpen(false); setConfirmTargetId(null); }}
+      />
+      <ConfirmDialog
+        open={doctorConfirmOpen}
+        title="Delete doctor"
+        message={doctorToDelete ? "Are you sure you want to delete this doctor and all related data?" : ''}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={() => {
+          if (doctorToDelete) {
+            (async () => {
+              try {
+                await onDeleteDoctor(doctorToDelete);
+              } catch (e) {
+                console.error('Failed to delete doctor via parent handler', e);
+              }
+              // Refresh local doctor list after deletion
+              try {
+                await fetchDoctors();
+              } catch (e) {
+                console.error('Failed to refresh doctors after delete', e);
+              }
+            })();
+          }
+          setDoctorConfirmOpen(false);
+          setDoctorToDelete(null);
+        }}
+        onCancel={() => { setDoctorConfirmOpen(false); setDoctorToDelete(null); }}
       />
     </div>
   );
