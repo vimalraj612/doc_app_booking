@@ -17,7 +17,7 @@ import { Button } from '../ui/button';
 
 import { useEffect } from 'react';
 import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO, DoctorDTO } from '../../api/doctor';
-import { fetchHospitalAppointmentsByDateRange, cancelAppointmentApi, fetchHospitalTodaysAppointmentCount } from '../../api/appointments';
+import { fetchHospitalAppointmentsByDateRange, updateAppointmentStatusApi, fetchHospitalTodaysAppointmentCount } from '../../api/appointments';
 import AppointmentsList from '../common/AppointmentsList';
 import DoctorAvailableSlot from './DoctorAvailableSlot';
 interface HospitalDashboardProps {
@@ -969,12 +969,13 @@ export function HospitalDashboard({
               cancelMsg={cancelMsg}
               onCancel={async (appt) => {
                 try {
-                  await cancelAppointmentApi(appt.id);
-                  setCancelMsg({ type: 'success', text: 'Appointment cancelled successfully.' });
+                  // mark appointment as completed from hospital view
+                  await updateAppointmentStatusApi(appt.id, 'COMPLETED');
+                  setCancelMsg({ type: 'success', text: 'Appointment completed successfully.' });
                   setCancelDialog({ open: false });
                   await fetchAppointments({ start: dateRange.start, end: dateRange.end });
                 } catch (e: any) {
-                  setCancelMsg({ type: 'error', text: e?.message || 'Failed to cancel appointment.' });
+                  setCancelMsg({ type: 'error', text: e?.message || 'Failed to complete appointment.' });
                   setCancelDialog({ open: false });
                 }
                 setTimeout(() => setCancelMsg(null), 2500);
@@ -986,7 +987,7 @@ export function HospitalDashboard({
                 return found ? found.label : key;
               }}
               fetchAppointments={fetchAppointments}
-              isDoctor={false}
+              isDoctor={true}
             />
           </TabsContent>
         </Tabs>
