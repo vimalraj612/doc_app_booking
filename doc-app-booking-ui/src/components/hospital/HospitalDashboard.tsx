@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRef } from 'react';
 import { User, Doctor, Appointment, Hospital } from '../../App';
 import { Card, CardContent } from '../ui/card';
-import { LogOut, Plus, User as UserIcon, Stethoscope, Calendar, Building2, LayoutTemplate, CalendarDays, Trash2, Edit } from 'lucide-react';
+import { LogOut, Plus, User as UserIcon, Stethoscope, Calendar, Building2, LayoutTemplate, CalendarDays, CalendarCheck, Trash2, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Input } from '../ui/input';
 import SPECIALIZATION_OPTIONS from '../../constants/specializations';
@@ -599,23 +599,23 @@ export function HospitalDashboard({
       <header className="border-b sticky top-0 bg-white z-10">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-purple-500" />
+            <Building2 className="w-6 h-6 text-purple-500 bg-transparent" />
             <h1 className="text-lg sm:text-xl">Hospital Portal</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2">
               <Avatar className="w-8 h-8">
                 <AvatarImage src={hospital?.photo} alt={hospital?.name} />
-                <AvatarFallback><Building2 className="w-4 h-4" /></AvatarFallback>
+                <AvatarFallback>{(hospital?.name || 'Hospital').split(' ').map(n => n[0]).join('')}</AvatarFallback>
               </Avatar>
               <span className="text-sm">{user.name}</span>
             </div>
             <Avatar className="sm:hidden w-8 h-8">
               <AvatarImage src={hospital?.photo} alt={hospital?.name} />
-              <AvatarFallback><Building2 className="w-4 h-4" /></AvatarFallback>
+              <AvatarFallback>{(hospital?.name || 'H').split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <button onClick={onLogout} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <LogOut className="w-5 h-5 text-gray-600" />
+              <LogOut className="w-5 h-5 text-gray-600 bg-transparent" />
             </button>
           </div>
         </div>
@@ -626,14 +626,14 @@ export function HospitalDashboard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 flex flex-col items-center justify-center">
-              <Stethoscope className="w-8 h-8 text-green-500 mb-2" />
+              <Stethoscope className="w-8 h-8 text-green-500 mb-2 bg-transparent" />
               <p className="text-2xl">{doctors.length}</p>
               <p className="text-xs text-gray-500">Doctors</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 flex flex-col items-center justify-center">
-              <UserIcon className="w-8 h-8 text-purple-500 mb-2" />
+              <CalendarCheck className="w-8 h-8 text-purple-500 mb-2 bg-transparent" />
               <p className="text-2xl">{hospitalTodayLoading ? '...' : (hospitalTodayCount !== null ? hospitalTodayCount : appointments.length)}</p>
               <p className="text-xs text-gray-500">Total Appts</p>
             </CardContent>
@@ -651,7 +651,7 @@ export function HospitalDashboard({
             <Dialog open={isAddDoctorOpen} onOpenChange={setIsAddDoctorOpen}>
               <DialogTrigger asChild>
                 <button className="mb-4 w-full sm:w-auto bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5 bg-transparent" />
                   Add New Doctor
                 </button>
               </DialogTrigger>
@@ -712,7 +712,7 @@ export function HospitalDashboard({
                             void handleSlotTemplateClick(doctor.id);
                           }}
                         >
-                          <span className="sm:hidden"><LayoutTemplate className="w-5 h-5" /></span>
+                          <span className="sm:hidden"><LayoutTemplate className="w-5 h-5 bg-transparent" /></span>
                           <span className="hidden sm:inline">Slot Templates</span>
                         </Button>
                           <Button
@@ -726,7 +726,7 @@ export function HospitalDashboard({
                               setDoctorSlotsOpen(true);
                             }}
                           >
-                            <span className="sm:hidden"><CalendarDays className="w-5 h-5" /></span>
+                            <span className="sm:hidden"><CalendarDays className="w-5 h-5 bg-transparent" /></span>
                             <span className="hidden sm:inline">Slots</span>
                           </Button>
                           <Button
@@ -741,19 +741,19 @@ export function HospitalDashboard({
                               setLeavesOpen(true);
                             }}
                           >
-                            <span className="sm:hidden"><Calendar className="w-5 h-5" /></span>
+                            <span className="sm:hidden"><Calendar className="w-5 h-5 bg-transparent" /></span>
                             <span className="hidden sm:inline">Leaves</span>
                           </Button>
                         <Button variant="outline" size="sm" className="flex items-center justify-center" title="View appointments" onClick={() => { setSelectedDoctorFilter(doctor.name); setActiveTab('appointments'); }}>
-                          <span className="sm:hidden"><Calendar className="w-5 h-5" /></span>
+                          <span className="sm:hidden"><CalendarCheck className="w-5 h-5 bg-transparent" /></span>
                           <span className="hidden sm:inline">Appointments</span>
                         </Button>
                         <Button variant="outline" size="sm" className="flex items-center justify-center" title="Edit" onClick={() => { setEditingDoctor(doctor); setIsAddDoctorOpen(true); }}>
-                          <span className="sm:hidden"><Edit className="w-5 h-5" /></span>
+                          <span className="sm:hidden"><Edit className="w-5 h-5 bg-transparent" /></span>
                           <span className="hidden sm:inline">Edit</span>
                         </Button>
                         <Button variant="destructive" size="sm" onClick={() => { setDoctorToDelete(doctor.id); setDoctorConfirmOpen(true); }} className="flex items-center justify-center" title="Delete">
-                          <span className="sm:hidden"><Trash2 className="w-5 h-5" /></span>
+                          <span className="sm:hidden"><Trash2 className="w-5 h-5 bg-transparent" /></span>
                           <span className="hidden sm:inline">Delete</span>
                         </Button>
                       </div>
@@ -859,11 +859,11 @@ export function HospitalDashboard({
                     {slotTemplates.length === 0 ? (
                       <div className="p-6 text-center text-gray-600">
                         <div className="flex flex-col items-center gap-3">
-                          <LayoutTemplate className="w-12 h-12 text-blue-500" />
+                            <LayoutTemplate className="w-12 h-12 text-blue-500 bg-transparent" />
                           <p className="font-medium">No slot templates yet</p>
                           <p className="text-sm">Create a recurring availability template to let patients book predictable slots.</p>
                           <div className="mt-3">
-                            <Button onClick={() => { resetTemplateForm(); }}><Plus className="w-4 h-4 mr-2" />Create template</Button>
+                            <Button onClick={() => { resetTemplateForm(); }}><Plus className="w-4 h-4 mr-2 bg-transparent" />Create template</Button>
                           </div>
                         </div>
                       </div>
@@ -898,7 +898,7 @@ export function HospitalDashboard({
                                           aria-label={`Edit template ${tpl.id}`}
                                           onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
                                         >
-                                          <Edit className="w-4 h-4" />
+                                          <Edit className="w-4 h-4 bg-transparent" />
                                         </Button>
                                         <Button
                                           variant="destructive"
@@ -908,7 +908,7 @@ export function HospitalDashboard({
                                           aria-label={`Delete template ${tpl.id}`}
                                           onClick={() => handleDeleteTemplate(tpl.id)}
                                         >
-                                          <Trash2 className="w-4 h-4" />
+                                          <Trash2 className="w-4 h-4 bg-transparent" />
                                         </Button>
                                       </div>
                                     </td>
@@ -937,7 +937,7 @@ export function HospitalDashboard({
                                     aria-label={`Edit template ${tpl.id}`}
                                     onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
                                   >
-                                    <Edit className="w-4 h-4 mr-2" />
+                                    <Edit className="w-4 h-4 mr-2 bg-transparent" />
                                     <span className="text-sm">Edit</span>
                                   </Button>
                                   <Button
@@ -948,7 +948,7 @@ export function HospitalDashboard({
                                     aria-label={`Delete template ${tpl.id}`}
                                     onClick={() => handleDeleteTemplate(tpl.id)}
                                   >
-                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    <Trash2 className="w-4 h-4 mr-2 bg-transparent" />
                                     <span className="text-sm">Delete</span>
                                   </Button>
                                 </div>

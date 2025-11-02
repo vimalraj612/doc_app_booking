@@ -304,10 +304,10 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
           <div className="flex items-center gap-3">
             <span className="text-sm">{user.name}</span>
             <button onClick={handleLogout} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <LogOut className="w-5 h-5 text-gray-600" />
+              <LogOut className="w-5 h-5 text-gray-600 bg-transparent" />
             </button>
             <button onClick={handleProfileOpen} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <UserIcon className="w-5 h-5 text-gray-600" />
+              <UserIcon className="w-5 h-5 text-gray-600 bg-transparent" />
             </button>
           </div>
         </div>

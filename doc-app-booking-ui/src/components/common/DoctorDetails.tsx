@@ -39,11 +39,11 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
               <div className="flex-1 space-y-4">
               <div className="flex flex-col gap-2 text-sm text-gray-600">
                 <span className="flex items-center gap-2">
-                  <Stethoscope className="w-4 h-4 text-blue-600" />
+                  <Stethoscope className="w-4 h-4 text-blue-600 bg-transparent" />
                   <span>{selectedDoctor.specialization}</span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-blue-600" />
+                  <MapPin className="w-4 h-4 text-blue-600 bg-transparent" />
                   <span>{selectedDoctor.hospitalName}</span>
                 </span>
                 <span className="flex items-center gap-2">
@@ -56,7 +56,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <UserIcon className="w-4 h-4 text-gray-500 mt-0.5" />
+                <UserIcon className="w-4 h-4 text-gray-500 bg-transparent mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm mb-1">Contact</p>
                   <p className="text-sm text-gray-600">Email: {selectedDoctor.email}</p>

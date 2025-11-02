@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { sendPatientOtp, verifyPatientOtp } from '../api';
-import { UserRole } from "../App";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import { sendPatientOtp, verifyPatientOtp } from '../../api';
+import { UserRole } from "../../App";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import {
   User,
   Stethoscope,
@@ -12,7 +12,7 @@ import {
   Check,
 } from "lucide-react";
 
-interface LoginPageProps {
+interface PatientLoginPage {
   onLogin: (
     email: string,
     password: string,
@@ -20,7 +20,7 @@ interface LoginPageProps {
   ) => void;
 }
 
-export function LoginPage({ onLogin }: LoginPageProps) {
+export function LoginPage({ onLogin }: PatientLoginPage) {
   // Use docPhoneNumber from URL path or localStorage if present
   // Get patient phone from path (for login input)
   const getPatientPhoneFromPath = () => {
@@ -149,7 +149,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <div
                 className={`p-3 bg-gradient-to-br ${activeConfig.gradient} rounded-xl shadow-lg`}
               >
-                <Stethoscope className="w-8 h-8 text-white" />
+                <Stethoscope className="w-8 h-8 text-white bg-transparent" />
               </div>
               <h1 className="text-3xl text-gray-900">
                 HealthCare
@@ -166,7 +166,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <div
                 className={`inline-flex p-4 bg-gradient-to-br ${activeConfig.gradient} rounded-2xl shadow-xl mb-6`}
               >
-                <ActiveIcon className="w-16 h-16 text-white" />
+                <ActiveIcon className="w-16 h-16 text-white bg-transparent" />
               </div>
               <h2 className="text-4xl mb-4 text-gray-900">
                 Welcome {activeConfig.label}
@@ -190,7 +190,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   <div
                     className={`p-1 bg-gradient-to-br ${activeConfig.gradient} rounded-full`}
                   >
-                    <Check className="w-4 h-4 text-white" />
+                    <Check className="w-4 h-4 text-white bg-transparent" />
                   </div>
                   <span className="text-gray-700">
                     {feature}
@@ -257,7 +257,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   disabled={loading}
                 >
                   {loading ? 'Sending OTP...' : `Send OTP as ${activeConfig.label}`}
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform bg-transparent" />
                 </button>
                 {error && <div className="text-red-600 text-sm text-center">{error}</div>}
                 {info && <div className="text-green-600 text-sm text-center">{info}</div>}
@@ -284,7 +284,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   disabled={loading}
                 >
                   {loading ? 'Verifying OTP...' : `Verify OTP as ${activeConfig.label}`}
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform bg-transparent" />
                 </button>
                 <button
                   type="button"

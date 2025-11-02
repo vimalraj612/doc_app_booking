@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { LoginPage } from './components/LoginPage';
+import { LoginPage } from './components/patient/PatientLoginPage';
 import { DoctorLoginPage } from './components/doctor/DoctorLoginPage';
 import { PatientDashboard } from './components/patient/PatientDashboard';
 import { DoctorDashboard } from './components/doctor/DoctorDashboard';
 import { HospitalDashboard } from './components/hospital/HospitalDashboard';
 import { deleteDoctor as apiDeleteDoctor } from './api/doctor';
-import { SuperAdminDashboard } from './components/SuperAdminDashboard';
 import { HospitalLoginPage } from './components/hospital/HospitalLoginPage';
 
 export type UserRole = 'patient' | 'doctor' | 'hospital' | 'superadmin' | null;
@@ -398,23 +397,7 @@ function App() {
           onDeleteDoctor={handleDeleteDoctor}
         />
       )}
-      {currentUser.role === 'superadmin' && (
-        <SuperAdminDashboard
-          user={currentUser}
-          hospitals={hospitals}
-          doctors={doctors}
-          appointments={appointments}
-          timeSlots={timeSlots}
-          timeSlotTemplates={timeSlotTemplates}
-          onLogout={handleLogout}
-          onAddHospital={handleAddHospital}
-          onDeleteHospital={handleDeleteHospital}
-          onDeleteDoctor={handleDeleteDoctor}
-          onAddTimeSlotTemplate={handleAddTimeSlotTemplate}
-          onGenerateSlotsFromTemplate={handleGenerateSlotsFromTemplate}
-        />
-      )}
-  {/* Global toaster removed per preference; success messages shown inline */}
+      {/* Global toaster removed per preference; success messages shown inline */}
     </div>
   );
 }
