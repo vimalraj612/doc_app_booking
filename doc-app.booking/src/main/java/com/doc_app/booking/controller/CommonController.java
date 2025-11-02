@@ -25,7 +25,6 @@ public class CommonController {
     public ResponseEntity<ApiResponse<List<DoctorDTO>>> searchDoctors(
             @RequestParam String query,
             @RequestParam(required = false) String specialization) {
-
         List<DoctorDTO> doctors = commonService.searchDoctors(query, specialization);
         return ResponseEntity.ok(ApiResponse.success(doctors));
     }

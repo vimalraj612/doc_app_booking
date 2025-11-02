@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface SlotTemplateRepository extends JpaRepository<SlotTemplate, Long> {
+    void deleteAllByDoctor(Doctor doctor);
     List<SlotTemplate> findByDoctorAndDayOfWeek(Doctor doctor, DayOfWeek dayOfWeek);
 
     List<SlotTemplate> findByDoctor(Doctor doctor);

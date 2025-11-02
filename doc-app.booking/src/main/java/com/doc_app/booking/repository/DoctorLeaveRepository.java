@@ -13,4 +13,7 @@ public interface DoctorLeaveRepository extends JpaRepository<DoctorLeave, Long> 
     List<DoctorLeave> findByDoctorAndDateBetween(Doctor doctor, LocalDate start, LocalDate end);
 
     boolean existsByDoctorAndDate(Doctor doctor, LocalDate date);
+
+    // Convenience method to check leave by doctor id without loading the Doctor entity
+    boolean existsByDoctor_IdAndDate(Long doctorId, LocalDate date);
 }

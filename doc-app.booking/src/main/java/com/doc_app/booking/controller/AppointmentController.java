@@ -53,6 +53,16 @@ public class AppointmentController {
         return ResponseEntity.ok(ApiResponse.success(count));
     }
 
+    @Operation(summary = "Get today's appointment count for a hospital")
+    @GetMapping("/hospital/{hospitalId}/today/count")
+    @PreAuthorize("hasRole('HOSPITAL_ADMIN')")
+    public ResponseEntity<ApiResponse<Long>> getTodaysAppointmentCountByHospital(
+            @Parameter(description = "ID of the hospital", required = true) @PathVariable Long hospitalId,
+            @RequestParam(value = "status", required = false) AppointmentStatus status) {
+        long count = appointmentService.countTodaysAppointmentsByHospital(hospitalId, status);
+        return ResponseEntity.ok(ApiResponse.success(count));
+    }
+
     private final AppointmentService appointmentService;
 
     @Operation(summary = "Create appointment - Patients can book for themselves, Hospital Admins can book for any patient")
@@ -316,9 +326,10 @@ public class AppointmentController {
     public ResponseEntity<ApiResponse<List<AppointmentDTO>>> getAppointmentsByHospitalAndDateRange(
             @Parameter(description = "ID of the hospital", required = true) @PathVariable Long hospitalId,
             @Parameter(description = "Start date and time (yyyy-MM-dd'T'HH:mm:ss)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @Parameter(description = "End date and time (yyyy-MM-dd'T'HH:mm:ss)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        List<AppointmentDTO> appointments = appointmentService.getAppointmentsByHospitalAndDateRange(hospitalId, start,
-                end);
+            @Parameter(description = "End date and time (yyyy-MM-dd'T'HH:mm:ss)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @Parameter(description = "Appointment status (optional)") @RequestParam(value = "status", required = false) AppointmentStatus status,
+            @Parameter(description = "Doctor ID to filter (optional)") @RequestParam(value = "doctorId", required = false) Long doctorId) {
+        List<AppointmentDTO> appointments = appointmentService.getAppointmentsByHospitalAndDateRange(hospitalId, start, end, status, doctorId);
         return ResponseEntity.ok(ApiResponse.success(appointments));
     }
 

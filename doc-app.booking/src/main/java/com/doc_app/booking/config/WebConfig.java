@@ -13,7 +13,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                    .allowedOriginPatterns("http://localhost:5173")
+                    .allowedOriginPatterns("http://localhost:5173", "https://laurine-oared-gideon.ngrok-free.dev")
                     .allowedMethods("GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT")
                     .allowedHeaders("*")
                     .allowCredentials(true);

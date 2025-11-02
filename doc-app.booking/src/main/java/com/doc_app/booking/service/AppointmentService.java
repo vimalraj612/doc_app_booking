@@ -39,7 +39,9 @@ public interface AppointmentService {
 
     List<AppointmentDTO> getAppointmentsByPatientAndDateRange(Long patientId, LocalDateTime start, LocalDateTime end);
 
-    List<AppointmentDTO> getAppointmentsByHospitalAndDateRange(Long hospitalId, LocalDateTime start, LocalDateTime end);
+    List<AppointmentDTO> getAppointmentsByHospitalAndDateRange(Long hospitalId, LocalDateTime start, LocalDateTime end, AppointmentStatus status, Long doctorId);
+
+    long countTodaysAppointmentsByHospital(Long hospitalId, AppointmentStatus status);
 
     boolean isDoctorAvailable(Long doctorId, LocalDateTime dateTime);
 }

@@ -23,6 +23,14 @@ import java.util.List;
 @Tag(name = "Slot Template Management", description = "APIs for managing doctor slot templates")
 public class SlotTemplateController {
 
+    @Operation(summary = "Delete slot template by ID", description = "Deletes a slot template by its ID")
+    @DeleteMapping("/{slotTemplateId}")
+    public ResponseEntity<ApiResponse<Void>> deleteById(
+            @Parameter(description = "ID of the slot template", required = true) @PathVariable Long slotTemplateId) {
+        slotTemplateService.deleteSlotTemplateById(slotTemplateId);
+        return ResponseEntity.ok(ApiResponse.success("Slot template deleted: " + slotTemplateId, null));
+    }
+
     private final SlotTemplateService slotTemplateService;
 
     @Operation(summary = "Create or update slot template for a doctor", description = "Creates a new slot template or updates an existing one for the specified doctor")
@@ -46,5 +54,13 @@ public class SlotTemplateController {
             @Parameter(description = "ID of the doctor", required = true) @PathVariable Long doctorId) {
         List<SlotTemplateDTO> templates = slotTemplateService.getSlotTemplateByDoctor(doctorId);
         return ResponseEntity.ok(ApiResponse.success("Slot templates retrieved successfully", templates));
+    }
+
+    @Operation(summary = "Delete all slot templates for a doctor", description = "Deletes all slot templates for the specified doctor")
+    @DeleteMapping("/doctor/{doctorId}")
+    public ResponseEntity<ApiResponse<Void>> deleteByDoctor(
+            @Parameter(description = "ID of the doctor", required = true) @PathVariable Long doctorId) {
+        slotTemplateService.deleteSlotTemplatesByDoctor(doctorId);
+        return ResponseEntity.ok(ApiResponse.success("All slot templates deleted for doctor " + doctorId, null));
     }
 }

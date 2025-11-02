@@ -39,6 +39,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.doctor.id = ?1 AND a.appointmentDateTime = ?2")
     boolean existsByDoctorAndDateTime(Long doctorId, LocalDateTime dateTime);
 
+    @Query("SELECT COUNT(a) FROM Appointment a WHERE a.doctor.hospital.id = ?1 AND a.appointmentDateTime BETWEEN ?2 AND ?3 AND a.status IN ?4")
+    long countByHospitalIdAndDateRangeAndStatusIn(Long hospitalId, LocalDateTime start, LocalDateTime end,
+            List<AppointmentStatus> statuses);
+
     List<Appointment> findBySlot_IdAndStatusIn(Long slotId, List<AppointmentStatus> statuses);
 
     List<Appointment> findBySlot_IdIn(List<Long> slotIds);

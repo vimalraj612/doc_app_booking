@@ -40,6 +40,7 @@ public class SlotServiceImpl implements SlotService {
     private final SlotTemplateRepository slotTemplateRepository;
     private final SlotRepository slotRepository;
     private final AppointmentRepository appointmentRepository;
+    private final com.doc_app.booking.repository.DoctorLeaveRepository doctorLeaveRepository;
 
     @Override
     @Transactional
@@ -116,12 +117,19 @@ public class SlotServiceImpl implements SlotService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<SlotDTO> getAvailableSlots(Long doctorId, LocalDate date) {
         // regenerate if no slots exist
         List<Slot> slots = slotRepository.findByDoctorIdAndDate(doctorId, date);
+        // If doctor has an active leave for the date, return empty list
+        boolean onLeave = doctorLeaveRepository.existsByDoctor_IdAndDate(doctorId, date);
+        if (onLeave) {
+            return new ArrayList<>();
+        }
+
+        // Do NOT auto-generate slots on read. If no slots are present, return empty list.
         if (slots.isEmpty()) {
-            return generateSlotsForDoctor(doctorId, date);
+            return new ArrayList<>();
         }
 
         // Batch fetch all appointments for these slots to avoid N+1 queries
@@ -151,7 +159,13 @@ public class SlotServiceImpl implements SlotService {
     @Override
     @Transactional(readOnly = true)
     public List<SlotDTO> getAllSlots(Long doctorId) {
-    List<Slot> slots = slotRepository.findByDoctorId(doctorId);
+        // If doctor has an active leave today, return empty list
+        boolean onLeaveToday = doctorLeaveRepository.existsByDoctor_IdAndDate(doctorId, java.time.LocalDate.now());
+        if (onLeaveToday) {
+            return new ArrayList<>();
+        }
+
+        List<Slot> slots = slotRepository.findByDoctorId(doctorId);
     List<Long> slotIds = slots.stream().map(Slot::getId).collect(Collectors.toList());
     List<Appointment> appointments = appointmentRepository.findBySlot_IdIn(slotIds);
     java.util.Map<Long, Appointment> slotAppointmentMap = appointments.stream()

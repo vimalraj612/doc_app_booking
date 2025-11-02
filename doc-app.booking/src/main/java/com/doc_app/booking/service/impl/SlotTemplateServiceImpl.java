@@ -22,6 +22,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SlotTemplateServiceImpl implements SlotTemplateService {
 
+    @Override
+    @Transactional
+    public void deleteSlotTemplateById(Long slotTemplateId) {
+        if (!slotTemplateRepository.existsById(slotTemplateId)) {
+            throw new EntityNotFoundException("Slot template not found");
+        }
+        slotTemplateRepository.deleteById(slotTemplateId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSlotTemplatesByDoctor(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found"));
+        List<SlotTemplate> templates = slotTemplateRepository.findByDoctor(doctor);
+        slotTemplateRepository.deleteAll(templates);
+    }
+
     private final SlotTemplateRepository slotTemplateRepository;
     private final DoctorRepository doctorRepository;
 

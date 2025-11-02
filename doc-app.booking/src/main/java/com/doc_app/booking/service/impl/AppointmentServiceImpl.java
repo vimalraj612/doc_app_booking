@@ -269,11 +269,24 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentDTO> getAppointmentsByHospitalAndDateRange(Long hospitalId, LocalDateTime start,
-            LocalDateTime end) {
-        List<AppointmentStatus> allowed = List.of(
+            LocalDateTime end, AppointmentStatus status, Long doctorId) {
+        List<AppointmentStatus> allowed;
+        if (status != null) {
+            allowed = List.of(status);
+        } else {
+            allowed = List.of(
                 AppointmentStatus.SCHEDULED,
                 AppointmentStatus.COMPLETED,
                 AppointmentStatus.CANCELLED);
+        }
+
+        // If doctorId provided, narrow down to that doctor's appointments within the hospital/date range
+        if (doctorId != null) {
+            return appointmentRepository.findByDoctorIdAndDateRangeAndStatusIn(doctorId, start, end, allowed).stream()
+                    .map(mapper::toAppointmentDTO)
+                    .collect(Collectors.toList());
+        }
+
         return appointmentRepository.findByHospitalIdAndDateRangeAndStatusIn(hospitalId, start, end, allowed).stream()
                 .map(mapper::toAppointmentDTO)
                 .collect(Collectors.toList());
@@ -283,5 +296,21 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional(readOnly = true)
     public boolean isDoctorAvailable(Long doctorId, LocalDateTime dateTime) {
         return !appointmentRepository.existsByDoctorAndDateTime(doctorId, dateTime);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countTodaysAppointmentsByHospital(Long hospitalId, AppointmentStatus status) {
+        java.time.LocalDateTime start = java.time.LocalDate.now().atStartOfDay();
+        java.time.LocalDateTime end = start.plusDays(1);
+
+        List<AppointmentStatus> allowed;
+        if (status != null) {
+            allowed = List.of(status);
+        } else {
+            allowed = List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED);
+        }
+
+        return appointmentRepository.countByHospitalIdAndDateRangeAndStatusIn(hospitalId, start, end, allowed);
     }
 }
