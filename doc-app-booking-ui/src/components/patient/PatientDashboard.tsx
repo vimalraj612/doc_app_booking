@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LogOut, User as UserIcon } from 'lucide-react';
-import { fetchDoctorByPhone } from '../../api/doctor';
+import { fetchDoctorByPhone, searchDoctors } from '../../api/doctor';
 import { fetchSlotsByDoctorIdAndDate, fetchPatientAppointmentsByDateRange, cancelAppointmentApi } from '../../api/appointments';
 import { apiFetch } from '../../api/http';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
@@ -104,18 +104,18 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   function getStoredPhoneNumber() {
     return window.localStorage.getItem('docPhoneNumber') || '';
   }
-  function getDocPhoneNumber() {
-    const fromQuery = getPhoneNumberFromQuery();
-    if (fromQuery) {
-      window.localStorage.setItem('docPhoneNumber', fromQuery);
-      return fromQuery;
-    }
-    return getStoredPhoneNumber();
-  }
-  const docPhoneNumber = getDocPhoneNumber();
+  // Determine phone source: query > stored > default (fallback for patients)
+  const docPhoneFromQuery = getPhoneNumberFromQuery();
+  const docPhoneStored = getStoredPhoneNumber();
+  const DEFAULT_PATIENT_DOC_PHONE = '911111111111';
+  const docPhoneNumber = docPhoneFromQuery || docPhoneStored || DEFAULT_PATIENT_DOC_PHONE;
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [doctorLoading, setDoctorLoading] = useState(true);
   const [doctorError, setDoctorError] = useState('');
+  const [doctorsList, setDoctorsList] = useState<any[]>([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(false);
+  const [doctorsError, setDoctorsError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showSlots, setShowSlots] = useState(false);
   const [slots, setSlots] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -146,7 +146,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   const filteredAppointments = statusFilter === 'ALL'
     ? appointments
     : appointments.filter(appt => appt.status === statusFilter);
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState(() => (docPhoneFromQuery || docPhoneStored) ? 'details' : 'doctors');
   const [appointmentsFetched, setAppointmentsFetched] = useState(false);
   const fetchAppointments = (customRange?: { start: string; end: string }) => {
     const patientId = window.localStorage.getItem('userId');
@@ -175,6 +175,13 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   const [slotsError, setSlotsError] = useState('');
 
   useEffect(() => {
+    // Only fetch a doctor's details when a real phone is provided via query or stored value.
+    const hasRealPhone = !!(docPhoneFromQuery || docPhoneStored);
+    if (!hasRealPhone) {
+      setDoctorLoading(false);
+      setSelectedDoctor(null);
+      return;
+    }
     if (!docPhoneNumber) return;
     const fetchDoctor = async () => {
       setDoctorLoading(true);
@@ -189,7 +196,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
       }
     };
     fetchDoctor();
-  }, [docPhoneNumber]);
+  }, [docPhoneNumber, docPhoneFromQuery, docPhoneStored]);
 
   const fetchSlots = async () => {
     if (!selectedDoctor) return;
@@ -298,8 +305,8 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* Patient icon */}
-            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
-            <span className="font-semibold text-green-600">Patient Portal</span>
+            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            <span className="font-semibold text-blue-600">Patient Portal</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm">{user.name}</span>

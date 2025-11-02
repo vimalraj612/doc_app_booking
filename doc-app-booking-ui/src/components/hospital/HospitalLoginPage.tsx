@@ -62,13 +62,13 @@ export function HospitalLoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding & Info */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden transition-all duration-500">
+  <div className="hidden lg:flex lg:w-1/2 bg-purple-50 relative overflow-hidden transition-all duration-500">
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo & Title */}
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+              <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
                 <Building2 className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-3xl text-gray-900">HealthCare</h1>
@@ -77,7 +77,7 @@ export function HospitalLoginPage() {
           </div>
           <div className="space-y-8">
             <div>
-              <div className="inline-flex p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl mb-6">
+              <div className="inline-flex p-4 bg-purple-500 rounded-2xl shadow-xl mb-6">
                 <Building2 className="w-16 h-16 text-white" />
               </div>
               <h2 className="text-4xl mb-4 text-gray-900">Welcome Hospital</h2>
@@ -86,7 +86,7 @@ export function HospitalLoginPage() {
             <div className="space-y-3">
               {["Secure & Private", "Easy to Use", "24/7 Access"].map((feature) => (
                 <div key={feature} className="flex items-center gap-3">
-                  <div className="p-1 bg-gradient-to-br from-green-500 to-blue-600 rounded-full">
+                  <div className="p-1 bg-purple-500 rounded-full">
                     <Check className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-gray-700">{feature}</span>
@@ -102,7 +102,7 @@ export function HospitalLoginPage() {
         <div className="w-full max-w-md mx-auto flex flex-col">
           <div className="flex-1 flex flex-col justify-start pt-8">
             <div className="lg:hidden flex items-center gap-3 mb-8">
-              <div className="p-3 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl shadow-lg">
+              <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl text-gray-900">HealthCare</h1>
@@ -131,7 +131,7 @@ export function HospitalLoginPage() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-blue-500"
+                  className="w-full h-12 bg-purple-500 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-purple-500"
                   disabled={loading}
                 >
                   {loading ? 'Sending OTP...' : 'Send OTP as Hospital'}
@@ -158,7 +158,7 @@ export function HospitalLoginPage() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-blue-500"
+                  className="w-full h-12 bg-purple-500 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-purple-500"
                   disabled={loading}
                 >
                   {loading ? 'Verifying OTP...' : 'Verify OTP as Hospital'}
