@@ -107,12 +107,10 @@ export async function fetchSlotsByDoctorIdAndDate(doctorId: string | number, dat
   });
 }
 
-
 export async function getAppointments() {
   // Replace with your backend endpoint
   return apiFetch<any[]>('/api/appointments');
 }
-
 
 // Book an appointment (matches PatientDashboard payload)
 export async function bookAppointment(payload: {
