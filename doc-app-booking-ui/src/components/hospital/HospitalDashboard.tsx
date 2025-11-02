@@ -20,6 +20,7 @@ import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, fetchSlotTemplatesBy
 import { fetchHospitalAppointmentsByDateRange, updateAppointmentStatusApi, fetchHospitalTodaysAppointmentCount } from '../../api/appointments';
 import AppointmentsList from '../common/AppointmentsList';
 import DoctorAvailableSlot from './DoctorAvailableSlot';
+import DoctorLeaves from './DoctorLeaves';
 interface HospitalDashboardProps {
   user: User;
   appointments: Appointment[];
@@ -326,6 +327,10 @@ export function HospitalDashboard({
   // Doctor slots modal state
   const [doctorSlotsOpen, setDoctorSlotsOpen] = useState(false);
   const [slotsDoctorId, setSlotsDoctorId] = useState<string | number | null>(null);
+  // Doctor leaves modal state
+  const [leavesOpen, setLeavesOpen] = useState(false);
+  const [leavesDoctorId, setLeavesDoctorId] = useState<string | number | null>(null);
+  const [leavesDoctorName, setLeavesDoctorName] = useState<string | null>(null);
   const [lastClickedDoctor, setLastClickedDoctor] = useState<string | null>(null);
   const lastRequestAtRef = useRef<number | null>(null);
 
@@ -724,6 +729,21 @@ export function HospitalDashboard({
                             <span className="sm:hidden"><CalendarDays className="w-5 h-5" /></span>
                             <span className="hidden sm:inline">Slots</span>
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center justify-center"
+                            title="Leaves"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLeavesDoctorId(doctor.id);
+                              setLeavesDoctorName(doctor.name);
+                              setLeavesOpen(true);
+                            }}
+                          >
+                            <span className="sm:hidden"><Calendar className="w-5 h-5" /></span>
+                            <span className="hidden sm:inline">Leaves</span>
+                          </Button>
                         <Button variant="outline" size="sm" className="flex items-center justify-center" title="View appointments" onClick={() => { setSelectedDoctorFilter(doctor.name); setActiveTab('appointments'); }}>
                           <span className="sm:hidden"><Calendar className="w-5 h-5" /></span>
                           <span className="hidden sm:inline">Appointments</span>
@@ -994,6 +1014,19 @@ export function HospitalDashboard({
       </div>
   {/* Doctor slots modal (hospital admin reserve) */}
   <DoctorAvailableSlot open={doctorSlotsOpen} onOpenChange={(open) => { setDoctorSlotsOpen(open); if (!open) setSlotsDoctorId(null); }} doctorId={slotsDoctorId} />
+
+  <DoctorLeaves
+    doctorId={leavesDoctorId}
+    doctorName={leavesDoctorName ?? undefined}
+    open={leavesOpen}
+    onOpenChange={(open) => {
+      setLeavesOpen(open);
+      if (!open) {
+        setLeavesDoctorId(null);
+        setLeavesDoctorName(null);
+      }
+    }}
+  />
 
   {/* Global ConfirmDialog so it overlays above other dialogs */}
       <ConfirmDialog
