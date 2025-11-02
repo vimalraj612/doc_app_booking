@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
+import { fetchDoctorLeavesForDoctor } from '../../api/doctorLeaves';
 import { Button } from '../ui/button';
 
 interface Slot {
@@ -48,6 +49,8 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState('');
+  const [leaveDates, setLeaveDates] = useState<Set<string>>(new Set());
+  const [leaveLoading, setLeaveLoading] = useState(true);
   // Appointee fields
   const [appointeeName, setAppointeeName] = useState('');
   const [appointeeAge, setAppointeeAge] = useState('');
@@ -97,6 +100,40 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
 
     loadSlots();
   }, [selectedDate, doctorId]);
+
+    // Load leaves for the selected doctor/date so we can disable booking when on leave
+    useEffect(() => {
+      if (!selectedDate || !doctorId) {
+        setLeaveDates(new Set());
+        setLeaveLoading(false);
+        return;
+      }
+      let mounted = true;
+      setLeaveLoading(true);
+      const loadLeaves = async () => {
+        try {
+          const res = await fetchDoctorLeavesForDoctor(doctorId as any);
+          if (!mounted) return;
+          // Normalize leave dates to YYYY-MM-DD to match the date picker value
+          const normalized = (res || []).map((d: any) => {
+            try {
+              // If API already returns YYYY-MM-DD, this will still work.
+              return new Date(d.date).toISOString().slice(0, 10);
+            } catch (_) {
+              return String(d.date).slice(0, 10);
+            }
+          });
+          setLeaveDates(new Set<string>(normalized));
+        } catch (err) {
+          // ignore
+          if (mounted) setLeaveDates(new Set());
+        } finally {
+          if (mounted) setLeaveLoading(false);
+        }
+      };
+      void loadLeaves();
+      return () => { mounted = false; };
+    }, [selectedDate, doctorId]);
 
   if (!open) return null;
 
@@ -158,91 +195,94 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                         className="w-full"
                       >
                         {(!slotsByDate[selectedDate] || slotsByDate[selectedDate].length === 0) ? (
-                          <div className="text-gray-500 italic text-center py-2 text-xs">
-                            No slots for this date
-                          </div>
+                          <div className="text-gray-500 italic text-center py-2 text-xs">No slots for this date</div>
                         ) : (
-                          <div
-                            className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar"
-                            style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}
-                          >
-                            {slotsByDate[selectedDate]
-                              .slice()
-                              .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
-                              .map((slot) => {
-                                const anySlot: any = slot as any;
-                                const appointmentStatus = anySlot.hasOwnProperty('appointmentStatus') ? anySlot.appointmentStatus : undefined;
+                          <>
+                            {leaveDates.has(selectedDate) ? (
+                              <div className="text-center py-2 w-full">
+                                <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">Doctor is on leave this day — booking disabled.</div>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
+                                {slotsByDate[selectedDate]
+                                  .slice()
+                                  .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+                                  .map((slot) => {
+                                    const anySlot: any = slot as any;
+                                    const appointmentStatus = anySlot.hasOwnProperty('appointmentStatus') ? anySlot.appointmentStatus : undefined;
 
-                                let statusValue: string;
-                                if (appointmentStatus !== undefined) {
-                                  statusValue = appointmentStatus === null ? 'AVAILABLE' : String(appointmentStatus);
-                                } else if (slot.available) {
-                                  statusValue = 'AVAILABLE';
-                                } else if (anySlot.status) {
-                                  statusValue = String(anySlot.status);
-                                } else {
-                                  statusValue = 'SCHEDULED';
-                                }
+                                    let statusValue: string;
+                                    if (appointmentStatus !== undefined) {
+                                      statusValue = appointmentStatus === null ? 'AVAILABLE' : String(appointmentStatus);
+                                    } else if (slot.available) {
+                                      statusValue = 'AVAILABLE';
+                                    } else if (anySlot.status) {
+                                      statusValue = String(anySlot.status);
+                                    } else {
+                                      statusValue = 'SCHEDULED';
+                                    }
 
-                                const isReserved = statusValue === 'RESERVED' || anySlot.reserved === true || anySlot.isReserved === true || !!anySlot.reservedBy;
+                                    const isReserved = statusValue === 'RESERVED' || anySlot.reserved === true || anySlot.isReserved === true || !!anySlot.reservedBy;
 
-                                let status: string;
-                                switch (String(statusValue).toUpperCase()) {
-                                  case 'AVAILABLE':
-                                    status = 'AVAILABLE';
-                                    break;
-                                  case 'RESERVED':
-                                    status = 'RESERVED';
-                                    break;
-                                  case 'SCHEDULED':
-                                    status = 'SCHEDULED';
-                                    break;
-                                  case 'COMPLETED':
-                                    status = 'COMPLETED';
-                                    break;
-                                  case 'CANCELLED':
-                                    status = 'CANCELLED';
-                                    break;
-                                  default:
-                                    status = slot.available ? 'AVAILABLE' : 'SCHEDULED';
-                                }
+                                    let status: string;
+                                    switch (String(statusValue).toUpperCase()) {
+                                      case 'AVAILABLE':
+                                        status = 'AVAILABLE';
+                                        break;
+                                      case 'RESERVED':
+                                        status = 'RESERVED';
+                                        break;
+                                      case 'SCHEDULED':
+                                        status = 'SCHEDULED';
+                                        break;
+                                      case 'COMPLETED':
+                                        status = 'COMPLETED';
+                                        break;
+                                      case 'CANCELLED':
+                                        status = 'CANCELLED';
+                                        break;
+                                      default:
+                                        status = slot.available ? 'AVAILABLE' : 'SCHEDULED';
+                                    }
 
-                                if (isReserved) status = 'RESERVED';
+                                    if (isReserved) status = 'RESERVED';
 
-                                const statusMap: any = {
-                                  AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
-                                  SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
-                                  RESERVED: { color: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Reserved' },
-                                  COMPLETED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Completed' },
-                                  CANCELLED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Cancelled' },
-                                };
-                                const statusInfo = statusMap[status] || statusMap['SCHEDULED'];
-                                const isClickable = status === 'AVAILABLE' && !booking;
+                                    const statusMap: any = {
+                                      AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
+                                      SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
+                                      RESERVED: { color: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Reserved' },
+                                      COMPLETED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Completed' },
+                                      CANCELLED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Cancelled' },
+                                    };
+                                    const statusInfo = statusMap[status] || statusMap['SCHEDULED'];
+                                    const isClickable = status === 'AVAILABLE' && !booking && !leaveLoading && !leaveDates.has(selectedDate);
 
-                                const colorHexMap: Record<string, { bg: string; border: string; text: string }> = {
-                                  AVAILABLE: { bg: '#ecfdf5', border: '#bbf7d0', text: '#166534' },
-                                  SCHEDULED: { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af' },
-                                  RESERVED: { bg: '#fff7ed', border: '#fed7aa', text: '#b45309' },
-                                  COMPLETED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
-                                  CANCELLED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
-                                };
-                                const hex = colorHexMap[status] || colorHexMap['SCHEDULED'];
+                                    const colorHexMap: Record<string, { bg: string; border: string; text: string }> = {
+                                      AVAILABLE: { bg: '#ecfdf5', border: '#bbf7d0', text: '#166534' },
+                                      SCHEDULED: { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af' },
+                                      RESERVED: { bg: '#fff7ed', border: '#fed7aa', text: '#b45309' },
+                                      COMPLETED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
+                                      CANCELLED: { bg: '#f8fafc', border: '#e6eef8', text: '#374151' },
+                                    };
+                                    const hex = colorHexMap[status] || colorHexMap['SCHEDULED'];
 
-                                return (
-                                  <button
-                                    key={String(slot.slotId)}
-                                    disabled={!isClickable}
-                                    onClick={() => isClickable && handleBookSlot(slot)}
-                                    className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
-                                    style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
-                                  >
-                                    <span className={`font-semibold text-[5.5px] leading-tight`} style={{ color: hex.text }}>{formatTime(slot.start)}</span>
-                                    <span className={`text-[4px] leading-tight`} style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
-                                    <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors`} style={{ color: hex.text }}>{statusInfo.label}</span>
-                                  </button>
-                                );
-                              })}
-                          </div>
+                                    return (
+                                      <button
+                                        key={String(slot.slotId)}
+                                        disabled={!isClickable}
+                                        onClick={() => isClickable && handleBookSlot(slot)}
+                                        className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
+                                        style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
+                                      >
+                                        <span className={`font-semibold text-[5.5px] leading-tight`} style={{ color: hex.text }}>{formatTime(slot.start)}</span>
+                                        <span className={`text-[4px] leading-tight`} style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
+                                        <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors`} style={{ color: hex.text }}>{statusInfo.label}</span>
+                                      </button>
+                                    );
+                                  })}
+                              </div>
+                            )}
+                          </>
                         )}
                       </motion.div>
                     )}
