@@ -700,7 +700,7 @@ export function HospitalDashboard({
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-row sm:flex-col gap-2 items-center">
+                      <div className="flex flex-row sm:flex-col gap-2 items-center sm:items-start min-w-0">
                         <Button
                           variant="outline"
                           size="sm"

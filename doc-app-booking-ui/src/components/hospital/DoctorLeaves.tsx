@@ -102,18 +102,22 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
             </Alert>
           )}
 
-          <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end">
+          <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
             <div>
               <Label>Date</Label>
               <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+
+              <div className="flex gap-2 mt-2">
+                <Button type="button" variant="outline" onClick={() => { setDate(''); setReason(''); }}>Reset</Button>
+                <Button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create'}</Button>
+              </div>
             </div>
-            <div className="sm:col-span-2">
+
+            <div>
               <Label>Reason (optional)</Label>
               <Input value={reason} onChange={e => setReason(e.target.value)} placeholder="Reason (max 500 chars)" />
-            </div>
-            <div className="sm:col-span-3 flex gap-2 justify-end">
-              <Button type="button" variant="outline" onClick={() => { setDate(''); setReason(''); }}>Reset</Button>
-              <Button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create'}</Button>
+
+              
             </div>
           </form>
 
