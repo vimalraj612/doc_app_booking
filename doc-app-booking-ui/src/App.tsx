@@ -372,7 +372,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" data-theme={currentUser?.role ?? 'patient'}>
       {currentUser.role === 'patient' && (
         <PatientDashboard onLogout={handleLogout} />
       )}

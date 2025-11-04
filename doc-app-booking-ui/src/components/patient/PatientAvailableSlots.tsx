@@ -101,39 +101,39 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
     loadSlots();
   }, [selectedDate, doctorId]);
 
-    // Load leaves for the selected doctor/date so we can disable booking when on leave
-    useEffect(() => {
-      if (!selectedDate || !doctorId) {
-        setLeaveDates(new Set());
-        setLeaveLoading(false);
-        return;
+  // Load leaves for the selected doctor/date so we can disable booking when on leave
+  useEffect(() => {
+    if (!selectedDate || !doctorId) {
+      setLeaveDates(new Set());
+      setLeaveLoading(false);
+      return;
+    }
+    let mounted = true;
+    setLeaveLoading(true);
+    const loadLeaves = async () => {
+      try {
+        const res = await fetchDoctorLeavesForDoctor(doctorId as any);
+        if (!mounted) return;
+        // Normalize leave dates to YYYY-MM-DD to match the date picker value
+        const normalized = (res || []).map((d: any) => {
+          try {
+            // If API already returns YYYY-MM-DD, this will still work.
+            return new Date(d.date).toISOString().slice(0, 10);
+          } catch (_) {
+            return String(d.date).slice(0, 10);
+          }
+        });
+        setLeaveDates(new Set<string>(normalized));
+      } catch (err) {
+        // ignore
+        if (mounted) setLeaveDates(new Set());
+      } finally {
+        if (mounted) setLeaveLoading(false);
       }
-      let mounted = true;
-      setLeaveLoading(true);
-      const loadLeaves = async () => {
-        try {
-          const res = await fetchDoctorLeavesForDoctor(doctorId as any);
-          if (!mounted) return;
-          // Normalize leave dates to YYYY-MM-DD to match the date picker value
-          const normalized = (res || []).map((d: any) => {
-            try {
-              // If API already returns YYYY-MM-DD, this will still work.
-              return new Date(d.date).toISOString().slice(0, 10);
-            } catch (_) {
-              return String(d.date).slice(0, 10);
-            }
-          });
-          setLeaveDates(new Set<string>(normalized));
-        } catch (err) {
-          // ignore
-          if (mounted) setLeaveDates(new Set());
-        } finally {
-          if (mounted) setLeaveLoading(false);
-        }
-      };
-      void loadLeaves();
-      return () => { mounted = false; };
-    }, [selectedDate, doctorId]);
+    };
+    void loadLeaves();
+    return () => { mounted = false; };
+  }, [selectedDate, doctorId]);
 
   if (!open) return null;
 
@@ -308,7 +308,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                         &times;
                       </button>
                     </div>
-                    <h2 className="text-xl font-bold mb-4">Book Appointment</h2>
+                    <h2 className="text-xl font-bold mb-4 text-gray-800">Book Appointment</h2>
                     <form
                       className="w-full"
                       onSubmit={e => {
@@ -373,7 +373,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                             setAppointeeName(e.target.value);
                             if (appointeeNameError) setAppointeeNameError('');
                           }}
-                          // required removed to prevent browser popup
+                        // required removed to prevent browser popup
                         />
                         <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeNameError || '\u00A0'}</div>
                       </div>
@@ -389,7 +389,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                             if (appointeeAgeError) setAppointeeAgeError('');
                           }}
                           min={0}
-                          // required removed to prevent browser popup
+                        // required removed to prevent browser popup
                         />
                         <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeAgeError || '\u00A0'}</div>
                       </div>
@@ -404,7 +404,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                             setAppointeePhone(e.target.value);
                             if (appointeePhoneError) setAppointeePhoneError('');
                           }}
-                          // required removed to prevent browser popup
+                        // required removed to prevent browser popup
                         />
                         <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeePhoneError || '\u00A0'}</div>
                       </div>
@@ -417,7 +417,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                             setAppointeeGender(e.target.value);
                             if (appointeeGenderError) setAppointeeGenderError('');
                           }}
-                          // required removed to prevent browser popup
+                        // required removed to prevent browser popup
                         >
                           <option value="">Example: Select gender</option>
                           <option value="Male">Male</option>
@@ -427,7 +427,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                         <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeGenderError || '\u00A0'}</div>
                       </div>
                       <div className="flex justify-end gap-2 mt-2">
-                       <Button type="button" variant="secondary"
+                        <Button type="button" variant="secondary"
                           onClick={() => {
                             setAppointeeNameError('');
                             setAppointeeAgeError('');
