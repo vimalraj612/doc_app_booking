@@ -27,6 +27,8 @@ export interface Doctor {
   photo: string;
   qualifications?: string;
   phoneNumber?: string;
+  department?: string;
+  experienceYears?: number;
 }
 
 export interface Hospital {

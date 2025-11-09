@@ -105,7 +105,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
               <div className="flex gap-2 mt-2">
                 <Button type="button" variant="outline" onClick={() => { setDate(''); setReason(''); }}>Reset</Button>
-                <Button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create'}</Button>
+                <Button type="submit" disabled={submitting} className="bg-purple-500 hover:bg-purple-600">{submitting ? 'Creating...' : 'Create'}</Button>
               </div>
             </div>
 

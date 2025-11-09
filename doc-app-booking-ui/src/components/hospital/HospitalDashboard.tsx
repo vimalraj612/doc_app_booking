@@ -99,6 +99,23 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
 
   const handleImage = (file?: File) => {
     if (!file) return;
+    
+    // Check file size (3MB = 3 * 1024 * 1024 bytes)
+    const maxSize = 3 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setErrors(prev => ({ 
+        ...prev, 
+        imageContentType: `Image size must be less than 3MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB` 
+      }));
+      return;
+    }
+    
+    // Clear any previous image error
+    setErrors(prev => {
+      const { imageContentType, ...rest } = prev;
+      return rest;
+    });
+    
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
@@ -162,109 +179,188 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
   // Prefill when editing
   useEffect(() => {
     if (!initialDoctor) return;
-    // Narrow union type: check for backend DTO fields first
-    const isDTO = (d: any): d is Partial<DoctorDTO> => d && (typeof d.firstName !== 'undefined' || typeof d.profileImage !== 'undefined' || typeof d.imageContentType !== 'undefined');
+    
+    // Check if this looks like a backend DTO (has firstName/lastName or profileImage fields)
+    // vs UI Doctor shape (has photo field as data URL)
+    const hasFirstName = 'firstName' in initialDoctor && initialDoctor.firstName;
+    const hasProfileImage = 'profileImage' in initialDoctor && initialDoctor.profileImage;
+    const hasPhoto = 'photo' in initialDoctor && initialDoctor.photo;
+    const isDTO = hasFirstName || hasProfileImage;
 
-    if (isDTO(initialDoctor)) {
-      setFirstName(initialDoctor.firstName || initialDoctor.name?.split(' ')?.[0] || '');
-      setLastName(initialDoctor.lastName || (initialDoctor.name ? initialDoctor.name.split(' ').slice(1).join(' ') : ''));
-      setEmail(initialDoctor.email || '');
-      setPhoneNumber(initialDoctor.phoneNumber || '');
-      setSpecialization(initialDoctor.specialization || '');
-      setDepartment(initialDoctor.department || '');
-      setExperienceYears(initialDoctor.experienceYears ?? '');
-      setQualifications(initialDoctor.qualifications || '');
-      if (initialDoctor.profileImage && initialDoctor.imageContentType) {
-        setProfileBase64(initialDoctor.profileImage as string);
-        setImageContentType(initialDoctor.imageContentType as string);
+    if (isDTO) {
+      // Backend DTO format
+      const dto = initialDoctor as Partial<DoctorDTO>;
+      setFirstName(dto.firstName || dto.name?.split(' ')?.[0] || '');
+      setLastName(dto.lastName || (dto.name ? dto.name.split(' ').slice(1).join(' ') : ''));
+      setEmail(dto.email || '');
+      setPhoneNumber(dto.phoneNumber || '');
+      setSpecialization(dto.specialization || '');
+      setDepartment(dto.department || '');
+      setExperienceYears(dto.experienceYears ?? '');
+      setQualifications(dto.qualifications || '');
+      if (dto.profileImage && dto.imageContentType) {
+        setProfileBase64(dto.profileImage as string);
+        setImageContentType(dto.imageContentType as string);
+      } else {
+        setProfileBase64(null);
+        setImageContentType(null);
       }
     } else {
-      // Assume UI Doctor shape
+      // UI Doctor shape
       const ui = initialDoctor as Partial<Doctor>;
       setFirstName(ui.name?.split(' ')?.[0] || '');
       setLastName(ui.name ? ui.name.split(' ').slice(1).join(' ') : '');
       setEmail(ui.email || '');
       setPhoneNumber(ui.phoneNumber || '');
       setSpecialization(ui.specialization || '');
-      setDepartment('');
-      setExperienceYears('');
+      setDepartment(ui.department || '');
+      setExperienceYears(ui.experienceYears ?? '');
       setQualifications(ui.qualifications || '');
-      setProfileBase64(null);
-      setImageContentType(null);
+      
+      // Parse photo data URL back to base64 and content type
+      if (hasPhoto && ui.photo && ui.photo.startsWith('data:')) {
+        const parts = ui.photo.split(',');
+        if (parts.length === 2) {
+          const meta = parts[0] || '';
+          const base64 = parts[1] || '';
+          const m = meta.match(/data:(.*);base64/);
+          if (m && m[1]) {
+            setImageContentType(m[1]);
+            setProfileBase64(base64);
+          }
+        }
+      } else {
+        setProfileBase64(null);
+        setImageContentType(null);
+      }
     }
   }, [initialDoctor]);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="firstName">First name</Label>
-          <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name" />
-          {errors.firstName && <div className="text-red-500 text-xs mt-1">{errors.firstName}</div>}
-        </div>
-        <div>
-          <Label htmlFor="lastName">Last name</Label>
-          <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last name" />
-          {errors.lastName && <div className="text-red-500 text-xs mt-1">{errors.lastName}</div>}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" />
-          {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
-        </div>
-        <div>
-          <Label htmlFor="phone">Phone</Label>
-          <Input id="phone" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="E.164, e.g. +919876543210" />
-          {errors.phoneNumber && <div className="text-red-500 text-xs mt-1">{errors.phoneNumber}</div>}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Personal Information Section */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="firstName" className="text-sm font-medium">First name *</Label>
+            <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Enter first name" />
+            {errors.firstName && <div className="text-red-500 text-xs">{errors.firstName}</div>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lastName" className="text-sm font-medium">Last name *</Label>
+            <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Enter last name" />
+            {errors.lastName && <div className="text-red-500 text-xs">{errors.lastName}</div>}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="specialization">Specialization</Label>
-          <select id="specialization" className="form-input w-full border rounded px-2 py-1" value={specialization} onChange={e => setSpecialization(e.target.value)}>
-            <option value="">Select specialization</option>
-            {SPECIALIZATION_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          {errors.specialization && <div className="text-red-500 text-xs mt-1">{errors.specialization}</div>}
-        </div>
-        <div>
-          <Label htmlFor="department">Department (optional)</Label>
-          <Input id="department" value={department} onChange={e => setDepartment(e.target.value)} placeholder="Department" />
-          {errors.department && <div className="text-red-500 text-xs mt-1">{errors.department}</div>}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="experience">Experience (years)</Label>
-          <Input id="experience" type="number" min={0} max={70} value={experienceYears} onChange={e => setExperienceYears(e.target.value === '' ? '' : Number(e.target.value))} />
-          {errors.experienceYears && <div className="text-red-500 text-xs mt-1">{errors.experienceYears}</div>}
-        </div>
-        <div>
-          <Label htmlFor="qualifications">Qualifications (optional)</Label>
-          <Input id="qualifications" value={qualifications} onChange={e => setQualifications(e.target.value)} placeholder="e.g. MBBS, MD" />
-          {errors.qualifications && <div className="text-red-500 text-xs mt-1">{errors.qualifications}</div>}
+      {/* Contact Information Section */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Contact Information</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="doctor@example.com" />
+            {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-sm font-medium">Phone *</Label>
+            <Input id="phone" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+919876543210" />
+            {errors.phoneNumber && <div className="text-red-500 text-xs">{errors.phoneNumber}</div>}
+          </div>
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="profile">Profile image (optional)</Label>
-        <input id="profile" type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) handleImage(f); }} />
-        {imageContentType && <div className="text-xs text-gray-600 mt-1">Detected: {imageContentType}</div>}
-        {errors.imageContentType && <div className="text-red-500 text-xs mt-1">{errors.imageContentType}</div>}
+      {/* Professional Information Section */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Professional Information</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="specialization" className="text-sm font-medium">Specialization *</Label>
+            <select 
+              id="specialization" 
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2" 
+              value={specialization} 
+              onChange={e => setSpecialization(e.target.value)}
+            >
+              <option value="">Select specialization</option>
+              {SPECIALIZATION_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {errors.specialization && <div className="text-red-500 text-xs">{errors.specialization}</div>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="department" className="text-sm font-medium">Department</Label>
+            <Input id="department" value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Cardiology, Surgery" />
+            {errors.department && <div className="text-red-500 text-xs">{errors.department}</div>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="experience" className="text-sm font-medium">Experience (years)</Label>
+            <Input id="experience" type="number" min={0} max={70} value={experienceYears} onChange={e => setExperienceYears(e.target.value === '' ? '' : Number(e.target.value))} placeholder="0" />
+            {errors.experienceYears && <div className="text-red-500 text-xs">{errors.experienceYears}</div>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="qualifications" className="text-sm font-medium">Qualifications</Label>
+            <Input id="qualifications" value={qualifications} onChange={e => setQualifications(e.target.value)} placeholder="e.g. MBBS, MD" />
+            {errors.qualifications && <div className="text-red-500 text-xs">{errors.qualifications}</div>}
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-row sm:flex-col gap-2 justify-center sm:justify-end items-center sm:items-end">
+      {/* Profile Image Section */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Profile Image</h3>
+        <div className="space-y-3">
+          <Label htmlFor="profile" className="text-sm font-medium">Profile image (optional, max 3MB)</Label>
+          {profileBase64 && imageContentType && (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <img 
+                src={`data:${imageContentType};base64,${profileBase64}`} 
+                alt="Profile preview" 
+                className="w-16 h-16 rounded-full object-cover border-2 border-purple-200 flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-700">Current profile image</p>
+                <p className="text-xs text-gray-500 mt-1 truncate">Type: {imageContentType}</p>
+              </div>
+            </div>
+          )}
+          <input 
+            id="profile" 
+            type="file" 
+            accept="image/*" 
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleImage(f); }} 
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
+          />
+          {!profileBase64 && !errors.imageContentType && (
+            <p className="text-xs text-gray-500">Supported formats: JPG, PNG, GIF (max 3MB)</p>
+          )}
+          {errors.imageContentType && <div className="text-red-500 text-xs">{errors.imageContentType}</div>}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col gap-3 items-stretch pt-6 border-t mt-2">
         <Button type="button" variant="outline" onClick={() => {
           setFirstName(''); setLastName(''); setEmail(''); setPhoneNumber(''); setSpecialization(''); setDepartment(''); setExperienceYears(''); setQualifications(''); setProfileBase64(null); setImageContentType(null); setErrors({});
-        }}>Reset</Button>
-        <Button type="submit" disabled={submitting}>{submitting ? (initialDoctor ? 'Updating...' : 'Adding...') : (initialDoctor ? 'Update Doctor' : 'Add Doctor')}</Button>
+        }} className="w-full">
+          Reset
+        </Button>
+        <Button type="submit" disabled={submitting} className="w-full bg-purple-500 hover:bg-purple-600">
+          {submitting ? (
+            <>
+              <span className="animate-spin mr-2">⏳</span>
+              {initialDoctor ? 'Updating...' : 'Adding...'}
+            </>
+          ) : (
+            initialDoctor ? 'Update Doctor' : 'Add Doctor'
+          )}
+        </Button>
       </div>
     </form>
   );
@@ -493,6 +589,8 @@ export function HospitalDashboard({
         photo: d.profileImage || d.imageContentType ? `data:${d.imageContentType};base64,${d.profileImage}` : '',
         qualifications: d.qualifications || '',
         phoneNumber: d.phoneNumber || '',
+        department: d.department || '',
+        experienceYears: d.experienceYears || 0,
       })));
     } catch (e) {
       setDoctors([]);
@@ -657,11 +755,12 @@ export function HospitalDashboard({
                   Add New Doctor
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl w-full sm:rounded-lg">
+              <DialogContent className="max-w-3xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}</DialogTitle>
-                  <DialogDescription>{editingDoctor ? 'Edit doctor details' : 'Add a new doctor to your hospital'}</DialogDescription>
+                  <DialogTitle className="text-xl font-semibold">{editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}</DialogTitle>
+                  <DialogDescription className="text-sm text-gray-600">{editingDoctor ? 'Update doctor information below' : 'Fill in the details to add a new doctor to your hospital'}</DialogDescription>
                 </DialogHeader>
+                <div className="mt-4">
                   <AddDoctorForm 
                     onSuccess={() => { setIsAddDoctorOpen(false); setEditingDoctor(null); }} 
                     onAddDoctor={handleAddDoctor}
@@ -670,6 +769,7 @@ export function HospitalDashboard({
                     hospital={hospital}
                     user={user}
                   />
+                </div>
               </DialogContent>
             </Dialog>
             {doctors.length === 0 ? (
@@ -698,6 +798,12 @@ export function HospitalDashboard({
                             <span className="text-gray-600"><span className="font-medium">Email:</span> {doctor.email}</span>
                             {doctor.phoneNumber && (
                               <span className="text-gray-600"><span className="font-medium">Phone:</span> {doctor.phoneNumber}</span>
+                            )}
+                            {doctor.department && (
+                              <span className="text-gray-600"><span className="font-medium">Department:</span> {doctor.department}</span>
+                            )}
+                            {(doctor.experienceYears ?? 0) > 0 && (
+                              <span className="text-gray-600"><span className="font-medium">Experience:</span> {doctor.experienceYears ?? 0} years</span>
                             )}
                           </div>
                         </div>
@@ -846,7 +952,7 @@ export function HospitalDashboard({
                           </div>
                           <div className="flex gap-2">
                             <Button variant="outline" onClick={() => resetTemplateForm()}>Reset</Button>
-                            <Button onClick={() => saveSlotTemplate()}>{templateForm.id ? 'Update' : 'Create'}</Button>
+                            <Button onClick={() => saveSlotTemplate()} className="bg-purple-500 hover:bg-purple-600">{templateForm.id ? 'Update' : 'Create'}</Button>
                           </div>
                         </div>
                       </div>
@@ -859,7 +965,7 @@ export function HospitalDashboard({
                           <p className="font-medium">No slot templates yet</p>
                           <p className="text-sm">Create a recurring availability template to let patients book predictable slots.</p>
                           <div className="mt-3">
-                            <Button onClick={() => { resetTemplateForm(); }}><Plus className="w-4 h-4 mr-2 bg-transparent" />Create template</Button>
+                            <Button onClick={() => { resetTemplateForm(); }} className="bg-purple-500 hover:bg-purple-600"><Plus className="w-4 h-4 mr-2 bg-transparent" />Create template</Button>
                           </div>
                         </div>
                       </div>
