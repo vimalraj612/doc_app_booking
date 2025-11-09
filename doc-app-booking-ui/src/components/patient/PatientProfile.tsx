@@ -1,6 +1,9 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
 import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
+import { InlineMessage } from '../ui/inline-message';
 import { PatientProfile as PatientProfileType } from '../../api/user';
 
 interface PatientProfileProps {
@@ -22,7 +25,6 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   onClose,
   msg,
 }) => {
-  // Always render modal if open, show loading if profile is not loaded
   // Map gender to uppercase for select value
   const mappedProfile = profile
     ? {
@@ -40,82 +42,155 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30">
-      <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar" style={{ marginTop: '115px', maxHeight: '500px', minHeight: '380px' }}>
-        <div className="absolute top-2 right-2 flex gap-2">
-          <button className="text-gray-500 hover:text-gray-800 p-1" onClick={onClose} title="Close">&times;</button>
-        </div>
-        <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
-        {loading && <div className="mb-2 text-blue-600">Loading...</div>}
-        {error
-          ? <div className="mb-2 text-red-600">{error}</div>
-          : msg && <div className="mb-2 text-green-600">{msg}</div>
-        }
-        <form onSubmit={e => { e.preventDefault(); onSave(); }} className="w-full flex flex-col">
-          <style>{`
-          .no-scrollbar {
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
-          }
-          .no-scrollbar::-webkit-scrollbar {
-            display: none; /* Chrome, Safari */
-          }
-        `}</style>
-          <style>{`
-          .no-scrollbar {
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
-          }
-          .no-scrollbar::-webkit-scrollbar {
-            display: none; /* Chrome, Safari */
-          }
-        `}</style>
-          <div className="mb-2">
-            <label className="block text-sm font-medium">First Name</label>
-            <input name="firstName" value={mappedProfile.firstName || ''} onChange={onChange} className="w-full border rounded px-2 py-1" disabled={loading} />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium">Last Name</label>
-            <input name="lastName" value={mappedProfile.lastName || ''} onChange={onChange} className="w-full border rounded px-2 py-1" disabled={loading} />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium">Email</label>
-            <input name="email" value={mappedProfile.email || ''} onChange={onChange} className="w-full border rounded px-2 py-1" disabled={loading} />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium">Phone Number</label>
-            <input name="phoneNumber" value={mappedProfile.phoneNumber || ''} className="w-full border rounded px-2 py-1 bg-gray-100 cursor-not-allowed" disabled readOnly />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium">Address</label>
-            <input name="address" value={mappedProfile.address || ''} onChange={onChange} className="w-full border rounded px-2 py-1" disabled={loading} />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium">Date of Birth</label>
-            <input name="dateOfBirth" value={mappedProfile.dateOfBirth || ''} onChange={onChange} className="w-full border rounded px-2 py-1" type="date" disabled={loading} />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium">Gender</label>
-            <select name="gender" value={mappedProfile.gender || ''} onChange={onChange} className="w-full border rounded px-2 py-1" disabled={loading}>
-              <option value="">Select</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-              <option value="OTHER">Other</option>
-            </select>
-          </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="default" disabled={loading}>
-              Save
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">Edit Profile</DialogTitle>
+          <DialogDescription className="text-sm text-gray-600">
+            Update your personal information below
+          </DialogDescription>
+        </DialogHeader>
 
+        <div className="mt-4">
+          {loading && <InlineMessage type="info" message="Loading profile..." />}
+          {error && <InlineMessage type="error" message={error} />}
+          {msg && !error && <InlineMessage type="success" message={msg} />}
+
+          <form onSubmit={e => { e.preventDefault(); onSave(); }} className="space-y-6 mt-4">
+            {/* Personal Information Section */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-medium">First Name *</Label>
+                  <Input 
+                    id="firstName"
+                    name="firstName" 
+                    value={mappedProfile.firstName || ''} 
+                    onChange={onChange} 
+                    placeholder="Enter first name"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm font-medium">Last Name *</Label>
+                  <Input 
+                    id="lastName"
+                    name="lastName" 
+                    value={mappedProfile.lastName || ''} 
+                    onChange={onChange} 
+                    placeholder="Enter last name"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth" className="text-sm font-medium">Date of Birth</Label>
+                  <Input 
+                    id="dateOfBirth"
+                    name="dateOfBirth" 
+                    type="date"
+                    value={mappedProfile.dateOfBirth || ''} 
+                    onChange={onChange}
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gender" className="text-sm font-medium">Gender</Label>
+                  <select 
+                    id="gender"
+                    name="gender" 
+                    value={mappedProfile.gender || ''} 
+                    onChange={onChange}
+                    disabled={loading}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information Section */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Contact Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                  <Input 
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={mappedProfile.email || ''} 
+                    onChange={onChange} 
+                    placeholder="patient@example.com"
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number</Label>
+                  <Input 
+                    id="phoneNumber"
+                    name="phoneNumber" 
+                    value={mappedProfile.phoneNumber || ''} 
+                    placeholder="+919876543210"
+                    className="bg-gray-50 cursor-not-allowed"
+                    disabled
+                    readOnly
+                  />
+                  <p className="text-xs text-gray-500">Phone number cannot be changed</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address" className="text-sm font-medium">Address</Label>
+                <Input 
+                  id="address"
+                  name="address" 
+                  value={mappedProfile.address || ''} 
+                  onChange={onChange} 
+                  placeholder="Enter your address"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-3 items-stretch pt-6 border-t mt-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose} 
+                disabled={loading}
+                className="w-full"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-blue-500 hover:bg-blue-600"
+              >
+                {loading ? (
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    Saving...
+                  </>
+                ) : (
+                  'Save Profile'
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 export default PatientProfile;

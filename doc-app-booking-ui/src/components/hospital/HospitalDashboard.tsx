@@ -911,155 +911,231 @@ export function HospitalDashboard({
                 )}
 
                 {slotTemplates !== null && !slotTemplatesLoading && (
-                  <div className="space-y-4 p-2">
+                  <div className="mt-4 space-y-6">
                     {successMessage && (
                       <InlineMessage type="success" message={successMessage} />
                     )}
-                    {/* Add / Edit form */}
-                    <div className="mb-1 border rounded p-3 bg-gray-50">
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-                        <div>
-                          <Label>Day of Week</Label>
-                          <select className="form-input w-full border rounded px-2 py-1" value={templateForm.dayOfWeek} onChange={e => setTemplateForm(f => ({ ...f, dayOfWeek: e.target.value }))}>
-                            <option>MONDAY</option>
-                            <option>TUESDAY</option>
-                            <option>WEDNESDAY</option>
-                            <option>THURSDAY</option>
-                            <option>FRIDAY</option>
-                            <option>SATURDAY</option>
-                            <option>SUNDAY</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label>Start Time</Label>
-                          <Input type="time" value={templateForm.startTime} onChange={e => setTemplateForm(f => ({ ...f, startTime: e.target.value }))} />
-                          {templateErrors.startTime && <div className="text-red-500 text-xs mt-1">{templateErrors.startTime}</div>}
-                        </div>
-                        <div>
-                          <Label>End Time</Label>
-                          <Input type="time" value={templateForm.endTime} onChange={e => setTemplateForm(f => ({ ...f, endTime: e.target.value }))} />
-                          {templateErrors.endTime && <div className="text-red-500 text-xs mt-1">{templateErrors.endTime}</div>}
-                        </div>
-                        <div>
-                          <Label>Duration (min)</Label>
-                          <Input type="number" min={5} value={templateForm.slotDurationMinutes} onChange={e => setTemplateForm(f => ({ ...f, slotDurationMinutes: Number(e.target.value || 0) }))} />
-                          {templateErrors.slotDurationMinutes && <div className="text-red-500 text-xs mt-1">{templateErrors.slotDurationMinutes}</div>}
-                        </div>
-                        <div className="flex flex-col items-end gap-2 md:col-span-1">
-                          <div className="flex items-center gap-2">
-                            <input id="tpl-active" type="checkbox" checked={templateForm.active} onChange={e => setTemplateForm(f => ({ ...f, active: e.target.checked }))} />
-                            <label htmlFor="tpl-active" className="text-sm">Active</label>
+                    
+                    {/* Add / Edit Template Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
+                        {templateForm.id ? 'Edit Template' : 'Add New Template'}
+                      </h3>
+                      
+                      <form onSubmit={(e) => { e.preventDefault(); saveSlotTemplate(); }} className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="dayOfWeek" className="text-sm font-medium">Day of Week *</Label>
+                            <select 
+                              id="dayOfWeek"
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2" 
+                              value={templateForm.dayOfWeek} 
+                              onChange={e => setTemplateForm(f => ({ ...f, dayOfWeek: e.target.value }))}
+                            >
+                              <option value="MONDAY">Monday</option>
+                              <option value="TUESDAY">Tuesday</option>
+                              <option value="WEDNESDAY">Wednesday</option>
+                              <option value="THURSDAY">Thursday</option>
+                              <option value="FRIDAY">Friday</option>
+                              <option value="SATURDAY">Saturday</option>
+                              <option value="SUNDAY">Sunday</option>
+                            </select>
                           </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => resetTemplateForm()}>Reset</Button>
-                            <Button onClick={() => saveSlotTemplate()} className="bg-purple-500 hover:bg-purple-600">{templateForm.id ? 'Update' : 'Create'}</Button>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="slotDuration" className="text-sm font-medium">Duration (minutes) *</Label>
+                            <Input 
+                              id="slotDuration"
+                              type="number" 
+                              min={5} 
+                              value={templateForm.slotDurationMinutes} 
+                              onChange={e => setTemplateForm(f => ({ ...f, slotDurationMinutes: Number(e.target.value || 0) }))}
+                              placeholder="e.g. 15, 30, 60"
+                            />
+                            {templateErrors.slotDurationMinutes && <div className="text-red-500 text-xs">{templateErrors.slotDurationMinutes}</div>}
                           </div>
                         </div>
-                      </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="startTime" className="text-sm font-medium">Start Time *</Label>
+                            <Input 
+                              id="startTime"
+                              type="time" 
+                              value={templateForm.startTime} 
+                              onChange={e => setTemplateForm(f => ({ ...f, startTime: e.target.value }))}
+                            />
+                            {templateErrors.startTime && <div className="text-red-500 text-xs">{templateErrors.startTime}</div>}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="endTime" className="text-sm font-medium">End Time *</Label>
+                            <Input 
+                              id="endTime"
+                              type="time" 
+                              value={templateForm.endTime} 
+                              onChange={e => setTemplateForm(f => ({ ...f, endTime: e.target.value }))}
+                            />
+                            {templateErrors.endTime && <div className="text-red-500 text-xs">{templateErrors.endTime}</div>}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <input 
+                            id="tpl-active" 
+                            type="checkbox" 
+                            checked={templateForm.active} 
+                            onChange={e => setTemplateForm(f => ({ ...f, active: e.target.checked }))}
+                            className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                          />
+                          <label htmlFor="tpl-active" className="text-sm font-medium text-gray-700">Active template</label>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-3 items-stretch pt-2">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => resetTemplateForm()}
+                            className="w-full"
+                          >
+                            Reset
+                          </Button>
+                          <Button 
+                            type="submit"
+                            className="w-full bg-purple-500 hover:bg-purple-600"
+                          >
+                            {templateForm.id ? 'Update Template' : 'Create Template'}
+                          </Button>
+                        </div>
+                      </form>
                     </div>
 
-                    {slotTemplates.length === 0 ? (
-                      <div className="p-6 text-center text-gray-600">
-                        <div className="flex flex-col items-center gap-3">
-                            <LayoutTemplate className="w-12 h-12 text-blue-500 bg-transparent" />
-                          <p className="font-medium">No slot templates yet</p>
-                          <p className="text-sm">Create a recurring availability template to let patients book predictable slots.</p>
-                          <div className="mt-3">
-                            <Button onClick={() => { resetTemplateForm(); }} className="bg-purple-500 hover:bg-purple-600"><Plus className="w-4 h-4 mr-2 bg-transparent" />Create template</Button>
+                    {/* Existing Templates Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Existing Templates</h3>
+                      
+                      {slotTemplates.length === 0 ? (
+                        <div className="p-6 text-center text-gray-600">
+                          <div className="flex flex-col items-center gap-3">
+                            <LayoutTemplate className="w-12 h-12 text-purple-400 bg-transparent" />
+                            <p className="font-medium">No slot templates yet</p>
+                            <p className="text-sm">Create a recurring availability template to let patients book predictable slots.</p>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Desktop & tablet: table view (md and up) */}
-                        <div className="hidden md:block overflow-x-auto">
-                          <table className="w-full text-sm border">
-                            <thead>
-                                      <tr className="bg-blue-50">
-                                        <th className="p-2 border">Day</th>
-                                        <th className="p-2 border">Start</th>
-                                        <th className="p-2 border">End</th>
-                                        <th className="p-2 border">Duration (min)</th>
-                                        <th className="p-2 border text-right">Actions</th>
-                                      </tr>
-                            </thead>
-                            <tbody>
-                              {slotTemplates.map(tpl => (
-                                <tr key={tpl.id} className="border-b">
-                                    <td className="p-2 border">{tpl.dayOfWeek}</td>
-                                    <td className="p-2 border">{tpl.startTime}</td>
-                                    <td className="p-2 border">{tpl.endTime}</td>
-                                    <td className="p-2 border text-center">{tpl.slotDurationMinutes}</td>
-                                    <td className="p-2 border text-right">
+                      ) : (
+                        <>
+                          {/* Desktop & tablet: table view (md and up) */}
+                          <div className="hidden md:block overflow-x-auto border rounded-lg">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="bg-purple-50 border-b">
+                                  <th className="p-3 text-left font-semibold text-gray-700">Day</th>
+                                  <th className="p-3 text-left font-semibold text-gray-700">Start Time</th>
+                                  <th className="p-3 text-left font-semibold text-gray-700">End Time</th>
+                                  <th className="p-3 text-center font-semibold text-gray-700">Duration</th>
+                                  <th className="p-3 text-right font-semibold text-gray-700">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {slotTemplates.map(tpl => (
+                                  <tr key={tpl.id} className="border-b hover:bg-gray-50 transition-colors">
+                                    <td className="p-3">
+                                      <span className="font-medium text-gray-900">{tpl.dayOfWeek}</span>
+                                    </td>
+                                    <td className="p-3 text-gray-600">{tpl.startTime}</td>
+                                    <td className="p-3 text-gray-600">{tpl.endTime}</td>
+                                    <td className="p-3 text-center">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {tpl.slotDurationMinutes} min
+                                      </span>
+                                    </td>
+                                    <td className="p-3">
                                       <div className="flex items-center gap-2 justify-end">
                                         <Button
                                           variant="outline"
                                           size="sm"
-                                          className="p-2"
+                                          className="flex items-center gap-1"
                                           title="Edit template"
                                           aria-label={`Edit template ${tpl.id}`}
                                           onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
                                         >
                                           <Edit className="w-4 h-4 bg-transparent" />
+                                          <span>Edit</span>
                                         </Button>
                                         <Button
                                           variant="destructive"
                                           size="sm"
-                                          className="p-2"
+                                          className="flex items-center gap-1"
                                           title="Delete template"
                                           aria-label={`Delete template ${tpl.id}`}
                                           onClick={() => handleDeleteTemplate(tpl.id)}
                                         >
                                           <Trash2 className="w-4 h-4 bg-transparent" />
+                                          <span>Delete</span>
                                         </Button>
                                       </div>
                                     </td>
                                   </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
 
-                        {/* Mobile & small tablet: stacked cards (below md) */}
-                        <div className="block md:hidden space-y-3">
-                          {slotTemplates.map(tpl => (
-                            <div key={`mobile-${tpl.id}`} className="border rounded p-3 bg-white shadow-sm">
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <div className="text-sm font-medium">{tpl.dayOfWeek}</div>
-                                  <div className="text-xs text-gray-600">{tpl.startTime} – {tpl.endTime}</div>
-                                  <div className="text-xs text-gray-600 mt-1">Duration: {tpl.slotDurationMinutes} min</div>
-                                </div>
-                                <div className="flex flex-col items-end gap-2 w-28">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full flex items-center justify-center"
-                                    title="Edit template"
-                                    aria-label={`Edit template ${tpl.id}`}
-                                    onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
-                                  >
-                                    <Edit className="w-4 h-4 mr-2 bg-transparent" />
-                                    <span className="text-sm">Edit</span>
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    className="w-full flex items-center justify-center"
-                                    title="Delete template"
-                                    aria-label={`Delete template ${tpl.id}`}
-                                    onClick={() => handleDeleteTemplate(tpl.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2 bg-transparent" />
-                                    <span className="text-sm">Delete</span>
-                                  </Button>
+                          {/* Mobile & small tablet: stacked cards (below md) */}
+                          <div className="block md:hidden space-y-3">
+                            {slotTemplates.map(tpl => (
+                              <div key={`mobile-${tpl.id}`} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <LayoutTemplate className="w-4 h-4 text-purple-500 bg-transparent flex-shrink-0" />
+                                      <span className="font-semibold text-gray-900">{tpl.dayOfWeek}</span>
+                                    </div>
+                                    <div className="space-y-1 text-sm text-gray-600">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">Time:</span>
+                                        <span>{tpl.startTime} – {tpl.endTime}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">Duration:</span>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                          {tpl.slotDurationMinutes} min
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-col gap-2 w-24 flex-shrink-0">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full flex items-center justify-center gap-1"
+                                      title="Edit template"
+                                      aria-label={`Edit template ${tpl.id}`}
+                                      onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
+                                    >
+                                      <Edit className="w-4 h-4 bg-transparent" />
+                                      <span className="text-xs">Edit</span>
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="w-full flex items-center justify-center gap-1"
+                                      title="Delete template"
+                                      aria-label={`Delete template ${tpl.id}`}
+                                      onClick={() => handleDeleteTemplate(tpl.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4 bg-transparent" />
+                                      <span className="text-xs">Delete</span>
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
               </DialogContent>

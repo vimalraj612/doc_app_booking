@@ -4,6 +4,9 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 import { fetchDoctorLeavesForDoctor } from '../../api/doctorLeaves';
 import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { InlineMessage } from '../ui/inline-message';
 import { ValidationMessages, SlotMessages } from '../../constants/messages';
 
@@ -142,68 +145,73 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   const slotsByDate = { [selectedDate]: slots };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30">
-      <div
-        className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar"
-        style={{ marginTop: '115px', maxHeight: '500px', minHeight: '380px' }}
-      >
-        {/* Close & Title */}
-        <div className="absolute top-2 right-2 flex gap-2">
-          <button
-            className="text-gray-500 hover:text-gray-800 p-1 text-xl"
-            onClick={onClose}
-            title="Close"
-          >
-            &times;
-          </button>
-        </div>
-        <h3 className="text-xl font-bold mb-4 text-gray-800">Available Slots</h3>
-        <div className="overflow-y-auto flex-1 w-full pr-1 pb-2 no-scrollbar">
-          {loadingSlots && <div>Loading...</div>}
-          {slotsError && <InlineMessage type="error" message={slotsError} />}
+    <>
+      <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-2xl font-bold text-gray-900">Available Slots</DialogTitle>
+            <DialogDescription className="text-sm text-gray-600">
+              Select a date to view available appointment slots
+            </DialogDescription>
+          </DialogHeader>
 
-          {!loadingSlots && !slotsError && (
-            <>
-              {/* Date Picker */}
-              <div className="flex gap-2 items-center justify-center mb-3">
-                <input
-                  id="slot-date-picker"
-                  type="date"
-                  value={selectedDate}
-                  onChange={e => setSelectedDate(e.target.value)}
-                  className="border rounded px-2 py-1 text-xs w-32 sm:w-40 md:w-48 lg:w-56 focus:ring-2 focus:ring-blue-200 transition-all"
-                  min={new Date().toISOString().slice(0, 10)}
-                  style={{ fontSize: '13px', maxWidth: '100%' }}
-                />
+          <div className="space-y-6 py-4">
+            {loadingSlots && (
+              <div className="flex items-center justify-center py-8">
+                <div className="inline-flex items-center gap-2 text-sm text-gray-500">
+                  <span className="animate-spin">⏳</span>
+                  Loading slots...
+                </div>
               </div>
+            )}
+            {slotsError && <InlineMessage type="error" message={slotsError} />}
 
-              {successMsg && (
-                <InlineMessage type="success" message={successMsg} className="mb-3" />
-              )}
+            {!loadingSlots && !slotsError && (
+              <div className="space-y-4">
+                {/* Date Picker Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Select Date</h3>
+                  <div className="flex justify-center">
+                    <Input
+                      id="slot-date-picker"
+                      type="date"
+                      value={selectedDate}
+                      onChange={e => setSelectedDate(e.target.value)}
+                      min={new Date().toISOString().slice(0, 10)}
+                      className="h-10 max-w-xs"
+                    />
+                  </div>
+                </div>
 
-              {/* Slots Grid */}
-              <div className="flex justify-center">
-                <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md flex justify-center">
-                  <AnimatePresence mode="wait">
-                    {selectedDate && (
-                      <motion.div
-                        key={selectedDate}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.2 }}
-                        className="w-full"
-                      >
-                        {(!slotsByDate[selectedDate] || slotsByDate[selectedDate].length === 0) ? (
-                          <div className="text-gray-500 italic text-center py-2 text-xs">No slots for this date</div>
-                        ) : (
-                          <>
-                            {leaveDates.has(selectedDate) ? (
-                              <div className="text-center py-2 w-full">
-                                <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">Doctor is on leave this day — booking disabled.</div>
-                              </div>
+                {successMsg && (
+                  <InlineMessage type="success" message={successMsg} />
+                )}
+
+                {/* Slots Grid Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Available Time Slots</h3>
+                  <div className="flex justify-center">
+                    <div className="w-full">
+                      <AnimatePresence mode="wait">
+                        {selectedDate && (
+                          <motion.div
+                            key={selectedDate}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.2 }}
+                            className="w-full"
+                          >
+                            {(!slotsByDate[selectedDate] || slotsByDate[selectedDate].length === 0) ? (
+                              <div className="text-gray-500 italic text-center py-2 text-xs">No slots for this date</div>
                             ) : (
-                              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
+                              <>
+                                {leaveDates.has(selectedDate) ? (
+                                  <div className="text-center py-2 w-full">
+                                    <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">Doctor is on leave this day — booking disabled.</div>
+                                  </div>
+                                ) : (
+                                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
                                 {slotsByDate[selectedDate]
                                   .slice()
                                   .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
@@ -280,190 +288,207 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                                       </button>
                                     );
                                   })}
-                              </div>
+                                  </div>
+                                )}
+                              </>
                             )}
-                          </>
+                          </motion.div>
                         )}
-                      </motion.div>
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Book Appointment Dialog */}
+      {confirmOpen && (
+        <Dialog open={confirmOpen} onOpenChange={(open) => !open && handleCancelBook()}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="space-y-3">
+              <DialogTitle className="text-2xl font-bold text-gray-900">Book Appointment</DialogTitle>
+              <DialogDescription className="text-sm text-gray-600">
+                {pendingSlot && (
+                  <>
+                    Book your appointment for <span className="font-semibold text-gray-900">{formatTime(pendingSlot.start)} - {formatTime(pendingSlot.end)}</span> on{' '}
+                    <span className="font-semibold text-gray-900">{selectedDate}</span>
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                let valid = true;
+                if (!appointeeName.trim()) {
+                  setAppointeeNameError(ValidationMessages.NAME_REQUIRED);
+                  valid = false;
+                } else {
+                  setAppointeeNameError('');
+                }
+                if (!appointeeAge.trim()) {
+                  setAppointeeAgeError(ValidationMessages.AGE_REQUIRED);
+                  valid = false;
+                } else {
+                  const ageNum = Number(appointeeAge);
+                  if (!Number.isInteger(ageNum) || ageNum <= 0) {
+                    setAppointeeAgeError(ValidationMessages.AGE_POSITIVE_INTEGER);
+                    valid = false;
+                  } else {
+                    setAppointeeAgeError('');
+                  }
+                }
+                if (!appointeePhone.trim()) {
+                  setAppointeePhoneError(ValidationMessages.PHONE_REQUIRED);
+                  valid = false;
+                } else if (!/^\+\d{7,}$/.test(appointeePhone)) {
+                  setAppointeePhoneError(ValidationMessages.PHONE_INVALID);
+                  valid = false;
+                } else {
+                  setAppointeePhoneError('');
+                }
+                if (!appointeeGender.trim()) {
+                  setAppointeeGenderError(ValidationMessages.GENDER_REQUIRED);
+                  valid = false;
+                } else if (!['Male', 'Female', 'Other'].includes(appointeeGender)) {
+                  setAppointeeGenderError(ValidationMessages.GENDER_INVALID);
+                  valid = false;
+                } else {
+                  setAppointeeGenderError('');
+                }
+                if (!valid) return;
+                handleConfirmBook({
+                  appointeeName,
+                  appointeeAge,
+                  appointeePhone,
+                  appointeeGender,
+                });
+              }}
+              className="space-y-6 py-4"
+            >
+              {/* Appointee Information Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Appointee Information</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="appointeeName" className="text-sm font-medium text-gray-700">
+                      Full Name <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="appointeeName"
+                      type="text"
+                      placeholder="John Doe"
+                      value={appointeeName}
+                      onChange={e => {
+                        setAppointeeName(e.target.value);
+                        if (appointeeNameError) setAppointeeNameError('');
+                      }}
+                      className={`h-10 ${appointeeNameError ? 'border-red-500' : ''}`}
+                    />
+                    {appointeeNameError && (
+                      <p className="text-xs text-red-500">{appointeeNameError}</p>
                     )}
-                  </AnimatePresence>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="appointeeAge" className="text-sm font-medium text-gray-700">
+                      Age <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="appointeeAge"
+                      type="number"
+                      placeholder="30"
+                      value={appointeeAge}
+                      onChange={e => {
+                        setAppointeeAge(e.target.value);
+                        if (appointeeAgeError) setAppointeeAgeError('');
+                      }}
+                      min={0}
+                      className={`h-10 ${appointeeAgeError ? 'border-red-500' : ''}`}
+                    />
+                    {appointeeAgeError && (
+                      <p className="text-xs text-red-500">{appointeeAgeError}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="appointeePhone" className="text-sm font-medium text-gray-700">
+                    </Label>
+                    <Input
+                      id="appointeePhone"
+                      type="tel"
+                      placeholder="+9876543210"
+                      value={appointeePhone}
+                      onChange={e => {
+                        setAppointeePhone(e.target.value);
+                        if (appointeePhoneError) setAppointeePhoneError('');
+                      }}
+                      className={`h-10 ${appointeePhoneError ? 'border-red-500' : ''}`}
+                    />
+                    {appointeePhoneError && (
+                      <p className="text-xs text-red-500">{appointeePhoneError}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="appointeeGender" className="text-sm font-medium text-gray-700">
+                      Gender <span className="text-red-500">*</span>
+                    </Label>
+                    <select
+                      id="appointeeGender"
+                      value={appointeeGender}
+                      onChange={e => {
+                        setAppointeeGender(e.target.value);
+                        if (appointeeGenderError) setAppointeeGenderError('');
+                      }}
+                      className={`flex h-10 w-full rounded-md border ${appointeeGenderError ? 'border-red-500' : 'border-gray-300'} bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2`}
+                    >
+                      <option value="">Select gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    {appointeeGenderError && (
+                      <p className="text-xs text-red-500">{appointeeGenderError}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {confirmOpen && (
-                <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30">
-                  <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-md relative flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar" style={{ marginTop: '115px', maxHeight: '500px', minHeight: '380px' }}>
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <button
-                        className="text-gray-500 hover:text-gray-800 p-1 text-xl"
-                        onClick={() => {
-                          setAppointeeNameError('');
-                          setAppointeeAgeError('');
-                          setAppointeePhoneError('');
-                          setAppointeeGenderError('');
-                          handleCancelBook();
-                        }}
-                        title="Close"
-                      >
-                        &times;
-                      </button>
-                    </div>
-                    <h2 className="text-xl font-bold mb-4 text-gray-800">Book Appointment</h2>
-                    <form
-                      className="w-full"
-                      onSubmit={e => {
-                        e.preventDefault();
-                        let valid = true;
-                        if (!appointeeName.trim()) {
-                          setAppointeeNameError(ValidationMessages.NAME_REQUIRED);
-                          valid = false;
-                        } else {
-                          setAppointeeNameError('');
-                        }
-                        if (!appointeeAge.trim()) {
-                          setAppointeeAgeError(ValidationMessages.AGE_REQUIRED);
-                          valid = false;
-                        } else {
-                          const ageNum = Number(appointeeAge);
-                          if (!Number.isInteger(ageNum) || ageNum <= 0) {
-                            setAppointeeAgeError(ValidationMessages.AGE_POSITIVE_INTEGER);
-                            valid = false;
-                          } else {
-                            setAppointeeAgeError('');
-                          }
-                        }
-                        if (!appointeePhone.trim()) {
-                          setAppointeePhoneError(ValidationMessages.PHONE_REQUIRED);
-                          valid = false;
-                        } else if (!/^\+\d{7,}$/.test(appointeePhone)) {
-                          setAppointeePhoneError(ValidationMessages.PHONE_INVALID);
-                          valid = false;
-                        } else {
-                          setAppointeePhoneError('');
-                        }
-                        if (!appointeeGender.trim()) {
-                          setAppointeeGenderError(ValidationMessages.GENDER_REQUIRED);
-                          valid = false;
-                        } else if (!['Male', 'Female', 'Other'].includes(appointeeGender)) {
-                          setAppointeeGenderError(ValidationMessages.GENDER_INVALID);
-                          valid = false;
-                        } else {
-                          setAppointeeGenderError('');
-                        }
-                        if (!valid) return;
-                        handleConfirmBook({
-                          appointeeName,
-                          appointeeAge,
-                          appointeePhone,
-                          appointeeGender,
-                        });
-                      }}
-                    >
-                      <div className="mb-2 text-center text-sm text-gray-700">
-                        {pendingSlot ? `Book appointment for ${formatTime(pendingSlot.start)} - ${formatTime(pendingSlot.end)}?` : ''}
-                      </div>
-                      <div className="mb-2">
-                        <label className="block text-sm font-medium">Appointee Name</label>
-                        <input
-                          type="text"
-                          className="w-full border rounded px-2 py-1"
-                          placeholder="Example: John Doe"
-                          value={appointeeName}
-                          onChange={e => {
-                            setAppointeeName(e.target.value);
-                            if (appointeeNameError) setAppointeeNameError('');
-                          }}
-                        // required removed to prevent browser popup
-                        />
-                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeNameError || '\u00A0'}</div>
-                      </div>
-                      <div className="mb-2">
-                        <label className="block text-sm font-medium">Appointee Age</label>
-                        <input
-                          type="number"
-                          className="w-full border rounded px-2 py-1"
-                          placeholder="Example: 30"
-                          value={appointeeAge}
-                          onChange={e => {
-                            setAppointeeAge(e.target.value);
-                            if (appointeeAgeError) setAppointeeAgeError('');
-                          }}
-                          min={0}
-                        // required removed to prevent browser popup
-                        />
-                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeAgeError || '\u00A0'}</div>
-                      </div>
-                      <div className="mb-2">
-                        <label className="block text-sm font-medium">Appointee Phone</label>
-                        <input
-                          type="tel"
-                          className="w-full border rounded px-2 py-1"
-                          placeholder="Example: +9876543210"
-                          value={appointeePhone}
-                          onChange={e => {
-                            setAppointeePhone(e.target.value);
-                            if (appointeePhoneError) setAppointeePhoneError('');
-                          }}
-                        // required removed to prevent browser popup
-                        />
-                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeePhoneError || '\u00A0'}</div>
-                      </div>
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium">Appointee Gender</label>
-                        <select
-                          className="w-full border rounded px-2 py-1"
-                          value={appointeeGender}
-                          onChange={e => {
-                            setAppointeeGender(e.target.value);
-                            if (appointeeGenderError) setAppointeeGenderError('');
-                          }}
-                        // required removed to prevent browser popup
-                        >
-                          <option value="">Example: Select gender</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        <div className="text-red-500 text-xs mt-1 min-h-[18px]">{appointeeGenderError || '\u00A0'}</div>
-                      </div>
-                      <div className="flex justify-end gap-2 mt-2">
-                        <Button type="button" variant="secondary"
-                          onClick={() => {
-                            setAppointeeNameError('');
-                            setAppointeeAgeError('');
-                            setAppointeePhoneError('');
-                            setAppointeeGenderError('');
-                            handleCancelBook();
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          className="secondary"
-                        >
-                          Book
-                        </Button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
-
-              <style>{`
-                .no-scrollbar {
-                  scrollbar-width: none;
-                  -ms-overflow-style: none;
-                }
-                .no-scrollbar::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3 pt-6 mt-2 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setAppointeeNameError('');
+                    setAppointeeAgeError('');
+                    setAppointeePhoneError('');
+                    setAppointeeGenderError('');
+                    handleCancelBook();
+                  }}
+                  className="w-full h-11 text-base"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                >
+                  Book Appointment
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 };
 

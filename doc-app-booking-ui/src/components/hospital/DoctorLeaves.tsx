@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
+import { Calendar, Trash2 } from 'lucide-react';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { createDoctorLeave, fetchDoctorLeavesForDoctor, deleteDoctorLeave, DoctorLeaveResponse } from '../../api/doctorLeaves';
 import { InlineMessage } from '../ui/inline-message';
@@ -84,55 +84,123 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Doctor Leaves</DialogTitle>
-          <DialogDescription>Manage leaves for {doctorName || 'the doctor'}.</DialogDescription>
+          <DialogTitle className="text-xl font-semibold">Doctor Leaves</DialogTitle>
+          <DialogDescription className="text-sm text-gray-600">
+            Manage leave dates for {doctorName || 'the doctor'}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="p-3 space-y-3">
-          {error && (
-            <InlineMessage type="error" message={error} />
-          )}
-          {successMsg && (
-            <InlineMessage type="success" message={successMsg} />
-          )}
+        <div className="mt-4 space-y-6">
+          {/* Messages */}
+          {error && <InlineMessage type="error" message={error} />}
+          {successMsg && <InlineMessage type="success" message={successMsg} />}
 
-          <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
-            <div>
-              <Label>Date</Label>
-              <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
-
-              <div className="flex gap-2 mt-2">
-                <Button type="button" variant="outline" onClick={() => { setDate(''); setReason(''); }}>Reset</Button>
-                <Button type="submit" disabled={submitting} className="bg-purple-500 hover:bg-purple-600">{submitting ? 'Creating...' : 'Create'}</Button>
+          {/* Add New Leave Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Add New Leave</h3>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="leaveDate" className="text-sm font-medium">Date *</Label>
+                  <Input 
+                    id="leaveDate"
+                    type="date" 
+                    value={date} 
+                    onChange={e => setDate(e.target.value)}
+                    placeholder="Select date"
+                    disabled={submitting}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="leaveReason" className="text-sm font-medium">Reason (optional)</Label>
+                  <Input 
+                    id="leaveReason"
+                    value={reason} 
+                    onChange={e => setReason(e.target.value)} 
+                    placeholder="e.g. Medical appointment, Personal"
+                    disabled={submitting}
+                    maxLength={500}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div>
-              <Label>Reason (optional)</Label>
-              <Input value={reason} onChange={e => setReason(e.target.value)} placeholder="Reason (max 500 chars)" />
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3 items-stretch pt-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => { setDate(''); setReason(''); }}
+                  disabled={submitting}
+                  className="w-full"
+                >
+                  Reset
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={submitting || !date}
+                  className="w-full bg-purple-500 hover:bg-purple-600"
+                >
+                  {submitting ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Leave'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
 
-              
-            </div>
-          </form>
-
-          <div className="pt-2">
+          {/* Scheduled Leaves Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Scheduled Leaves</h3>
             {loading ? (
-              <div className="text-sm text-gray-500">Loading...</div>
+              <div className="p-6 text-center">
+                <div className="inline-flex items-center gap-2 text-sm text-gray-500">
+                  <span className="animate-spin">⏳</span>
+                  Loading leaves...
+                </div>
+              </div>
             ) : leaves.length === 0 ? (
-              <div className="text-sm text-gray-500">No leaves scheduled.</div>
+              <div className="p-6 text-center text-gray-600">
+                <div className="flex flex-col items-center gap-3">
+                  <Calendar className="w-12 h-12 text-gray-400 bg-transparent" />
+                  <p className="font-medium">No leaves scheduled</p>
+                  <p className="text-sm">Add a leave date above to get started</p>
+                </div>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {leaves.map(l => (
-                  <div key={l.id} className="flex items-center justify-between border rounded p-2">
-                    <div>
-                      <div className="font-semibold">{l.date}</div>
-                      {l.reason && <div className="text-xs text-gray-600">{l.reason}</div>}
+                  <div 
+                    key={l.id} 
+                    className="flex items-start justify-between p-4 border rounded-lg bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="mt-0.5">
+                        <Calendar className="w-5 h-5 text-purple-500 bg-transparent" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-900">{l.date}</div>
+                        {l.reason && (
+                          <div className="text-sm text-gray-600 mt-1 break-words">{l.reason}</div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="destructive" size="sm" onClick={() => setConfirm({ open: true, id: l.id })}>Delete</Button>
-                    </div>
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => setConfirm({ open: true, id: l.id })}
+                      className="flex items-center gap-2 flex-shrink-0"
+                      title="Delete leave"
+                    >
+                      <Trash2 className="w-4 h-4 bg-transparent" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -143,7 +211,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
         <ConfirmDialog
           open={confirm.open}
           title="Delete leave"
-          message="Are you sure you want to delete this leave entry?"
+          message="Are you sure you want to delete this leave entry? This action cannot be undone."
           confirmText="Delete"
           cancelText="Cancel"
           onConfirm={() => handleDelete(confirm.id)}
