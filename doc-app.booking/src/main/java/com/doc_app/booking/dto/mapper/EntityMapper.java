@@ -52,14 +52,15 @@ public interface EntityMapper {
     @Mapping(target = "appointments", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "contact", source = "phoneNumber")
-    @Mapping(target = "profileImage", expression = "java(decodeBase64Image(request.getProfileImageBase64()))")
+    @Mapping(target = "profileImage", expression = "java(decodeBase64Image(request.getProfileImage()))")
     Doctor toDoctor(CreateDoctorRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "appointments", ignore = true)
     @Mapping(target = "hospital", ignore = true)
     @Mapping(target = "contact", source = "phoneNumber")
-    @Mapping(target = "profileImage", expression = "java(decodeBase64Image(request.getProfileImageBase64()))")
+    @Mapping(target = "profileImage", expression = "java(updateProfileImage(doctor.getProfileImage(), request.getProfileImage()))")
+    @Mapping(target = "imageContentType", source = "imageContentType")
     void updateDoctor(@MappingTarget Doctor doctor, UpdateDoctorRequest request);
 
     @Mapping(target = "appointments", ignore = true)
@@ -146,6 +147,19 @@ public interface EntityMapper {
             // Invalid base64 string
             return null;
         }
+    }
+
+    /**
+     * Helper method to update profile image - only decode and update if new base64 is provided
+     * Otherwise, keep the existing image
+     */
+    default byte[] updateProfileImage(byte[] existingImage, String newBase64Image) {
+        // If new base64 is provided, decode and return it
+        if (newBase64Image != null && !newBase64Image.trim().isEmpty()) {
+            return decodeBase64Image(newBase64Image);
+        }
+        // Otherwise, keep the existing image unchanged
+        return existingImage;
     }
 
 }

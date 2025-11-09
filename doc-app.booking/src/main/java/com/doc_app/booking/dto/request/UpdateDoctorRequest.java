@@ -1,5 +1,6 @@
 package com.doc_app.booking.dto.request;
 
+import com.doc_app.booking.validation.Base64ImageSize;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -39,7 +40,8 @@ public class UpdateDoctorRequest {
     private String qualifications;
 
     // Profile Image (base64 encoded)
-    private String profileImageBase64;
+    @Base64ImageSize(maxSizeInBytes = 3145728, message = "Profile image must not exceed 3MB")
+    private String profileImage;
 
     @Size(max = 100, message = "Image content type must not exceed 100 characters")
     @Pattern(regexp = "^$|^image/(jpeg|jpg|png|gif|bmp|webp)$", message = "Invalid image content type. Allowed: jpeg, jpg, png, gif, bmp, webp")
