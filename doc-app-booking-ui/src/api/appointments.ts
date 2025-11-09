@@ -102,7 +102,20 @@ export interface Slot {
 
 export async function fetchSlotsByDoctorIdAndDate(doctorId: string | number, date: string) {
   const token = window.localStorage.getItem('accessToken') || '';
-  return apiFetch<{ data: Slot[] }>(`/api/v1/slots/doctor/${doctorId}?date=${date}`, {
+  // Normalize developer/mock ids like 'd1' to the numeric userId stored in localStorage
+  let id: string | number = doctorId;
+  try {
+    const idStr = String(id || '');
+    if (!idStr || idStr === 'd1' || idStr.startsWith('d')) {
+      const userIdStr = window.localStorage.getItem('userId') || '';
+      const parsed = parseInt(userIdStr, 10);
+      if (!Number.isNaN(parsed)) id = parsed;
+    }
+  } catch (_) {
+    // ignore and leave id as provided
+  }
+
+  return apiFetch<{ data: Slot[] }>(`/api/v1/slots/doctor/${encodeURIComponent(String(id))}?date=${encodeURIComponent(date)}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 }

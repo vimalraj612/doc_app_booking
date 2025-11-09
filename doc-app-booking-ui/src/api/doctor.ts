@@ -111,11 +111,13 @@ export async function searchDoctors(query: string): Promise<DoctorDTO[]> {
 
 // Get today's appointment count for a doctor (authorization required)
 
-export async function getTodayAppointmentCount(doctorId?: string) {
+export async function getTodayAppointmentCount(doctorId?: string | number) {
   const token = localStorage.getItem('accessToken');
-  let id = doctorId;
-  if (!id || id === 'd1') {
-    id = localStorage.getItem('userId') || '';
+  let id: string | number = doctorId || '';
+  // Replace mock/fallback 'd1' with actual userId from localStorage
+  if (!id || id === 'd1' || id === 'd1' || String(id).startsWith('d')) {
+    const userIdStr = localStorage.getItem('userId');
+    id = userIdStr ? parseInt(userIdStr, 10) : '';
   }
   return apiFetch<number>(
     `/api/v1/appointments/doctor/${id}/today/count`,
@@ -130,11 +132,13 @@ export async function getTodayAppointmentCount(doctorId?: string) {
 
 // Get today's free slots count for a doctor (authorization required)
 
-export async function getTodayFreeSlotsCount(doctorId?: string) {
+export async function getTodayFreeSlotsCount(doctorId?: string | number) {
   const token = localStorage.getItem('accessToken');
-  let id = doctorId;
-  if (!id || id === 'd1') {
-    id = localStorage.getItem('userId') || '';
+  let id: string | number = doctorId || '';
+  // Replace mock/fallback 'd1' with actual userId from localStorage
+  if (!id || id === 'd1' || String(id).startsWith('d')) {
+    const userIdStr = localStorage.getItem('userId');
+    id = userIdStr ? parseInt(userIdStr, 10) : '';
   }
   return apiFetch<number>(
     `/api/v1/slots/doctor/${id}/today/free-count`,
