@@ -20,6 +20,7 @@ public class AppointmentDTO {
     private String appointeePhone;
     private String appointeeGender;
     private String notes;
+    private LocalDateTime followUpDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

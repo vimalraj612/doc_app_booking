@@ -38,6 +38,8 @@ public class CreateAppointmentRequest {
     @Size(max = 1000)
     private String notes;
 
+    private LocalDateTime followUpDate;
+
     private boolean reserved;
 
     public boolean isReserved() {

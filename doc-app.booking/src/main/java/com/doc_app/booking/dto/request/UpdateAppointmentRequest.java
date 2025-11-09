@@ -19,5 +19,7 @@ public class UpdateAppointmentRequest {
     @Size(max = 1000)
     private String notes;
 
+    private LocalDateTime followUpDate;
+
     private com.doc_app.booking.model.AppointmentType appointmentType;
 }

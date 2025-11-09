@@ -38,6 +38,9 @@ public class Appointment {
 
     private String notes;
 
+    @Column(name = "follow_up_date")
+    private LocalDateTime followUpDate;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
