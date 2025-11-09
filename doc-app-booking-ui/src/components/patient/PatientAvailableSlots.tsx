@@ -4,6 +4,8 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 import { fetchDoctorLeavesForDoctor } from '../../api/doctorLeaves';
 import { Button } from '../ui/button';
+import { InlineMessage } from '../ui/inline-message';
+import { ValidationMessages, SlotMessages } from '../../constants/messages';
 
 interface Slot {
   slotId: string | number;
@@ -92,7 +94,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
         const res = await fetchSlotsByDoctorIdAndDate(doctorId, selectedDate);
         setSlots(res.data);
       } catch (err: any) {
-        setSlotsError(err.message || 'Failed to load slots');
+        setSlotsError(err.message || SlotMessages.LOADING_FAILED);
       } finally {
         setLoadingSlots(false);
       }
@@ -158,7 +160,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
         <h3 className="text-xl font-bold mb-4 text-gray-800">Available Slots</h3>
         <div className="overflow-y-auto flex-1 w-full pr-1 pb-2 no-scrollbar">
           {loadingSlots && <div>Loading...</div>}
-          {slotsError && <div className="text-red-500">{slotsError}</div>}
+          {slotsError && <InlineMessage type="error" message={slotsError} />}
 
           {!loadingSlots && !slotsError && (
             <>
@@ -176,9 +178,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
               </div>
 
               {successMsg && (
-                <div className="text-center text-green-700 text-xs font-semibold py-1">
-                  {successMsg}
-                </div>
+                <InlineMessage type="success" message={successMsg} className="mb-3" />
               )}
 
               {/* Slots Grid */}
@@ -315,37 +315,37 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                         e.preventDefault();
                         let valid = true;
                         if (!appointeeName.trim()) {
-                          setAppointeeNameError('Name is required.');
+                          setAppointeeNameError(ValidationMessages.NAME_REQUIRED);
                           valid = false;
                         } else {
                           setAppointeeNameError('');
                         }
                         if (!appointeeAge.trim()) {
-                          setAppointeeAgeError('Age is required.');
+                          setAppointeeAgeError(ValidationMessages.AGE_REQUIRED);
                           valid = false;
                         } else {
                           const ageNum = Number(appointeeAge);
                           if (!Number.isInteger(ageNum) || ageNum <= 0) {
-                            setAppointeeAgeError('Age must be a positive integer.');
+                            setAppointeeAgeError(ValidationMessages.AGE_POSITIVE_INTEGER);
                             valid = false;
                           } else {
                             setAppointeeAgeError('');
                           }
                         }
                         if (!appointeePhone.trim()) {
-                          setAppointeePhoneError('Phone is required.');
+                          setAppointeePhoneError(ValidationMessages.PHONE_REQUIRED);
                           valid = false;
                         } else if (!/^\+\d{7,}$/.test(appointeePhone)) {
-                          setAppointeePhoneError('Phone must start with + and be a valid number (at least 7 digits).');
+                          setAppointeePhoneError(ValidationMessages.PHONE_INVALID);
                           valid = false;
                         } else {
                           setAppointeePhoneError('');
                         }
                         if (!appointeeGender.trim()) {
-                          setAppointeeGenderError('Gender is required.');
+                          setAppointeeGenderError(ValidationMessages.GENDER_REQUIRED);
                           valid = false;
                         } else if (!['Male', 'Female', 'Other'].includes(appointeeGender)) {
-                          setAppointeeGenderError('Please select a valid gender.');
+                          setAppointeeGenderError(ValidationMessages.GENDER_INVALID);
                           valid = false;
                         } else {
                           setAppointeeGenderError('');

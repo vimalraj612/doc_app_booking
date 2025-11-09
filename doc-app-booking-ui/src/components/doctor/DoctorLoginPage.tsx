@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { InlineMessage } from "../ui/inline-message";
 import { Stethoscope, ArrowRight, Check } from "lucide-react";
-// TODO: Update the import path below if your api file is located elsewhere
 import { sendDoctorOtp, verifyDoctorOtp } from '../../api/auth';
-// If the file does not exist, create 'src/lib/api.ts' and export the required functions.
+import { AuthMessages } from "../../constants/messages";
 
 export function DoctorLoginPage() {
   const [mobile, setMobile] = useState("");
@@ -24,12 +24,12 @@ export function DoctorLoginPage() {
       const res = await sendDoctorOtp(mobile);
       if (res.success) {
         setStep('otp');
-        setInfo('OTP sent to your mobile number.');
+        setInfo(AuthMessages.OTP_SENT);
       } else {
-        setError('Failed to send OTP.');
+        setError(AuthMessages.OTP_SEND_FAILED);
       }
     } catch (err) {
-      setError('Failed to send OTP.');
+      setError(AuthMessages.OTP_SEND_FAILED);
     } finally {
       setLoading(false);
     }
@@ -53,10 +53,10 @@ export function DoctorLoginPage() {
         window.localStorage.setItem('doctorLoggedIn', 'true');
         window.location.href = '/doctor/dashboard';
       } else {
-        setError('Invalid OTP.');
+        setError(AuthMessages.OTP_INVALID);
       }
     } catch (err) {
-      setError('Invalid OTP.');
+      setError(AuthMessages.OTP_INVALID);
     } finally {
       setLoading(false);
     }
@@ -137,11 +137,15 @@ export function DoctorLoginPage() {
                   className="w-full h-12 bg-green-500 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-green-500"
                   disabled={loading}
                 >
-                  {loading ? 'Sending OTP...' : 'Send OTP as Doctor'}
+                  {loading ? AuthMessages.SENDING_OTP : 'Send OTP as Doctor'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-                {error && <div className="text-red-600 text-sm text-center">{error}</div>}
-                {info && <div className="text-green-600 text-sm text-center">{info}</div>}
+                {error && (
+                  <InlineMessage type="error" message={error} className="mt-4" />
+                )}
+                {info && (
+                  <InlineMessage type="success" message={info} className="mt-4" />
+                )}
               </form>
             )}
             {step === 'otp' && (
@@ -164,7 +168,7 @@ export function DoctorLoginPage() {
                   className="w-full h-12 bg-green-500 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-green-500"
                   disabled={loading}
                 >
-                  {loading ? 'Verifying OTP...' : 'Verify OTP as Doctor'}
+                  {loading ? AuthMessages.VERIFYING_OTP : 'Verify OTP as Doctor'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button
@@ -175,8 +179,12 @@ export function DoctorLoginPage() {
                 >
                   Change mobile number
                 </button>
-                {error && <div className="text-red-600 text-sm text-center">{error}</div>}
-                {info && <div className="text-green-600 text-sm text-center">{info}</div>}
+                {error && (
+                  <InlineMessage type="error" message={error} className="mt-4" />
+                )}
+                {info && (
+                  <InlineMessage type="success" message={info} className="mt-4" />
+                )}
               </form>
             )}
           </div>

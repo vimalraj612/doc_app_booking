@@ -6,6 +6,8 @@ import { Input } from '../ui/input';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { createDoctorLeave, fetchDoctorLeavesForDoctor, deleteDoctorLeave, DoctorLeaveResponse } from '../../api/doctorLeaves';
+import { InlineMessage } from '../ui/inline-message';
+import { LeaveMessages, ValidationMessages } from '../../constants/messages';
 
 interface DoctorLeavesProps {
   doctorId: string | number | null;
@@ -38,7 +40,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
       const data = await fetchDoctorLeavesForDoctor(doctorId);
       setLeaves(data || []);
     } catch (e: any) {
-      setError(e?.message || 'Failed to load leaves');
+      setError(e?.message || LeaveMessages.LOADING_FAILED);
     } finally {
       setLoading(false);
     }
@@ -47,20 +49,20 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
   const handleCreate = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!doctorId || !date) {
-      setError('Please choose a date');
+      setError(ValidationMessages.DATE_REQUIRED);
       return;
     }
     setSubmitting(true);
     setError(null);
     try {
       await createDoctorLeave({ doctorId, date, reason });
-      setSuccessMsg('Leave created');
+      setSuccessMsg(LeaveMessages.CREATED_SUCCESS);
       setDate('');
       setReason('');
       await loadLeaves();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (e: any) {
-      setError(e?.message || 'Failed to create leave');
+      setError(e?.message || LeaveMessages.CREATE_FAILED);
     } finally {
       setSubmitting(false);
     }
@@ -70,11 +72,11 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
     if (!id) return setConfirm({ open: false });
     try {
       await deleteDoctorLeave(id);
-      setSuccessMsg('Leave deleted');
+      setSuccessMsg(LeaveMessages.DELETED_SUCCESS);
       await loadLeaves();
       setTimeout(() => setSuccessMsg(null), 2500);
     } catch (e: any) {
-      setError(e?.message || 'Failed to delete leave');
+      setError(e?.message || LeaveMessages.DELETE_FAILED);
     } finally {
       setConfirm({ open: false });
     }
@@ -90,16 +92,10 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
         <div className="p-3 space-y-3">
           {error && (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <InlineMessage type="error" message={error} />
           )}
           {successMsg && (
-            <Alert>
-              <AlertTitle>Success</AlertTitle>
-              <AlertDescription>{successMsg}</AlertDescription>
-            </Alert>
+            <InlineMessage type="success" message={successMsg} />
           )}
 
           <form onSubmit={handleCreate} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">

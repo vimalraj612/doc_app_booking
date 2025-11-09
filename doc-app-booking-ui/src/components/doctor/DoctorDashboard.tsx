@@ -15,6 +15,8 @@ import { Calendar } from '../ui/calendar';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { InlineMessage } from '../ui/inline-message';
+import { AppointmentMessages, DoctorMessages } from '../../constants/messages';
 
 interface DoctorDashboardProps {
   user: User;
@@ -84,7 +86,7 @@ export function DoctorDashboard({
         setTodayCount(extractData(todayRes));
         setFreeSlotsCount(extractData(freeRes));
       } catch (err: any) {
-        setStatsError('Failed to load stats');
+        setStatsError(DoctorMessages.LOADING_FAILED);
       } finally {
         setLoadingStats(false);
       }
@@ -165,7 +167,7 @@ export function DoctorDashboard({
         setAppointmentsFetched(true);
       })
       .catch(() => {
-        setAppointmentsError('Failed to load appointments');
+        setAppointmentsError(AppointmentMessages.LOADING_FAILED);
         setAppointments([]);
       })
       .finally(() => setAppointmentsLoading(false));
@@ -195,7 +197,7 @@ export function DoctorDashboard({
 
   // Cancel handler (dummy for now)
   const onCancel = (appt: any) => {
-    setCancelMsg({ type: 'success', text: 'Appointment cancelled (demo)' });
+    setCancelMsg({ type: 'success', text: AppointmentMessages.CANCEL_SUCCESS });
     setCancelDialog({ open: false });
   };
 

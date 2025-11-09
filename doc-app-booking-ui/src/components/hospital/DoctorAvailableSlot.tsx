@@ -3,10 +3,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate, reserveAppointment } from '../../api/appointments';
 import { fetchDoctorLeavesForDoctor } from '../../api/doctorLeaves';
+import { InlineMessage } from '../ui/inline-message';
+import { SlotMessages } from '../../constants/messages';
 
 interface Slot {
     slotId: string | number;
@@ -43,7 +44,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
     // This helps when someone runs the dev server without modifying env files.
     const isSimpleTest = (() => {
         try {
-            if (import.meta.env.VITE_SIMPLE_TEST === 'true') return true;
+            if ((import.meta as any).env?.VITE_SIMPLE_TEST === 'true') return true;
         } catch (_) { }
         try {
             if (typeof window !== 'undefined') {
@@ -65,7 +66,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                 const res = await fetchSlotsByDoctorIdAndDate(doctorId, date);
                 setSlots(res.data || []);
             } catch (e: any) {
-                setError(e?.message || 'Failed to load slots');
+                setError(e?.message || SlotMessages.LOADING_FAILED);
             } finally {
                 setLoading(false);
             }
@@ -121,18 +122,17 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                 slotId: selectedSlot.slotId,
                 reserved: true,
             });
-            // Show success message only in simple test mode
-            if (isSimpleTest) {
-                setSuccess('Slot reserved successfully');
-                window.setTimeout(() => setSuccess(null), 3000);
-            }
+            // Show success message
+            setSuccess(SlotMessages.RESERVED_SUCCESS);
+            window.setTimeout(() => setSuccess(null), 3000);
             // keep the confirmation panel open inside the dialog so user sees the reserved state
             // we do not clear selectedSlot here so the panel can show details; user can close when ready
             // refresh
             const res = await fetchSlotsByDoctorIdAndDate(doctorId as any, date);
             setSlots(res.data || []);
         } catch (e: any) {
-            setError(e?.message || 'Failed to reserve slot');
+            const errorMsg = e?.message || SlotMessages.RESERVE_FAILED;
+            setError(errorMsg);
         } finally {
             setBooking(false);
         }
@@ -324,16 +324,10 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
 
                 <div className="space-y-3">
                     {error && (
-                        <Alert variant="destructive">
-                            <AlertTitle>Error</AlertTitle>
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
+                        <InlineMessage type="error" message={error} />
                     )}
                     {success && (
-                        <Alert>
-                            <AlertTitle>Success</AlertTitle>
-                            <AlertDescription>{success}</AlertDescription>
-                        </Alert>
+                        <InlineMessage type="success" message={success} />
                     )}
 
                     <div className="flex gap-2 items-center justify-center mb-3">

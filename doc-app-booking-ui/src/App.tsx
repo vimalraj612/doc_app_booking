@@ -372,7 +372,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen" data-theme={currentUser?.role ?? 'patient'}>
+    <div className="min-h-screen bg-gray-50">
       {currentUser.role === 'patient' && (
         <PatientDashboard onLogout={handleLogout} />
       )}
@@ -397,7 +397,6 @@ function App() {
           onDeleteDoctor={handleDeleteDoctor}
         />
       )}
-      {/* Global toaster removed per preference; success messages shown inline */}
     </div>
   );
 }

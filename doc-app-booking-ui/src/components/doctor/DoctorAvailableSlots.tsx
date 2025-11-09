@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 import { Button } from '../ui/button';
 import { Trash2, LayoutTemplate } from 'lucide-react';
+import { InlineMessage } from '../ui/inline-message';
 
 interface Slot {
   slotId: string | number;
@@ -83,13 +84,11 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
       <h3 className="text-xl font-bold mb-4 text-gray-800">Today's Slots ({todayStr})</h3>
       <div className="overflow-y-auto flex-1 w-full pr-1 pb-2 no-scrollbar">
         {loadingSlots && <div>Loading...</div>}
-        {slotsError && <div className="text-red-500">{slotsError}</div>}
+        {slotsError && <InlineMessage type="error" message={slotsError} />}
         {!loadingSlots && !slotsError && (
           <>
             {successMsg && (
-              <div className="text-center text-green-700 text-xs font-semibold py-1">
-                {successMsg}
-              </div>
+              <InlineMessage type="success" message={successMsg} className="mb-3" />
             )}
             {/* Slots Grid */}
             <div className="flex justify-center">

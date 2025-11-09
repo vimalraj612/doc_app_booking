@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
+import { InlineMessage } from '../ui/inline-message';
+import { ValidationMessages, DoctorMessages, SlotTemplateMessages, AppointmentMessages } from '../../constants/messages';
 
 import { useEffect } from 'react';
 import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO, DoctorDTO } from '../../api/doctor';
@@ -62,34 +64,34 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
 
   const validate = () => {
     const errs: { [k: string]: string } = {};
-    if (!firstName || !firstName.trim()) errs.firstName = 'First name is required';
-    else if (firstName.length > 100) errs.firstName = 'First name must not exceed 100 characters';
-    else if (!namePattern.test(firstName)) errs.firstName = 'First name contains invalid characters';
+    if (!firstName || !firstName.trim()) errs.firstName = ValidationMessages.FIRST_NAME_REQUIRED;
+    else if (firstName.length > 100) errs.firstName = ValidationMessages.FIRST_NAME_MAX;
+    else if (!namePattern.test(firstName)) errs.firstName = ValidationMessages.FIRST_NAME_INVALID;
 
-    if (!lastName || !lastName.trim()) errs.lastName = 'Last name is required';
-    else if (lastName.length > 100) errs.lastName = 'Last name must not exceed 100 characters';
-    else if (!namePattern.test(lastName)) errs.lastName = 'Last name contains invalid characters';
+    if (!lastName || !lastName.trim()) errs.lastName = ValidationMessages.LAST_NAME_REQUIRED;
+    else if (lastName.length > 100) errs.lastName = ValidationMessages.LAST_NAME_MAX;
+    else if (!namePattern.test(lastName)) errs.lastName = ValidationMessages.LAST_NAME_INVALID;
 
-    if (!email || !email.trim()) errs.email = 'Email is required';
-    else if (email.length > 200) errs.email = 'Email must not exceed 200 characters';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Please provide a valid email address';
+    if (!email || !email.trim()) errs.email = ValidationMessages.EMAIL_REQUIRED;
+    else if (email.length > 200) errs.email = ValidationMessages.EMAIL_MAX;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = ValidationMessages.EMAIL_INVALID;
 
-    if (!phoneNumber || !phoneNumber.trim()) errs.phoneNumber = 'Phone number is required';
-    else if (phoneNumber.length > 20) errs.phoneNumber = 'Phone number must not exceed 20 characters';
-    else if (!phonePattern.test(phoneNumber)) errs.phoneNumber = 'Please provide a valid phone number';
+    if (!phoneNumber || !phoneNumber.trim()) errs.phoneNumber = ValidationMessages.PHONE_REQUIRED;
+    else if (phoneNumber.length > 20) errs.phoneNumber = ValidationMessages.PHONE_MAX;
+    else if (!phonePattern.test(phoneNumber)) errs.phoneNumber = ValidationMessages.PHONE_INVALID;
 
-    if (!specialization || !specialization.trim()) errs.specialization = 'Specialization is required';
-    else if (specialization.length > 200) errs.specialization = 'Specialization must not exceed 200 characters';
-    else if (!SPECIALIZATION_OPTIONS.find(o => o.value === specialization)) errs.specialization = 'Please select a valid specialization';
+    if (!specialization || !specialization.trim()) errs.specialization = ValidationMessages.SPECIALIZATION_REQUIRED;
+    else if (specialization.length > 200) errs.specialization = ValidationMessages.SPECIALIZATION_MAX;
+    else if (!SPECIALIZATION_OPTIONS.find(o => o.value === specialization)) errs.specialization = ValidationMessages.SPECIALIZATION_INVALID;
 
-    if (department && department.length > 200) errs.department = 'Department must not exceed 200 characters';
-    else if (department && !departmentPattern.test(department)) errs.department = 'Department contains invalid characters';
+    if (department && department.length > 200) errs.department = ValidationMessages.DEPARTMENT_MAX;
+    else if (department && !departmentPattern.test(department)) errs.department = ValidationMessages.DEPARTMENT_INVALID;
 
-    if (experienceYears !== '' && (Number(experienceYears) < 0 || Number(experienceYears) > 70)) errs.experienceYears = 'Experience must be between 0 and 70';
+    if (experienceYears !== '' && (Number(experienceYears) < 0 || Number(experienceYears) > 70)) errs.experienceYears = ValidationMessages.EXPERIENCE_RANGE;
 
-    if (qualifications && qualifications.length > 1000) errs.qualifications = 'Qualifications must not exceed 1000 characters';
+    if (qualifications && qualifications.length > 1000) errs.qualifications = ValidationMessages.QUALIFICATIONS_MAX;
 
-    if (imageContentType && imageContentType.length > 100) errs.imageContentType = 'Image content type must not exceed 100 characters';
+    if (imageContentType && imageContentType.length > 100) errs.imageContentType = ValidationMessages.IMAGE_TYPE_MAX;
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -386,15 +388,15 @@ export function HospitalDashboard({
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
     };
-    if (!templateForm.startTime) errs.startTime = 'Start time is required';
-    if (!templateForm.endTime) errs.endTime = 'End time is required';
+    if (!templateForm.startTime) errs.startTime = ValidationMessages.START_TIME_REQUIRED;
+    if (!templateForm.endTime) errs.endTime = ValidationMessages.END_TIME_REQUIRED;
     if (templateForm.startTime && templateForm.endTime) {
       const s = toMinutes(templateForm.startTime);
       const e = toMinutes(templateForm.endTime);
-      if (e <= s) errs.endTime = 'End time must be after start time';
-      if (e - s < templateForm.slotDurationMinutes) errs.endTime = 'Slot duration must fit within start/end range';
+      if (e <= s) errs.endTime = ValidationMessages.END_TIME_AFTER_START;
+      if (e - s < templateForm.slotDurationMinutes) errs.endTime = ValidationMessages.DURATION_MUST_FIT;
     }
-    if (!templateForm.slotDurationMinutes || templateForm.slotDurationMinutes < 5) errs.slotDurationMinutes = 'Duration must be at least 5 minutes';
+    if (!templateForm.slotDurationMinutes || templateForm.slotDurationMinutes < 5) errs.slotDurationMinutes = ValidationMessages.DURATION_MIN_5;
     setTemplateErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -402,7 +404,7 @@ export function HospitalDashboard({
   const saveSlotTemplate = async (doctorId?: string) => {
     const docId = doctorId || slotTemplatesDoctor;
     if (!docId) {
-      setSlotTemplatesError('No doctor selected for slot template');
+      setSlotTemplatesError(SlotTemplateMessages.NO_DOCTOR_SELECTED);
       window.setTimeout(() => setSlotTemplatesError(''), 3500);
       return;
     }
@@ -428,12 +430,12 @@ export function HospitalDashboard({
       setSlotTemplates(data);
       resetTemplateForm();
       setTemplateErrors({});
-      const msg = (resp && (resp.message || (resp.data && (resp.data.message || undefined)))) || 'Slot template saved';
+      const msg = (resp && (resp.message || (resp.data && (resp.data.message || undefined)))) || SlotTemplateMessages.SAVED_SUCCESS;
       setSuccessMessage(msg);
       window.setTimeout(() => setSuccessMessage(null), 3500);
     } catch (e: any) {
       console.error('Failed to save slot template', e);
-      setSlotTemplatesError(extractErrorMessage(e) || 'Failed to save slot template');
+      setSlotTemplatesError(extractErrorMessage(e) || SlotTemplateMessages.SAVE_FAILED);
       window.setTimeout(() => setSlotTemplatesError(''), 3500);
     } finally {
       setSlotTemplatesLoading(false);
@@ -451,7 +453,7 @@ export function HospitalDashboard({
     const templateId = confirmTargetId;
     if (!templateId) return setConfirmOpen(false);
     if (!slotTemplatesDoctor) {
-      setSlotTemplatesError('No doctor selected for slot template');
+      setSlotTemplatesError(SlotTemplateMessages.NO_DOCTOR_SELECTED);
       window.setTimeout(() => setSlotTemplatesError(''), 3500);
       setConfirmOpen(false);
       setConfirmTargetId(null);
@@ -463,12 +465,12 @@ export function HospitalDashboard({
       const resp: any = await deleteSlotTemplate(templateId);
       const data = await fetchSlotTemplatesByDoctorId(slotTemplatesDoctor);
       setSlotTemplates(data);
-      const msg = (resp && resp.message) || 'Slot template deleted';
+      const msg = (resp && resp.message) || SlotTemplateMessages.DELETED_SUCCESS;
       setSuccessMessage(msg);
       window.setTimeout(() => setSuccessMessage(null), 3500);
     } catch (e: any) {
       console.error('Failed to delete slot template', e);
-      setSlotTemplatesError(extractErrorMessage(e) || 'Failed to delete slot template');
+      setSlotTemplatesError(extractErrorMessage(e) || SlotTemplateMessages.DELETE_FAILED);
       window.setTimeout(() => setSlotTemplatesError(''), 3500);
     } finally {
       setSlotTemplatesLoading(false);
@@ -511,7 +513,7 @@ export function HospitalDashboard({
       setSlotTemplates(data);
     } catch (e: any) {
       console.error('HospitalDashboard (top-level): failed to fetch slot templates', e);
-      setSlotTemplatesError(extractErrorMessage(e) || 'Failed to load slot templates');
+      setSlotTemplatesError(extractErrorMessage(e) || SlotTemplateMessages.LOADING_FAILED);
       window.setTimeout(() => setSlotTemplatesError(''), 3500);
       setSlotTemplates(null);
     } finally {
@@ -547,7 +549,7 @@ export function HospitalDashboard({
         const count = resp && typeof resp === 'object' && 'data' in resp ? resp.data : (typeof resp === 'number' ? resp : 0);
         setHospitalTodayCount(Number(count || 0));
       } catch (e: any) {
-        setHospitalTodayError(extractErrorMessage(e) || 'Failed to load today\'s count');
+        setHospitalTodayError(extractErrorMessage(e) || DoctorMessages.TODAY_COUNT_FAILED);
         setHospitalTodayCount(null);
       } finally {
         setHospitalTodayLoading(false);
@@ -568,7 +570,7 @@ export function HospitalDashboard({
       setHospitalAppointments(appts || []);
       setAppointmentsFetched(true);
     } catch (e: any) {
-      setHospitalAppointmentsError(extractErrorMessage(e) || 'Failed to load appointments');
+      setHospitalAppointmentsError(extractErrorMessage(e) || AppointmentMessages.LOADING_FAILED);
       setHospitalAppointments([]);
     } finally {
       setHospitalAppointmentsLoading(false);
@@ -795,10 +797,7 @@ export function HospitalDashboard({
 
                 {slotTemplatesError && (
                   <div className="p-2">
-                    <Alert variant="destructive">
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{slotTemplatesError}</AlertDescription>
-                    </Alert>
+                    <InlineMessage type="error" message={slotTemplatesError} />
                     <div className="flex gap-2 justify-end mt-3">
                       <Button variant="outline" onClick={() => setSlotTemplatesError('')}>Dismiss</Button>
                     </div>
@@ -808,10 +807,7 @@ export function HospitalDashboard({
                 {slotTemplates !== null && !slotTemplatesLoading && (
                   <div className="space-y-4 p-2">
                     {successMessage && (
-                      <Alert>
-                        <AlertTitle>Success</AlertTitle>
-                        <AlertDescription>{successMessage}</AlertDescription>
-                      </Alert>
+                      <InlineMessage type="success" message={successMessage} />
                     )}
                     {/* Add / Edit form */}
                     <div className="mb-1 border rounded p-3 bg-gray-50">
@@ -991,11 +987,11 @@ export function HospitalDashboard({
                 try {
                   // mark appointment as completed from hospital view
                   await updateAppointmentStatusApi(appt.id, 'COMPLETED');
-                  setCancelMsg({ type: 'success', text: 'Appointment completed successfully.' });
+                  setCancelMsg({ type: 'success', text: AppointmentMessages.COMPLETE_SUCCESS });
                   setCancelDialog({ open: false });
                   await fetchAppointments({ start: dateRange.start, end: dateRange.end });
                 } catch (e: any) {
-                  setCancelMsg({ type: 'error', text: e?.message || 'Failed to complete appointment.' });
+                  setCancelMsg({ type: 'error', text: e?.message || AppointmentMessages.COMPLETE_FAILED });
                   setCancelDialog({ open: false });
                 }
                 setTimeout(() => setCancelMsg(null), 2500);
@@ -1013,9 +1009,7 @@ export function HospitalDashboard({
         </Tabs>
       </div>
   {/* Doctor slots modal (hospital admin reserve) */}
-  <DoctorAvailableSlot open={doctorSlotsOpen} onOpenChange={(open) => { setDoctorSlotsOpen(open); if (!open) setSlotsDoctorId(null); }} doctorId={slotsDoctorId} />
-
-  <DoctorLeaves
+            <DoctorAvailableSlot open={doctorSlotsOpen} onOpenChange={(open) => { setDoctorSlotsOpen(open); if (!open) setSlotsDoctorId(null); }} doctorId={slotsDoctorId} />  <DoctorLeaves
     doctorId={leavesDoctorId}
     doctorName={leavesDoctorName ?? undefined}
     open={leavesOpen}

@@ -10,6 +10,8 @@ import AppointmentsList from '../common/AppointmentsList';
 import PatientAvailableSlots from './PatientAvailableSlots';
 import PatientProfile from './PatientProfile';
 import { getPatientUserProfile, updatePatientProfile, PatientProfile as PatientProfileType } from '../../api/user';
+import { InlineMessage } from '../ui/inline-message';
+import { AppointmentMessages, ProfileMessages, DoctorMessages, SlotMessages } from '../../constants/messages';
 
 export interface PatientDashboardProps {
   onLogout: () => void;
@@ -44,7 +46,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
       // Use resp.data for the profile object
       setProfile(resp && resp.data ? resp.data : null);
     } catch (e) {
-      setProfileMsg('Failed to load profile');
+      setProfileMsg(ProfileMessages.LOADING_FAILED);
     } finally {
       setProfileLoading(false);
     }
@@ -73,10 +75,10 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setProfileMsg(null);
     try {
       await updatePatientProfile(userId, profile);
-      setProfileMsg('Profile updated successfully!');
+      setProfileMsg(ProfileMessages.UPDATED_SUCCESS);
       setTimeout(() => setProfileMsg(null), 2000); // Clear after 2s
     } catch (e) {
-      setProfileMsg('Failed to update profile');
+      setProfileMsg(ProfileMessages.UPDATE_FAILED);
     } finally {
       setProfileLoading(false);
     }
@@ -161,7 +163,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
       end: new Date(new Date(end).setHours(23, 59, 59, 999)).toISOString(),
     })
       .then(resp => setAppointments(resp.data || []))
-      .catch(() => setAppointmentsError('Failed to fetch appointments.'))
+      .catch(() => setAppointmentsError(AppointmentMessages.LOADING_FAILED))
       .finally(() => setAppointmentsLoading(false));
   };
 
@@ -190,8 +192,8 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         const doctor = await fetchDoctorByPhone(docPhoneNumber);
         setSelectedDoctor(doctor);
       } catch (e) {
-        setDoctorError('Failed to fetch doctor details.');
-      } finally {
+        setDoctorError(DoctorMessages.DETAILS_FAILED);
+      } finally{
         setDoctorLoading(false);
       }
     };
@@ -208,7 +210,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   const slotsResp = await fetchSlotsByDoctorIdAndDate(selectedDoctor.id, date);
   setSlots(slotsResp.data);
     } catch (e) {
-      setSlotsError('Failed to fetch slots.');
+      setSlotsError(SlotMessages.LOADING_FAILED);
     } finally {
       setLoadingSlots(false);
     }
@@ -276,16 +278,16 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
       }
       if (resp && typeof resp === 'object' && 'success' in resp) {
         if (resp.success) {
-          setSuccessMsg('Appointment booked successfully!');
+          setSuccessMsg(AppointmentMessages.BOOKED_SUCCESS);
           setSlots(prev => prev.map(s => s.slotId === pendingSlot.slotId ? { ...s, available: false } : s));
         } else {
-          setSuccessMsg(resp.message || 'Booking failed.');
+          setSuccessMsg(resp.message || AppointmentMessages.BOOKING_FAILED);
         }
       } else {
-        setSuccessMsg('Booking failed.');
+        setSuccessMsg(AppointmentMessages.BOOKING_FAILED);
       }
     } catch (e) {
-      setSuccessMsg('Booking failed.');
+      setSuccessMsg(AppointmentMessages.BOOKING_FAILED);
     } finally {
       setBooking(false);
       setTimeout(() => setSuccessMsg(''), 2500);
@@ -369,11 +371,11 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
               onCancel={async (appt) => {
                 try {
                   await cancelAppointmentApi(appt.id);
-                  setCancelMsg({ type: 'success', text: 'Appointment cancelled successfully.' });
+                  setCancelMsg({ type: 'success', text: AppointmentMessages.CANCEL_SUCCESS });
                   setCancelDialog({ open: false });
                   fetchAppointments({ start: dateRange.start, end: dateRange.end });
                 } catch (e: any) {
-                  setCancelMsg({ type: 'error', text: e?.message || 'Failed to cancel appointment.' });
+                  setCancelMsg({ type: 'error', text: e?.message || AppointmentMessages.CANCEL_FAILED });
                   setCancelDialog({ open: false });
                 }
                 setTimeout(() => setCancelMsg(null), 2500);

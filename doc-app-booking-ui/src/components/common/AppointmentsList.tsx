@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { updateAppointmentStatusApi } from '../../api/appointments';
 import ConfirmDialog from '../ui/ConfirmDialog';
+import { InlineMessage } from '../ui/inline-message';
 
 interface Appointment {
   id: string | number;
@@ -99,12 +100,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
         {/* Cancel/Complete message */}
         {(cancelMsg || completeMsg) && (
-          <div
-            className={`mb-2 text-center text-sm font-semibold ${
-              (cancelMsg?.type === 'success' || completeMsg?.type === 'success') ? 'text-green-600' : 'text-red-600'
-            }`}
-          >
-            {cancelMsg?.text || completeMsg?.text}
+          <div className="mb-3">
+            <InlineMessage 
+              type={(cancelMsg?.type === 'success' || completeMsg?.type === 'success') ? 'success' : 'error'} 
+              message={cancelMsg?.text || completeMsg?.text || ''} 
+            />
           </div>
         )}
 
@@ -198,8 +198,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         )}
 
         {appointmentsError && (
-          <div className="py-8 text-center text-red-500">
-            {appointmentsError}
+          <div className="py-4">
+            <InlineMessage type="error" message={appointmentsError} />
           </div>
         )}
 

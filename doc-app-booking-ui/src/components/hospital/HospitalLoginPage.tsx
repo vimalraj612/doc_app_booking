@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { InlineMessage } from "../ui/inline-message";
 import { Building2, ArrowRight, Check } from "lucide-react";
 import { sendHospitalOtp, verifyHospitalOtp } from '../../api/auth';
+import { AuthMessages } from "../../constants/messages";
 
 export function HospitalLoginPage() {
   const [mobile, setMobile] = useState("");
@@ -21,12 +23,12 @@ export function HospitalLoginPage() {
       const res = await sendHospitalOtp(mobile);
       if (res.success) {
         setStep('otp');
-        setInfo('OTP sent to your mobile number.');
+        setInfo(AuthMessages.OTP_SENT);
       } else {
-        setError('Failed to send OTP.');
+        setError(AuthMessages.OTP_SEND_FAILED);
       }
     } catch (err) {
-      setError('Failed to send OTP.');
+      setError(AuthMessages.OTP_SEND_FAILED);
     } finally {
       setLoading(false);
     }
@@ -50,10 +52,10 @@ export function HospitalLoginPage() {
         window.localStorage.setItem('hospitalLoggedIn', 'true');
         window.location.href = '/hospital/dashboard';
       } else {
-        setError('Invalid OTP.');
+        setError(AuthMessages.OTP_INVALID);
       }
     } catch (err) {
-      setError('Invalid OTP.');
+      setError(AuthMessages.OTP_INVALID);
     } finally {
       setLoading(false);
     }
@@ -134,11 +136,15 @@ export function HospitalLoginPage() {
                   className="w-full h-12 bg-purple-500 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-purple-500"
                   disabled={loading}
                 >
-                  {loading ? 'Sending OTP...' : 'Send OTP as Hospital'}
+                  {loading ? AuthMessages.SENDING_OTP : 'Send OTP as Hospital'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-                {error && <div className="text-red-600 text-sm text-center">{error}</div>}
-                {info && <div className="text-green-600 text-sm text-center">{info}</div>}
+                {error && (
+                  <InlineMessage type="error" message={error} className="mt-4" />
+                )}
+                {info && (
+                  <InlineMessage type="success" message={info} className="mt-4" />
+                )}
               </form>
             )}
             {step === 'otp' && (
@@ -172,8 +178,12 @@ export function HospitalLoginPage() {
                 >
                   Change mobile number
                 </button>
-                {error && <div className="text-red-600 text-sm text-center">{error}</div>}
-                {info && <div className="text-green-600 text-sm text-center">{info}</div>}
+                {error && (
+                  <InlineMessage type="error" message={error} className="mt-4" />
+                )}
+                {info && (
+                  <InlineMessage type="success" message={info} className="mt-4" />
+                )}
               </form>
             )}
           </div>

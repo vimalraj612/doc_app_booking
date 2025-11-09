@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { User as UserIcon, MapPin, Stethoscope } from 'lucide-react';
 import React from 'react';
 import { Button } from '../ui/button';
+import { InlineMessage } from '../ui/inline-message';
 
 interface DoctorDetailsProps {
   selectedDoctor: any;
@@ -17,7 +18,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
     {loading ? (
       <div>Loading doctor details...</div>
     ) : error ? (
-      <div className="text-red-500">{error}</div>
+      <InlineMessage type="error" message={error} />
     ) : selectedDoctor ? (
       <Card>
         <CardContent className="p-6 relative flex flex-col">
