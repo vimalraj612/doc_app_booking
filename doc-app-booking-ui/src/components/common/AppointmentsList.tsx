@@ -18,6 +18,7 @@ interface Appointment {
   appointeePhone?: string;
   appointeeGender?: string;
   notes?: string | null;
+  followUpDate?: string | null;
 }
 
 interface AppointmentsListProps {
@@ -410,6 +411,16 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                         {appt.appointeeGender && (
                           <div className="text-xs">
                             <span className="font-medium">Gender:</span> {appt.appointeeGender}
+                          </div>
+                        )}
+
+                        {appt.followUpDate && (
+                          <div className="flex items-start gap-2">
+                            <Calendar className="w-4 h-4 text-purple-500 bg-transparent flex-shrink-0 mt-0.5" />
+                            <div>
+                              <span className="font-medium text-purple-700 text-sm">Follow-up Date:</span>
+                              <span className="ml-2 text-sm">{new Date(appt.followUpDate).toLocaleDateString()}</span>
+                            </div>
                           </div>
                         )}
 

@@ -13,12 +13,31 @@ export function HospitalLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [mobileError, setMobileError] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setInfo("");
+    setMobileError(null);
+    
+    // Validate mobile number
+    if (!mobile || mobile.trim() === '') {
+      setMobileError('Mobile number is required');
+      setLoading(false);
+      return;
+    }
+    
+    // Check if mobile number has at least 10 digits
+    const digitsOnly = mobile.replace(/\D/g, '');
+    if (digitsOnly.length < 10) {
+      setMobileError('Please enter a valid mobile number (at least 10 digits)');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await sendHospitalOtp(mobile);
       if (res.success) {
@@ -39,6 +58,21 @@ export function HospitalLoginPage() {
     setLoading(true);
     setError("");
     setInfo("");
+    setOtpError(null);
+    
+    // Validate OTP
+    if (!otp || otp.trim() === '') {
+      setOtpError('OTP is required');
+      setLoading(false);
+      return;
+    }
+    
+    if (otp.length < 4) {
+      setOtpError('Please enter a valid OTP');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await verifyHospitalOtp(mobile, otp);
       if (res && res.data) {
@@ -124,12 +158,14 @@ export function HospitalLoginPage() {
                     type="tel"
                     placeholder="Enter your mobile number"
                     value={mobile}
-                    onChange={e => setMobile(e.target.value)}
-                    required
+                    onChange={e => { setMobile(e.target.value); setMobileError(null); }}
                     autoFocus
                     className="h-12"
                     disabled={loading}
                   />
+                  {mobileError && (
+                    <p className="text-sm text-red-600 mt-1">{mobileError}</p>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -156,11 +192,13 @@ export function HospitalLoginPage() {
                     type="text"
                     placeholder="Enter the OTP sent to your mobile"
                     value={otp}
-                    onChange={e => setOtp(e.target.value)}
-                    required
+                    onChange={e => { setOtp(e.target.value); setOtpError(null); }}
                     className="h-12"
                     disabled={loading}
                   />
+                  {otpError && (
+                    <p className="text-sm text-red-600 mt-1">{otpError}</p>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -173,7 +211,7 @@ export function HospitalLoginPage() {
                 <button
                   type="button"
                   className="w-full mt-2 text-green-600 hover:underline text-sm"
-                  onClick={() => { setStep('mobile'); setOtp(''); setError(""); setInfo(""); }}
+                  onClick={() => { setStep('mobile'); setOtp(''); setError(""); setInfo(""); setOtpError(null); }}
                   disabled={loading}
                 >
                   Change mobile number

@@ -65,6 +65,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
   const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     setMobile(value);
+    setMobileError(null); // Clear error when user types
     localStorage.setItem('docPhoneNumber', value);
   };
   const [otp, setOtp] = useState("");
@@ -74,6 +75,8 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [mobileError, setMobileError] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   // Step 1: Send OTP (Patient)
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -81,6 +84,23 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     setLoading(true);
     setError(null);
     setInfo(null);
+    setMobileError(null);
+    
+    // Validate mobile number
+    if (!mobile || mobile.trim() === '') {
+      setMobileError('Mobile number is required');
+      setLoading(false);
+      return;
+    }
+    
+    // Check if mobile number has at least 10 digits
+    const digitsOnly = mobile.replace(/\D/g, '');
+    if (digitsOnly.length < 10) {
+      setMobileError('Please enter a valid mobile number (at least 10 digits)');
+      setLoading(false);
+      return;
+    }
+    
     try {
       let phone = mobile;
       if (!phone.startsWith('+')) phone = '+' + phone;
@@ -106,6 +126,21 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     setLoading(true);
     setError(null);
     setInfo(null);
+    setOtpError(null);
+    
+    // Validate OTP
+    if (!otp || otp.trim() === '') {
+      setOtpError('OTP is required');
+      setLoading(false);
+      return;
+    }
+    
+    if (otp.length < 4) {
+      setOtpError('Please enter a valid OTP');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await verifyPatientOtp(mobile, otp);
       if (res && res.data) {
@@ -248,10 +283,12 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                     placeholder="Enter your mobile number"
                     value={mobile}
                     onChange={handleMobileChange}
-                    required
                     className="h-12"
                     disabled={loading}
                   />
+                  {mobileError && (
+                    <p className="text-sm text-red-600 mt-1">{mobileError}</p>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -278,11 +315,13 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                     type="text"
                     placeholder="Enter the OTP sent to your mobile"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
+                    onChange={(e) => { setOtp(e.target.value); setOtpError(null); }}
                     className="h-12"
                     disabled={loading}
                   />
+                  {otpError && (
+                    <p className="text-sm text-red-600 mt-1">{otpError}</p>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -295,7 +334,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                 <button
                   type="button"
                   className="w-full mt-2 text-blue-600 hover:underline text-sm"
-                  onClick={() => { setStep('mobile'); setOtp(''); setError(null); setInfo(null); }}
+                  onClick={() => { setStep('mobile'); setOtp(''); setError(null); setInfo(null); setOtpError(null); }}
                   disabled={loading}
                 >
                   Change mobile number
