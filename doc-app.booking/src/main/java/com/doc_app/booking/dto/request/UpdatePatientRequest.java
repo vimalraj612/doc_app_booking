@@ -1,5 +1,6 @@
 package com.doc_app.booking.dto.request;
 
+import com.doc_app.booking.validation.ValidPhoneNumber;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -16,7 +17,7 @@ public class UpdatePatientRequest {
     @Size(max = 200)
     private String email;
 
-    @Size(max = 30)
+    @ValidPhoneNumber(optional = true)
     private String phoneNumber;
 
     @Size(max = 500)

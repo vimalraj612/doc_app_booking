@@ -82,6 +82,7 @@ public interface EntityMapper {
     @Mapping(target = "appointeeAge", source = "appointeeAge")
     @Mapping(target = "appointeePhone", source = "appointeePhone")
     @Mapping(target = "appointeeGender", source = "appointeeGender")
+    @Mapping(target = "followUpDate", source = "followUpDate")
     AppointmentDTO toAppointmentDTO(Appointment appointment);
 
     @Mapping(target = "doctor", ignore = true)

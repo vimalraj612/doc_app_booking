@@ -1,5 +1,6 @@
 package com.doc_app.booking.dto.request;
 
+import com.doc_app.booking.validation.ValidPhoneNumber;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -32,12 +33,10 @@ public class UpdateHospitalRequest {
     @Size(max = 200, message = "Email must not exceed 200 characters")
     private String email;
 
-    @Pattern(regexp = "^$|^[+]?[1-9]\\d{1,14}$", message = "Please provide a valid phone number")
-    @Size(max = 20, message = "Phone number must not exceed 20 characters")
+    @ValidPhoneNumber(optional = true)
     private String phoneNumber;
 
-    @Pattern(regexp = "^$|^[+]?[1-9]\\d{1,14}$", message = "Please provide a valid alternate phone number")
-    @Size(max = 20, message = "Alternate phone number must not exceed 20 characters")
+    @ValidPhoneNumber(optional = true)
     private String alternatePhone;
 
     @Pattern(regexp = "^$|^(https?://)?(www\\.)?[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.[a-zA-Z]{2,}(/.*)?$", 
@@ -77,8 +76,7 @@ public class UpdateHospitalRequest {
     @Size(max = 200, message = "Admin email must not exceed 200 characters")
     private String adminEmail;
 
-    @Pattern(regexp = "^[+]?[1-9]\\d{1,14}$", message = "Please provide a valid admin phone number")
-    @Size(max = 20, message = "Admin phone number must not exceed 20 characters")
+    @ValidPhoneNumber(optional = true)
     private String adminPhone;
 
     // Services

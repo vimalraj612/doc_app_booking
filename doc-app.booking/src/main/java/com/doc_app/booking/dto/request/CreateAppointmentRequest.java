@@ -1,5 +1,6 @@
 package com.doc_app.booking.dto.request;
 
+import com.doc_app.booking.validation.ValidPhoneNumber;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -15,7 +16,7 @@ public class CreateAppointmentRequest {
 
     // Patient identification by phone number (unique identifier, optional for
     // reserved)
-    @Size(min = 10, max = 15, message = "Phone number must be between 10-15 characters")
+    @ValidPhoneNumber(optional = true)
     private String patientPhone;
 
     // Optional for reserved appointments
@@ -28,7 +29,10 @@ public class CreateAppointmentRequest {
 
     private String appointeeName;
     private Integer appointeeAge;
+    
+    @ValidPhoneNumber(optional = true)
     private String appointeePhone;
+    
     private String appointeeGender;
 
     // optional: if provided, book this slot

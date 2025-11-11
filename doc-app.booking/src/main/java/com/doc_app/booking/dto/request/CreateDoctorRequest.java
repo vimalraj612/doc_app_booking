@@ -1,6 +1,7 @@
 package com.doc_app.booking.dto.request;
 
 import com.doc_app.booking.validation.Base64ImageSize;
+import com.doc_app.booking.validation.ValidPhoneNumber;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -23,8 +24,7 @@ public class CreateDoctorRequest {
     private String email;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^[+]?[1-9]\\d{1,14}$", message = "Please provide a valid phone number")
-    @Size(max = 20, message = "Phone number must not exceed 20 characters")
+    @ValidPhoneNumber
     private String phoneNumber;
 
     // Professional Information
