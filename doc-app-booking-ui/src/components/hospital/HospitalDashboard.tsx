@@ -5,6 +5,7 @@ import { Card, CardContent } from '../ui/card';
 import { LogOut, Plus, User as UserIcon, Stethoscope, Calendar, Building2, LayoutTemplate, CalendarDays, CalendarCheck, Trash2, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Input } from '../ui/input';
+import { PhoneInput } from '../ui/phone-input';
 import SPECIALIZATION_OPTIONS from '../../constants/specializations';
 import { Label } from '../ui/label';
 import ConfirmDialog from '../ui/ConfirmDialog';
@@ -16,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { InlineMessage } from '../ui/inline-message';
 import { ValidationMessages, DoctorMessages, SlotTemplateMessages, AppointmentMessages } from '../../constants/messages';
+import { validateAndFormatPhone, removeCountryCode, sanitizePhoneInput } from '../../utils/phoneUtils';
 
 import { useEffect } from 'react';
 import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO, DoctorDTO } from '../../api/doctor';
@@ -60,7 +62,6 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
   const namePattern = /^[a-zA-Z\s\-.']+$/;
   // Specialization is selected from a canonical list; validate against that list instead of a regex
   const departmentPattern = /^$|^[a-zA-Z\s\-.'&]+$/;
-  const phonePattern = /^[+]?([1-9]\d{1,14})$/;
 
   const validate = () => {
     const errs: { [k: string]: string } = {};
@@ -76,9 +77,14 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
     else if (email.length > 200) errs.email = ValidationMessages.EMAIL_MAX;
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = ValidationMessages.EMAIL_INVALID;
 
-    if (!phoneNumber || !phoneNumber.trim()) errs.phoneNumber = ValidationMessages.PHONE_REQUIRED;
-    else if (phoneNumber.length > 20) errs.phoneNumber = ValidationMessages.PHONE_MAX;
-    else if (!phonePattern.test(phoneNumber)) errs.phoneNumber = ValidationMessages.PHONE_INVALID;
+    if (!phoneNumber || !phoneNumber.trim()) {
+      errs.phoneNumber = ValidationMessages.PHONE_REQUIRED;
+    } else {
+      const validation = validateAndFormatPhone(phoneNumber);
+      if (!validation.isValid) {
+        errs.phoneNumber = validation.error || ValidationMessages.PHONE_INVALID;
+      }
+    }
 
     if (!specialization || !specialization.trim()) errs.specialization = ValidationMessages.SPECIALIZATION_REQUIRED;
     else if (specialization.length > 200) errs.specialization = ValidationMessages.SPECIALIZATION_MAX;
@@ -135,6 +141,11 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
     if (!validate()) return;
     setSubmitting(true);
     const name = `${firstName.trim()} ${lastName.trim()}`.trim();
+    
+    // Format phone number with +91 prefix
+    const validation = validateAndFormatPhone(phoneNumber);
+    const formattedPhone = validation.formattedPhone || phoneNumber;
+    
     const doctorPayload: any = {
       name,
       firstName: firstName.trim(),
@@ -146,7 +157,7 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
       hospitalId: user.id,
       hospitalName: hospital?.name || user.name,
       email: email.trim(),
-      phoneNumber: phoneNumber.trim(),
+      phoneNumber: formattedPhone,
     };
     if (profileBase64) {
       doctorPayload.profileImage = profileBase64;
@@ -193,7 +204,8 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
       setFirstName(dto.firstName || dto.name?.split(' ')?.[0] || '');
       setLastName(dto.lastName || (dto.name ? dto.name.split(' ').slice(1).join(' ') : ''));
       setEmail(dto.email || '');
-      setPhoneNumber(dto.phoneNumber || '');
+      // Remove country code for display in input
+      setPhoneNumber(dto.phoneNumber ? removeCountryCode(dto.phoneNumber) : '');
       setSpecialization(dto.specialization || '');
       setDepartment(dto.department || '');
       setExperienceYears(dto.experienceYears ?? '');
@@ -211,7 +223,8 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
       setFirstName(ui.name?.split(' ')?.[0] || '');
       setLastName(ui.name ? ui.name.split(' ').slice(1).join(' ') : '');
       setEmail(ui.email || '');
-      setPhoneNumber(ui.phoneNumber || '');
+      // Remove country code for display in input
+      setPhoneNumber(ui.phoneNumber ? removeCountryCode(ui.phoneNumber) : '');
       setSpecialization(ui.specialization || '');
       setDepartment(ui.department || '');
       setExperienceYears(ui.experienceYears ?? '');
@@ -265,9 +278,15 @@ function AddDoctorForm({ onSuccess, onAddDoctor, onUpdateDoctor, initialDoctor =
             {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-sm font-medium">Phone *</Label>
-            <Input id="phone" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+919876543210" />
-            {errors.phoneNumber && <div className="text-red-500 text-xs">{errors.phoneNumber}</div>}
+            <PhoneInput 
+              id="phone" 
+              label="Phone Number"
+              value={phoneNumber} 
+              onChange={(value) => setPhoneNumber(value)} 
+              placeholder="Enter 10 digit mobile number"
+              error={errors.phoneNumber}
+              required
+            />
           </div>
         </div>
       </div>

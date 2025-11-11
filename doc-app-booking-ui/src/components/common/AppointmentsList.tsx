@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { Calendar, ChevronLeft, ChevronRight, Search, X, User, Clock, Phone, FileText } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Search, X, User, Clock, Phone, FileText, Filter } from 'lucide-react';
 import { updateAppointmentStatusApi } from '../../api/appointments';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
@@ -129,7 +129,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   const displayedAppointments = applyAdditionalFilters(filteredAppointments);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Messages */}
       {(cancelMsg || completeMsg) && (
         <InlineMessage 
@@ -193,7 +193,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
             <div className="flex items-center gap-2">
               <select
                 id="statusFilter"
-                className="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
+                className="flex h-10 flex-1 rounded-md border-2 border-gray-300 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:border-purple-500"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -235,25 +235,24 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 <X className="w-4 h-4 bg-transparent" />
                 <span className="hidden sm:inline">Clear</span>
               </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMoreFilters(!showMoreFilters)}
+                className="text-xs"
+                title={showMoreFilters ? 'Hide More Filters' : 'Show More Filters'}
+              >
+                <Filter className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">{showMoreFilters ? 'Hide' : 'Show'} More Filters</span>
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* More Filters Toggle */}
-        <div className="flex justify-end mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowMoreFilters(!showMoreFilters)}
-            className="text-xs"
-          >
-            {showMoreFilters ? 'Hide' : 'Show'} More Filters
-          </Button>
-        </div>
-
         {/* Additional Filters */}
         {showMoreFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 mt-4">
             <div className="space-y-2">
               <Label htmlFor="doctorNameFilter" className="text-sm font-medium">Doctor Name</Label>
               <Input
@@ -338,7 +337,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         {!appointmentsLoading &&
           !appointmentsError &&
           displayedAppointments.length > 0 && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-4">
               {displayedAppointments.map((appt: Appointment) => {
                 const statusStyles: Record<
                   string,
