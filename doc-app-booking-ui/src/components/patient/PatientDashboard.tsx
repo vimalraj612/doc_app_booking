@@ -101,15 +101,25 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
 
   function getPhoneNumberFromQuery() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('docPhoneNumber') || '';
+    let phone = params.get('docPhoneNumber') || '';
+    // Ensure +91 prefix
+    if (phone && !phone.startsWith('+')) {
+      phone = '+91' + phone;
+    }
+    return phone;
   }
   function getStoredPhoneNumber() {
-    return window.localStorage.getItem('docPhoneNumber') || '';
+    let phone = window.localStorage.getItem('docPhoneNumber') || '';
+    // Ensure +91 prefix
+    if (phone && !phone.startsWith('+')) {
+      phone = '+91' + phone;
+    }
+    return phone;
   }
   // Determine phone source: query > stored > default (fallback for patients)
   const docPhoneFromQuery = getPhoneNumberFromQuery();
   const docPhoneStored = getStoredPhoneNumber();
-  const DEFAULT_PATIENT_DOC_PHONE = '911111111111';
+  const DEFAULT_PATIENT_DOC_PHONE = '+911111111111';
   const docPhoneNumber = docPhoneFromQuery || docPhoneStored || DEFAULT_PATIENT_DOC_PHONE;
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [doctorLoading, setDoctorLoading] = useState(true);
@@ -250,7 +260,11 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setSuccessMsg('');
     setConfirmOpen(false);
     try {
-      const patientPhone = window.localStorage.getItem('phoneNumber') || '';
+      let patientPhone = window.localStorage.getItem('phoneNumber') || '';
+      // Ensure +91 prefix for patient phone
+      if (patientPhone && !patientPhone.startsWith('+')) {
+        patientPhone = '+91' + patientPhone;
+      }
       const patientName = window.localStorage.getItem('patientName') || patientPhone || 'Patient';
       const doctorId = pendingSlot.doctorId || (selectedDoctor && selectedDoctor.id);
       const appointmentDateTime = pendingSlot.start;

@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { sendPatientOtp, verifyPatientOtp } from '../../api';
 import { UserRole } from "../../App";
+import { PhoneInput } from "../ui/phone-input";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { InlineMessage } from "../ui/inline-message";
 import { AuthMessages } from "../../constants/messages";
+import { 
+  validateAndFormatPhone, 
+  removeCountryCode, 
+  sanitizePhoneInput 
+} from '../../utils/phoneUtils';
 import {
   User,
   Stethoscope,
@@ -40,7 +46,11 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     const url = new URL(window.location.href);
     let docPhone = url.searchParams.get('docPhoneNumber');
     if (docPhone) {
-      if (!docPhone.startsWith('+')) docPhone = '+' + docPhone;
+      // Add +91 prefix if not present
+      if (!docPhone.startsWith('+')) {
+        docPhone = '+91' + docPhone;
+      }
+      // Store doctor's phone separately for appointment booking
       localStorage.setItem('docPhoneNumber', docPhone);
     }
     return docPhone;
@@ -50,7 +60,8 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
   const [mobile, setMobile] = useState(() => {
     const patientPhone = getPatientPhoneFromPath();
     if (patientPhone) {
-      return patientPhone.startsWith('+') ? patientPhone : '+' + patientPhone;
+      // Remove any country code and keep only 10 digits
+      return removeCountryCode(patientPhone);
     }
     return '';
   });
@@ -61,12 +72,10 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     return undefined;
   });
 
-  // Keep localStorage in sync if user edits the input
-  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
+  // Handle mobile number change
+  const handleMobileChange = (value: string) => {
     setMobile(value);
-    setMobileError(null); // Clear error when user types
-    localStorage.setItem('docPhoneNumber', value);
+    setMobileError(null);
   };
   const [otp, setOtp] = useState("");
   // Only allow patient role for now
@@ -86,26 +95,18 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     setInfo(null);
     setMobileError(null);
     
-    // Validate mobile number
-    if (!mobile || mobile.trim() === '') {
-      setMobileError('Mobile number is required');
-      setLoading(false);
-      return;
-    }
+    // Validate and format mobile number using utility
+    const validation = validateAndFormatPhone(mobile);
     
-    // Check if mobile number has at least 10 digits
-    const digitsOnly = mobile.replace(/\D/g, '');
-    if (digitsOnly.length < 10) {
-      setMobileError('Please enter a valid mobile number (at least 10 digits)');
+    if (!validation.isValid) {
+      setMobileError(validation.error || 'Invalid phone number');
       setLoading(false);
       return;
     }
     
     try {
-      let phone = mobile;
-      if (!phone.startsWith('+')) phone = '+' + phone;
-      setMobile(phone); // update state if user entered without +
-      localStorage.setItem('docPhoneNumber', phone);
+      const phone = validation.formattedPhone;
+      localStorage.setItem('patientPhoneNumber', phone);
       const res = await sendPatientOtp(phone);
       if (res.success) {
         setStep('otp');
@@ -142,7 +143,11 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     }
     
     try {
-      const res = await verifyPatientOtp(mobile, otp);
+      // Format phone with country code for verification
+      const validation = validateAndFormatPhone(mobile);
+      const phone = validation.formattedPhone;
+      
+      const res = await verifyPatientOtp(phone, otp);
       if (res && res.data) {
         const { token, role, userId, phoneNumber, message, name } = res.data;
         if (token) localStorage.setItem('accessToken', token);
@@ -153,7 +158,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
         if (name) localStorage.setItem('name', String(name));
       }
       // You may want to pass token/user to parent here
-      onLogin(mobile, '', activeRole); // password is empty, not used
+      onLogin(phone, '', activeRole); // password is empty, not used
     } catch (err) {
       setError(AuthMessages.OTP_INVALID);
     } finally {
@@ -275,21 +280,15 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
           <div className="pb-8">
             {step === 'mobile' && (
               <form onSubmit={handleSendOtp} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number</Label>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="Enter your mobile number"
-                    value={mobile}
-                    onChange={handleMobileChange}
-                    className="h-12"
-                    disabled={loading}
-                  />
-                  {mobileError && (
-                    <p className="text-sm text-red-600 mt-1">{mobileError}</p>
-                  )}
-                </div>
+                <PhoneInput
+                  id="mobile"
+                  label="Mobile Number"
+                  value={mobile}
+                  onChange={handleMobileChange}
+                  error={mobileError}
+                  disabled={loading}
+                  required
+                />
                 <button
                   type="submit"
                   className={`w-full h-12 bg-gradient-to-r ${activeConfig.gradient} text-white rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group`}

@@ -73,7 +73,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                   <div className="flex-1">
                     <p className="text-sm mb-1">Contact</p>
                     {selectedDoctor.email && <p className="text-sm text-gray-600">Email: {selectedDoctor.email}</p>}
-                    {docPhoneNumber && <p className="text-sm text-gray-600">Phone: +{docPhoneNumber}</p>}
+                    {docPhoneNumber && <p className="text-sm text-gray-600">Phone: {docPhoneNumber}</p>}
                   </div>
                 </div>
               )}

@@ -85,7 +85,7 @@ export type DoctorDTO = {
 // Fetch doctor by phone using new endpoint
 export async function fetchDoctorByPhone(phoneNumber: string): Promise<DoctorDTO | null> {
   try {
-    const normalizedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+    const normalizedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
     const url = `/api/v1/doctors/phone/${encodeURIComponent(normalizedPhone)}`;
     const token = window.localStorage.getItem('accessToken') || '';
     console.log('Doctor API URL:', url, 'Bearer:', token ? '[present]' : '[missing]');

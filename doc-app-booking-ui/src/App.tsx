@@ -106,7 +106,7 @@ function App() {
     let docPhone = params.get('docPhoneNumber');
     if (docPhone) {
       if (!docPhone.startsWith('+')) {
-        docPhone = '+' + docPhone;
+        docPhone = '+91' + docPhone;
       }
       setDocPhoneNumber(docPhone);
       localStorage.setItem('docPhoneNumber', docPhone);

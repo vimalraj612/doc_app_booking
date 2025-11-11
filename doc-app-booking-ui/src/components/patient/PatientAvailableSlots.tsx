@@ -6,9 +6,11 @@ import { fetchDoctorLeavesForDoctor } from '../../api/doctorLeaves';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
+import { PhoneInput } from '../ui/phone-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { InlineMessage } from '../ui/inline-message';
 import { ValidationMessages, SlotMessages } from '../../constants/messages';
+import { validateAndFormatPhone, sanitizePhoneInput } from '../../utils/phoneUtils';
 
 interface Slot {
   slotId: string | number;
@@ -345,11 +347,14 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                 if (!appointeePhone.trim()) {
                   setAppointeePhoneError(ValidationMessages.PHONE_REQUIRED);
                   valid = false;
-                } else if (!/^\+\d{7,}$/.test(appointeePhone)) {
-                  setAppointeePhoneError(ValidationMessages.PHONE_INVALID);
-                  valid = false;
                 } else {
-                  setAppointeePhoneError('');
+                  const validation = validateAndFormatPhone(appointeePhone);
+                  if (!validation.isValid) {
+                    setAppointeePhoneError(validation.error || ValidationMessages.PHONE_INVALID);
+                    valid = false;
+                  } else {
+                    setAppointeePhoneError('');
+                  }
                 }
                 if (!appointeeGender.trim()) {
                   setAppointeeGenderError(ValidationMessages.GENDER_REQUIRED);
@@ -361,10 +366,12 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                   setAppointeeGenderError('');
                 }
                 if (!valid) return;
+                // Format phone number with +91 prefix
+                const validation = validateAndFormatPhone(appointeePhone);
                 handleConfirmBook({
                   appointeeName,
                   appointeeAge,
-                  appointeePhone,
+                  appointeePhone: validation.formattedPhone || appointeePhone,
                   appointeeGender,
                 });
               }}
@@ -418,22 +425,18 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="appointeePhone" className="text-sm font-medium text-gray-700">
-                    </Label>
-                    <Input
+                    <PhoneInput
                       id="appointeePhone"
-                      type="tel"
-                      placeholder="+9876543210"
+                      label="Phone Number"
                       value={appointeePhone}
-                      onChange={e => {
-                        setAppointeePhone(e.target.value);
+                      onChange={(value) => {
+                        setAppointeePhone(value);
                         if (appointeePhoneError) setAppointeePhoneError('');
                       }}
-                      className={`h-10 ${appointeePhoneError ? 'border-red-500' : ''}`}
+                      error={appointeePhoneError}
+                      placeholder="Enter 10 digit mobile number"
+                      required
                     />
-                    {appointeePhoneError && (
-                      <p className="text-xs text-red-500">{appointeePhoneError}</p>
-                    )}
                   </div>
 
                   <div className="space-y-2">

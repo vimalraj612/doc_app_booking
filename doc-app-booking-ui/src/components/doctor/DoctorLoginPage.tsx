@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { PhoneInput } from "../ui/phone-input";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { InlineMessage } from "../ui/inline-message";
 import { Stethoscope, ArrowRight, Check } from "lucide-react";
 import { sendDoctorOtp, verifyDoctorOtp } from '../../api/auth';
 import { AuthMessages } from "../../constants/messages";
+import { validateAndFormatPhone } from '../../utils/phoneUtils';
 
 export function DoctorLoginPage() {
   const [mobile, setMobile] = useState("");
@@ -24,24 +26,17 @@ export function DoctorLoginPage() {
     setInfo("");
     setMobileError(null);
     
-    // Validate mobile number
-    if (!mobile || mobile.trim() === '') {
-      setMobileError('Mobile number is required');
-      setLoading(false);
-      return;
-    }
+    // Validate and format mobile number using utility
+    const validation = validateAndFormatPhone(mobile);
     
-    // Check if mobile number has exactly 10 digits
-    const digitsOnly = mobile.replace(/\D/g, '');
-    if (digitsOnly.length !== 10) {
-      setMobileError('Please enter exactly 10 digits');
+    if (!validation.isValid) {
+      setMobileError(validation.error || 'Invalid phone number');
       setLoading(false);
       return;
     }
     
     try {
-      // Add +91 prefix
-      const phone = '+91' + digitsOnly;
+      const phone = validation.formattedPhone;
       const res = await sendDoctorOtp(phone);
       if (res.success) {
         setStep('otp');
@@ -77,8 +72,10 @@ export function DoctorLoginPage() {
     }
     
     try {
-      // Add +91 prefix for verification
-      const phone = '+91' + mobile;
+      // Format phone with country code for verification
+      const validation = validateAndFormatPhone(mobile);
+      const phone = validation.formattedPhone;
+      
       const res = await verifyDoctorOtp(phone, otp);
       if (res && res.data) {
         const { token, role, userId, phoneNumber, message, name } = res.data;
@@ -156,22 +153,16 @@ export function DoctorLoginPage() {
           <div className="pb-8">
             {step === 'mobile' && (
               <form onSubmit={handleSendOtp} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number</Label>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="Enter your mobile number"
-                    value={mobile}
-                    onChange={e => { setMobile(e.target.value); setMobileError(null); }}
-                    autoFocus
-                    className="h-12"
-                    disabled={loading}
-                  />
-                  {mobileError && (
-                    <p className="text-sm text-red-600 mt-1">{mobileError}</p>
-                  )}
-                </div>
+                <PhoneInput
+                  id="mobile"
+                  label="Mobile Number"
+                  value={mobile}
+                  onChange={(value) => { setMobile(value); setMobileError(null); }}
+                  error={mobileError}
+                  disabled={loading}
+                  autoFocus
+                  required
+                />
                 <button
                   type="submit"
                   className="w-full h-12 bg-green-500 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-green-500"

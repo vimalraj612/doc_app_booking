@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { PhoneInput } from "../ui/phone-input";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { InlineMessage } from "../ui/inline-message";
 import { Building2, ArrowRight, Check } from "lucide-react";
 import { sendHospitalOtp, verifyHospitalOtp } from '../../api/auth';
 import { AuthMessages } from "../../constants/messages";
+import { validateAndFormatPhone } from '../../utils/phoneUtils';
 
 export function HospitalLoginPage() {
   const [mobile, setMobile] = useState("");
@@ -23,23 +25,18 @@ export function HospitalLoginPage() {
     setInfo("");
     setMobileError(null);
     
-    // Validate mobile number
-    if (!mobile || mobile.trim() === '') {
-      setMobileError('Mobile number is required');
-      setLoading(false);
-      return;
-    }
+    // Validate and format mobile number using utility
+    const validation = validateAndFormatPhone(mobile);
     
-    // Check if mobile number has at least 10 digits
-    const digitsOnly = mobile.replace(/\D/g, '');
-    if (digitsOnly.length < 10) {
-      setMobileError('Please enter a valid mobile number (at least 10 digits)');
+    if (!validation.isValid) {
+      setMobileError(validation.error || 'Invalid phone number');
       setLoading(false);
       return;
     }
     
     try {
-      const res = await sendHospitalOtp(mobile);
+      const phone = validation.formattedPhone;
+      const res = await sendHospitalOtp(phone);
       if (res.success) {
         setStep('otp');
         setInfo(AuthMessages.OTP_SENT);
@@ -74,7 +71,11 @@ export function HospitalLoginPage() {
     }
     
     try {
-      const res = await verifyHospitalOtp(mobile, otp);
+      // Format phone with country code for verification
+      const validation = validateAndFormatPhone(mobile);
+      const phone = validation.formattedPhone;
+      
+      const res = await verifyHospitalOtp(phone, otp);
       if (res && res.data) {
         const { token, role, userId, phoneNumber, message, name } = res.data;
         if (token) localStorage.setItem('accessToken', token);
@@ -151,22 +152,16 @@ export function HospitalLoginPage() {
           <div className="pb-8">
             {step === 'mobile' && (
               <form onSubmit={handleSendOtp} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="mobile">Mobile Number</Label>
-                  <Input
-                    id="mobile"
-                    type="tel"
-                    placeholder="Enter your mobile number"
-                    value={mobile}
-                    onChange={e => { setMobile(e.target.value); setMobileError(null); }}
-                    autoFocus
-                    className="h-12"
-                    disabled={loading}
-                  />
-                  {mobileError && (
-                    <p className="text-sm text-red-600 mt-1">{mobileError}</p>
-                  )}
-                </div>
+                <PhoneInput
+                  id="mobile"
+                  label="Mobile Number"
+                  value={mobile}
+                  onChange={(value) => { setMobile(value); setMobileError(null); }}
+                  error={mobileError}
+                  disabled={loading}
+                  autoFocus
+                  required
+                />
                 <button
                   type="submit"
                   className="w-full h-12 bg-purple-500 text-white font-semibold rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group border border-purple-500"
