@@ -47,21 +47,20 @@ export const InlineMessage: React.FC<InlineMessageProps> = ({
   return (
     <div
       className={cn(
-        'flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border',
+        'flex items-center justify-center p-3 sm:p-4 rounded-lg border',
         'transition-all duration-200',
         getColorClasses(),
         className
       )}
       role="alert"
     >
-      <div className="mt-0.5">{getIcon()}</div>
       <div className="flex-1 min-w-0">
         {title && (
-          <h3 className="font-semibold text-sm sm:text-base mb-0.5">
+          <h3 className="font-semibold text-sm sm:text-base mb-0.5 text-center">
             {title}
           </h3>
         )}
-        <p className="text-xs sm:text-sm">{message}</p>
+        <p className="text-xs sm:text-sm text-center">{message}</p>
       </div>
     </div>
   );
