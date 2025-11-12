@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
 import { LogOut, User as UserIcon } from 'lucide-react';
-import { fetchDoctorByPhone, searchDoctors } from '../../api/doctor';
-import { fetchSlotsByDoctorIdAndDate, fetchPatientAppointmentsByDateRange, cancelAppointmentApi } from '../../api/appointments';
-import { apiFetch } from '../../api/http';
+import { fetchDoctorByPhone } from '../../api/doctor';
+import { fetchPatientAppointmentsByDateRange } from '../../api/appointments';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
-import Header from '../common/Header';
-import DoctorDetails from '../common/DoctorDetails';
-import AppointmentsList from '../common/AppointmentsList';
-import PatientAvailableSlots from './PatientAvailableSlots';
 import PatientProfile from './PatientProfile';
+import { BookAppointmentTab } from './BookAppointmentTab';
+import { PatientAppointmentsTab } from './PatientAppointmentsTab';
 import { getPatientUserProfile, updatePatientProfile, PatientProfile as PatientProfileType } from '../../api/user';
-import { InlineMessage } from '../ui/inline-message';
-import { AppointmentMessages, ProfileMessages, DoctorMessages, SlotMessages } from '../../constants/messages';
+import { ProfileMessages, AppointmentMessages } from '../../constants/messages';
 
 export interface PatientDashboardProps {
   onLogout: () => void;
@@ -29,6 +25,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     onLogout();
     window.location.href = '/login/patient';
   };
+
   // Profile modal state
   const [profileOpen, setProfileOpen] = useState(false);
   const [profile, setProfile] = useState<PatientProfileType | null>(null);
@@ -43,7 +40,6 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setProfileMsg(null);
     try {
       const resp = await getPatientUserProfile(userId);
-      // Use resp.data for the profile object
       setProfile(resp && resp.data ? resp.data : null);
     } catch (e) {
       setProfileMsg(ProfileMessages.LOADING_FAILED);
@@ -76,7 +72,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     try {
       await updatePatientProfile(userId, profile);
       setProfileMsg(ProfileMessages.UPDATED_SUCCESS);
-      setTimeout(() => setProfileMsg(null), 2000); // Clear after 2s
+      setTimeout(() => setProfileMsg(null), 2000);
     } catch (e) {
       setProfileMsg(ProfileMessages.UPDATE_FAILED);
     } finally {
@@ -84,8 +80,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     }
   };
 
-
-  // Get user name: prefer patientName, else phoneNumber, else 'Patient'
+  // Get user name
   const getUserName = () => {
     const patientName = window.localStorage.getItem('name');
     if (patientName && patientName.trim()) return patientName;
@@ -99,220 +94,115 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setUser({ name: getUserName() });
   }, []);
 
-  function getPhoneNumberFromQuery() {
-    const params = new URLSearchParams(window.location.search);
-    let phone = params.get('docPhoneNumber') || '';
-    // Ensure +91 prefix
-    if (phone && !phone.startsWith('+')) {
-      phone = '+91' + phone;
-    }
-    return phone;
-  }
-  function getStoredPhoneNumber() {
-    let phone = window.localStorage.getItem('docPhoneNumber') || '';
-    // Ensure +91 prefix
-    if (phone && !phone.startsWith('+')) {
-      phone = '+91' + phone;
-    }
-    return phone;
-  }
-  // Determine phone source: query > stored > default (fallback for patients)
-  const docPhoneFromQuery = getPhoneNumberFromQuery();
-  const docPhoneStored = getStoredPhoneNumber();
-  const DEFAULT_PATIENT_DOC_PHONE = '+911111111111';
-  const docPhoneNumber = docPhoneFromQuery || docPhoneStored || DEFAULT_PATIENT_DOC_PHONE;
+  // Doctor state (for booking tab)
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
-  const [doctorLoading, setDoctorLoading] = useState(true);
+  const [doctorLoading, setDoctorLoading] = useState(false);
   const [doctorError, setDoctorError] = useState('');
-  const [doctorsList, setDoctorsList] = useState<any[]>([]);
-  const [doctorsLoading, setDoctorsLoading] = useState(false);
-  const [doctorsError, setDoctorsError] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSlots, setShowSlots] = useState(false);
-  const [slots, setSlots] = useState<any[]>([]);
+
+  // Fetch doctor by phone number
+  const getPhoneNumberFromQuery = () => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('docPhoneNumber');
+  };
+
+  const getStoredPhoneNumber = () => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem('docPhoneNumber');
+  };
+
+  const docPhoneNumber = getPhoneNumberFromQuery() || getStoredPhoneNumber() || '';
+
+  useEffect(() => {
+    if (docPhoneNumber) {
+      setDoctorLoading(true);
+      setDoctorError('');
+      fetchDoctorByPhone(docPhoneNumber)
+        .then((doctor) => {
+          if (doctor) {
+            setSelectedDoctor(doctor);
+            setDoctorError('');
+          } else {
+            setSelectedDoctor(null);
+            setDoctorError('Doctor not found');
+          }
+        })
+        .catch((e: any) => {
+          setDoctorError(e?.message || 'Failed to load doctor details');
+          setSelectedDoctor(null);
+        })
+        .finally(() => setDoctorLoading(false));
+    }
+  }, [docPhoneNumber]);
+
+  // Appointments state
   const [appointments, setAppointments] = useState<any[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [appointmentsError, setAppointmentsError] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const statusOptions = [
-    { key: 'ALL', label: 'All' },
-    { key: 'SCHEDULED', label: 'Scheduled' },
-    { key: 'CANCELLED', label: 'Cancelled' },
-    { key: 'COMPLETED', label: 'Completed' },
-  ];
-  const getStatusLabel = (key: string) => {
-    const found = statusOptions.find(opt => opt.key === key);
-    return found ? found.label : key;
-  };
-  const [dateRange, setDateRange] = useState(() => {
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => {
     const today = new Date();
-    const next2 = new Date();
-    next2.setDate(today.getDate() + 2);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1); // Yesterday
     return {
-      start: today.toISOString().slice(0, 10),
-      end: next2.toISOString().slice(0, 10),
+      start: yesterday.toISOString().slice(0, 10),
+      end: today.toISOString().slice(0, 10),
     };
   });
-  const [cancelDialog, setCancelDialog] = useState<{ open: boolean; appt?: any }>({ open: false });
   const [cancelMsg, setCancelMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const filteredAppointments = statusFilter === 'ALL'
-    ? appointments
-    : appointments.filter(appt => appt.status === statusFilter);
-  const [activeTab, setActiveTab] = useState(() => (docPhoneFromQuery || docPhoneStored) ? 'details' : 'doctors');
+  const [cancelDialog, setCancelDialog] = useState<{ open: boolean; appointment?: any }>({ open: false });
   const [appointmentsFetched, setAppointmentsFetched] = useState(false);
-  const fetchAppointments = (customRange?: { start: string; end: string }) => {
+
+  const fetchAppointments = async (params: { start: string; end: string }) => {
+    const patientPhone = window.localStorage.getItem('phoneNumber');
     const patientId = window.localStorage.getItem('userId');
     if (!patientId) return;
-    const start = customRange?.start || dateRange.start;
-    const end = customRange?.end || dateRange.end;
     setAppointmentsLoading(true);
     setAppointmentsError('');
-    fetchPatientAppointmentsByDateRange({
-      patientId,
-      start: new Date(start).toISOString(),
-      end: new Date(new Date(end).setHours(23, 59, 59, 999)).toISOString(),
-    })
-      .then(resp => setAppointments(resp.data || []))
-      .catch(() => setAppointmentsError(AppointmentMessages.LOADING_FAILED))
-      .finally(() => setAppointmentsLoading(false));
-  };
-
-  useEffect(() => {
-    if (activeTab === 'appointments' && appointmentsFetched) {
-      fetchAppointments({ start: dateRange.start, end: dateRange.end });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRange.start, dateRange.end]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [slotsError, setSlotsError] = useState('');
-
-  useEffect(() => {
-    // Only fetch a doctor's details when a real phone is provided via query or stored value.
-    const hasRealPhone = !!(docPhoneFromQuery || docPhoneStored);
-    if (!hasRealPhone) {
-      setDoctorLoading(false);
-      setSelectedDoctor(null);
-      return;
-    }
-    if (!docPhoneNumber) return;
-    const fetchDoctor = async () => {
-      setDoctorLoading(true);
-      setDoctorError('');
-      try {
-        const doctor = await fetchDoctorByPhone(docPhoneNumber);
-        setSelectedDoctor(doctor);
-      } catch (e) {
-        setDoctorError(DoctorMessages.DETAILS_FAILED);
-      } finally{
-        setDoctorLoading(false);
-      }
-    };
-    fetchDoctor();
-  }, [docPhoneNumber, docPhoneFromQuery, docPhoneStored]);
-
-  const fetchSlots = async () => {
-    if (!selectedDoctor) return;
-    setLoadingSlots(true);
-    setSlotsError('');
     try {
-  // Use selectedDate if set, otherwise default to today
-  const date = selectedDate || new Date().toISOString().slice(0, 10);
-  const slotsResp = await fetchSlotsByDoctorIdAndDate(selectedDoctor.id, date);
-  setSlots(slotsResp.data);
-    } catch (e) {
-      setSlotsError(SlotMessages.LOADING_FAILED);
-    } finally {
-      setLoadingSlots(false);
-    }
-  };
-
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
-  const [booking, setBooking] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingSlot, setPendingSlot] = useState<any>(null);
-
-  const slotsByDate: { [date: string]: any[] } = {};
-  slots.forEach(slot => {
-    const date = new Date(slot.start).toISOString().slice(0, 10);
-    if (!slotsByDate[date]) slotsByDate[date] = [];
-    slotsByDate[date].push(slot);
-  });
-  const allDates = Object.keys(slotsByDate).sort();
-
-  useEffect(() => {
-    if (allDates.length > 0 && !selectedDate) setSelectedDate(allDates[0]);
-  }, [allDates, selectedDate]);
-
-  const formatTime = (time: string) =>
-    new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  const handleBookSlot = (slot: any) => {
-    if (!slot.available || booking) return;
-    setPendingSlot(slot);
-    setConfirmOpen(true);
-  };
-
-  const handleConfirmBook = async (appointeeData: { appointeeName: string; appointeeAge: string; appointeePhone: string; appointeeGender: string }) => {
-    if (!pendingSlot) return;
-    setBooking(true);
-    setSuccessMsg('');
-    setConfirmOpen(false);
-    try {
-      let patientPhone = window.localStorage.getItem('phoneNumber') || '';
-      // Ensure +91 prefix for patient phone
-      if (patientPhone && !patientPhone.startsWith('+')) {
-        patientPhone = '+91' + patientPhone;
-      }
-      const patientName = window.localStorage.getItem('patientName') || patientPhone || 'Patient';
-      const doctorId = pendingSlot.doctorId || (selectedDoctor && selectedDoctor.id);
-      const appointmentDateTime = pendingSlot.start;
-      const slotId = pendingSlot.slotId;
-      const payload = {
-        doctorId,
-        patientPhone,
-        patientName,
-        appointmentDateTime,
-        slotId,
-        ...appointeeData,
-      };
-      const token = window.localStorage.getItem('accessToken') || '';
-      const rawResp = await apiFetch('/api/v1/appointments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
+      const result = await fetchPatientAppointmentsByDateRange({
+        patientId,
+        start: params.start + 'T00:00:00',
+        end: params.end + 'T23:59:59',
       });
-      let resp: any = rawResp;
-      if (typeof window !== 'undefined' && rawResp instanceof Response) {
-        resp = await rawResp.json();
-      }
-      if (resp && typeof resp === 'object' && 'success' in resp) {
-        if (resp.success) {
-          setSuccessMsg(AppointmentMessages.BOOKED_SUCCESS);
-          setSlots(prev => prev.map(s => s.slotId === pendingSlot.slotId ? { ...s, available: false } : s));
-        } else {
-          setSuccessMsg(resp.message || AppointmentMessages.BOOKING_FAILED);
-        }
+      if (result && result.data) {
+        setAppointments(result.data);
+        setAppointmentsError('');
       } else {
-        setSuccessMsg(AppointmentMessages.BOOKING_FAILED);
+        setAppointments([]);
+        setAppointmentsError('');
       }
-    } catch (e) {
-      setSuccessMsg(AppointmentMessages.BOOKING_FAILED);
+    } catch (e: any) {
+      setAppointmentsError(e?.message || AppointmentMessages.LOADING_FAILED);
+      setAppointments([]);
     } finally {
-      setBooking(false);
-      setTimeout(() => setSuccessMsg(''), 2500);
-      setPendingSlot(null);
+      setAppointmentsLoading(false);
     }
   };
 
-  const handleCancelBook = () => {
-    setConfirmOpen(false);
-    setPendingSlot(null);
+  const getStatusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      BOOKED: 'Booked',
+      CANCELLED: 'Cancelled',
+      COMPLETED: 'Completed',
+      NO_SHOW: 'No Show',
+    };
+    return map[status] || status;
   };
+
+  const statusOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'BOOKED', label: 'Booked' },
+    { value: 'CANCELLED', label: 'Cancelled' },
+    { value: 'COMPLETED', label: 'Completed' },
+    { value: 'NO_SHOW', label: 'No Show' },
+  ];
+
+  const filteredAppointments =
+    statusFilter === 'all' ? appointments : appointments.filter((a) => a.status === statusFilter);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('details');
 
   return (
     <div className="min-h-screen bg-white">
@@ -321,7 +211,20 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* Patient icon */}
-            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            <svg
+              className="w-6 h-6 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              />
+            </svg>
             <span className="font-semibold text-blue-600">Patient Portal</span>
           </div>
           <div className="flex items-center gap-3">
@@ -335,6 +238,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
           </div>
         </div>
       </header>
+
       <div className="container mx-auto px-4 py-6">
         {profileOpen && (
           <PatientProfile
@@ -347,31 +251,40 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
             msg={profileMsg}
           />
         )}
-        <Tabs value={activeTab} onValueChange={tab => {
-          setActiveTab(tab);
-          if (tab === 'appointments' && !appointmentsFetched) {
-            fetchAppointments({
-              start: dateRange.start,
-              end: dateRange.end,
-            });
-            setAppointmentsFetched(true);
-          }
-        }}>
+
+        <Tabs
+          value={activeTab}
+          onValueChange={(tab) => {
+            setActiveTab(tab);
+            if (tab === 'appointments' && !appointmentsFetched) {
+              fetchAppointments({
+                start: dateRange.start,
+                end: dateRange.end,
+              });
+              setAppointmentsFetched(true);
+            }
+          }}
+        >
           <TabsList className="w-full flex">
-            <TabsTrigger value="details" className="flex-1">Doctor Details</TabsTrigger>
-            <TabsTrigger value="appointments" className="flex-1">Appointments</TabsTrigger>
+            <TabsTrigger value="details" className="flex-1">
+              Doctor Details
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="flex-1">
+              Appointments
+            </TabsTrigger>
           </TabsList>
+
           <TabsContent value="details" className="space-y-4 mt-4">
-            <DoctorDetails
+            <BookAppointmentTab
               selectedDoctor={selectedDoctor}
-              loading={doctorLoading}
-              error={doctorError}
-              onShowSlots={() => { setShowSlots(true); fetchSlots(); }}
+              doctorLoading={doctorLoading}
+              doctorError={doctorError}
               docPhoneNumber={docPhoneNumber}
             />
           </TabsContent>
+
           <TabsContent value="appointments" className="mt-4">
-            <AppointmentsList
+            <PatientAppointmentsTab
               appointments={appointments}
               filteredAppointments={filteredAppointments}
               statusOptions={statusOptions}
@@ -382,18 +295,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
               appointmentsLoading={appointmentsLoading}
               appointmentsError={appointmentsError}
               cancelMsg={cancelMsg}
-              onCancel={async (appt) => {
-                try {
-                  await cancelAppointmentApi(appt.id);
-                  setCancelMsg({ type: 'success', text: AppointmentMessages.CANCEL_SUCCESS });
-                  setCancelDialog({ open: false });
-                  fetchAppointments({ start: dateRange.start, end: dateRange.end });
-                } catch (e: any) {
-                  setCancelMsg({ type: 'error', text: e?.message || AppointmentMessages.CANCEL_FAILED });
-                  setCancelDialog({ open: false });
-                }
-                setTimeout(() => setCancelMsg(null), 2500);
-              }}
+              setCancelMsg={setCancelMsg}
               cancelDialog={cancelDialog}
               setCancelDialog={setCancelDialog}
               getStatusLabel={getStatusLabel}
@@ -401,23 +303,6 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
             />
           </TabsContent>
         </Tabs>
-        {/* Book Appointment Modal/Section */}
-        <PatientAvailableSlots
-          open={showSlots}
-          onClose={() => setShowSlots(false)}
-          doctorId={selectedDoctor ? selectedDoctor.id : ''}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          selectedSlot={selectedSlot}
-          booking={booking}
-          handleBookSlot={handleBookSlot}
-          successMsg={successMsg}
-          confirmOpen={confirmOpen}
-          pendingSlot={pendingSlot}
-          handleConfirmBook={handleConfirmBook}
-          handleCancelBook={handleCancelBook}
-          formatTime={formatTime}
-        />
       </div>
     </div>
   );
