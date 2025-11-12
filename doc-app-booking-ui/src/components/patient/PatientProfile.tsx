@@ -5,6 +5,8 @@ import { Input } from '../ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { InlineMessage } from '../ui/inline-message';
 import { PatientProfile as PatientProfileType } from '../../api/user';
+import { useLocale } from '../../contexts/LocaleContext';
+import { getGenderOptions } from '../../constants/dropdownOptions';
 
 interface PatientProfileProps {
   profile: PatientProfileType | null;
@@ -25,6 +27,9 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   onClose,
   msg,
 }) => {
+  const { t } = useLocale();
+  const genderOptions = getGenderOptions(t);
+
   // Map gender to uppercase for select value
   const mappedProfile = profile
     ? {
@@ -45,41 +50,41 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Edit Profile</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">{t.patient.editProfile}</DialogTitle>
           <DialogDescription className="text-sm text-gray-600">
-            Update your personal information below
+            {t.profileFields.updatePersonalInfo}
           </DialogDescription>
         </DialogHeader>
 
         <div className="mt-4">
-          {loading && <InlineMessage type="info" message="Loading profile..." />}
+          {loading && <InlineMessage type="info" message={t.profileFields.loadingProfile} />}
           {error && <InlineMessage type="error" message={error} />}
           {msg && !error && <InlineMessage type="success" message={msg} />}
 
           <form onSubmit={e => { e.preventDefault(); onSave(); }} className="space-y-6 mt-4">
             {/* Personal Information Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
+              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.forms.personalInfo}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-sm font-medium">First Name *</Label>
+                  <Label htmlFor="firstName" className="text-sm font-medium">{t.profileFields.firstName} *</Label>
                   <Input 
                     id="firstName"
                     name="firstName" 
                     value={mappedProfile.firstName || ''} 
                     onChange={onChange} 
-                    placeholder="Enter first name"
+                    placeholder={t.profileFields.enterFirstName}
                     disabled={loading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-sm font-medium">Last Name *</Label>
+                  <Label htmlFor="lastName" className="text-sm font-medium">{t.profileFields.lastName} *</Label>
                   <Input 
                     id="lastName"
                     name="lastName" 
                     value={mappedProfile.lastName || ''} 
                     onChange={onChange} 
-                    placeholder="Enter last name"
+                    placeholder={t.profileFields.enterLastName}
                     disabled={loading}
                   />
                 </div>
@@ -87,7 +92,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth" className="text-sm font-medium">Date of Birth</Label>
+                  <Label htmlFor="dateOfBirth" className="text-sm font-medium">{t.profileFields.dateOfBirth}</Label>
                   <Input 
                     id="dateOfBirth"
                     name="dateOfBirth" 
@@ -98,7 +103,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="gender" className="text-sm font-medium">Gender</Label>
+                  <Label htmlFor="gender" className="text-sm font-medium">{t.profileFields.gender}</Label>
                   <select 
                     id="gender"
                     name="gender" 
@@ -107,10 +112,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     disabled={loading}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   >
-                    <option value="">Select gender</option>
-                    <option value="MALE">Male</option>
-                    <option value="FEMALE">Female</option>
-                    <option value="OTHER">Other</option>
+                    <option value="">{t.profileFields.selectGender}</option>
+                    {genderOptions.map(opt => (
+                      <option key={opt.key} value={opt.key}>{opt.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -118,22 +123,22 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
             {/* Contact Information Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Contact Information</h3>
+              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.forms.contactInfo}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                  <Label htmlFor="email" className="text-sm font-medium">{t.profileFields.email} *</Label>
                   <Input 
                     id="email"
                     name="email"
                     type="email"
                     value={mappedProfile.email || ''} 
                     onChange={onChange} 
-                    placeholder="patient@example.com"
+                    placeholder={t.profileFields.enterEmail}
                     disabled={loading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number</Label>
+                  <Label htmlFor="phoneNumber" className="text-sm font-medium">{t.profileFields.phoneNumber}</Label>
                   <Input 
                     id="phoneNumber"
                     name="phoneNumber" 
@@ -143,18 +148,18 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     disabled
                     readOnly
                   />
-                  <p className="text-xs text-gray-500">Phone number cannot be changed</p>
+                  <p className="text-xs text-gray-500">{t.profileFields.phoneCannotChange}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address" className="text-sm font-medium">Address</Label>
+                <Label htmlFor="address" className="text-sm font-medium">{t.profileFields.address}</Label>
                 <Input 
                   id="address"
                   name="address" 
                   value={mappedProfile.address || ''} 
                   onChange={onChange} 
-                  placeholder="Enter your address"
+                  placeholder={t.profileFields.enterAddress}
                   disabled={loading}
                 />
               </div>
@@ -169,7 +174,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 disabled={loading}
                 className="w-full"
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button 
                 type="submit" 
@@ -179,10 +184,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 {loading ? (
                   <>
                     <span className="animate-spin mr-2">⏳</span>
-                    Saving...
+                    {t.profileFields.savingProfile}
                   </>
                 ) : (
-                  'Save Profile'
+                  t.profileFields.saveProfile
                 )}
               </Button>
             </div>

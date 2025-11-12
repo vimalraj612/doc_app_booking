@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { TabsContent } from '../ui/tabs';
 import { AddDoctorForm } from './AddDoctorForm';
 import { DoctorDTO } from '../../api/doctor';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface DoctorsTabProps {
   doctors: Array<{
@@ -30,7 +31,7 @@ interface DoctorsTabProps {
   setEditingDoctor: (doctor: any) => void;
   onAddDoctor: (doctor: Partial<DoctorDTO>) => Promise<void>;
   onUpdateDoctor: (id: string, doctor: Partial<DoctorDTO>) => Promise<void>;
-  onSlotTemplateClick: (doctorId: string) => void;
+  onSlotTemplatesClick: (doctorId: string) => void;
   onSlotsClick: (doctorId: string) => void;
   onLeavesClick: (doctorId: string, doctorName: string) => void;
   onViewAppointments: (doctorName: string) => void;
@@ -48,26 +49,27 @@ export default function DoctorsTab({
   setEditingDoctor,
   onAddDoctor,
   onUpdateDoctor,
-  onSlotTemplateClick,
+  onSlotTemplatesClick,
   onSlotsClick,
   onLeavesClick,
   onViewAppointments,
   onDeleteClick,
   setLastClickedDoctor,
 }: DoctorsTabProps) {
+  const { t } = useLocale();
   return (
     <TabsContent value="doctors" className="space-y-3 mt-4">
       <Dialog open={isAddDoctorOpen} onOpenChange={setIsAddDoctorOpen}>
         <DialogTrigger asChild>
           <button className="mb-4 w-full sm:w-auto bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
             <Plus className="w-5 h-5 bg-transparent" />
-            Add New Doctor
+            {t.messages.LABELS.ADD_NEW_DOCTOR}
           </button>
         </DialogTrigger>
         <DialogContent className="max-w-3xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">{editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}</DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">{editingDoctor ? 'Update doctor information below' : 'Fill in the details to add a new doctor to your hospital'}</DialogDescription>
+            <DialogTitle className="text-xl font-semibold">{editingDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR}</DialogTitle>
+            <DialogDescription className="text-sm text-gray-600">{editingDoctor ? t.messages.LABELS.UPDATE_DOCTOR_INFO : t.messages.LABELS.FILL_DOCTOR_DETAILS}</DialogDescription>
           </DialogHeader>
           <div className="mt-4">
             <AddDoctorForm 
@@ -84,7 +86,7 @@ export default function DoctorsTab({
       {doctors.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
-            No doctors added yet
+            {t.messages.LABELS.NO_DOCTORS_YET}
           </CardContent>
         </Card>
       ) : (
@@ -100,19 +102,19 @@ export default function DoctorsTab({
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-base md:truncate">{doctor.name}</h3>
                     <div className="flex flex-col gap-1 mt-1 text-sm">
-                      <span className="text-gray-600"><span className="font-medium">Specialization:</span> {doctor.specialization}</span>
+                      <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.SPECIALIZATION}:</span> {doctor.specialization}</span>
                       {doctor.qualifications && (
-                        <span className="text-gray-600"><span className="font-medium">Qualifications:</span> {doctor.qualifications}</span>
+                        <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.QUALIFICATIONS}:</span> {doctor.qualifications}</span>
                       )}
-                      <span className="text-gray-600"><span className="font-medium">Email:</span> {doctor.email}</span>
+                      <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.EMAIL}:</span> {doctor.email}</span>
                       {doctor.phoneNumber && (
-                        <span className="text-gray-600"><span className="font-medium">Phone:</span> {doctor.phoneNumber}</span>
+                        <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.PHONE}:</span> {doctor.phoneNumber}</span>
                       )}
                       {doctor.department && (
-                        <span className="text-gray-600"><span className="font-medium">Department:</span> {doctor.department}</span>
+                        <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.DEPARTMENT}:</span> {doctor.department}</span>
                       )}
                       {(doctor.experienceYears ?? 0) > 0 && (
-                        <span className="text-gray-600"><span className="font-medium">Experience:</span> {doctor.experienceYears ?? 0} years</span>
+                        <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.EXPERIENCE_YEARS}:</span> {doctor.experienceYears ?? 0} years</span>
                       )}
                     </div>
                   </div>
@@ -122,74 +124,74 @@ export default function DoctorsTab({
                     variant="outline"
                     size="sm"
                     className="flex items-center justify-center"
-                    title="Slot Templates"
+                    title={t.messages.LABELS.SLOT_TEMPLATES_ACTION}
                     onPointerDown={() => setLastClickedDoctor(doctor.id)}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onSlotTemplateClick(doctor.id);
+                      onSlotTemplatesClick(doctor.id);
                     }}
                   >
                     <span className="sm:hidden"><LayoutTemplate className="w-5 h-5 bg-transparent" /></span>
-                    <span className="hidden sm:inline">Slot Templates</span>
+                    <span className="hidden sm:inline">{t.messages.LABELS.SLOT_TEMPLATES}</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     className="flex items-center justify-center"
-                    title="Slots"
+                    title={t.messages.LABELS.SLOTS}
                     onClick={(e) => {
                       e.stopPropagation();
                       onSlotsClick(doctor.id);
                     }}
                   >
                     <span className="sm:hidden"><CalendarDays className="w-5 h-5 bg-transparent" /></span>
-                    <span className="hidden sm:inline">Slots</span>
+                    <span className="hidden sm:inline">{t.messages.LABELS.SLOTS}</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     className="flex items-center justify-center"
-                    title="Leaves"
+                    title={t.messages.LABELS.LEAVES}
                     onClick={(e) => {
                       e.stopPropagation();
                       onLeavesClick(doctor.id, doctor.name);
                     }}
                   >
                     <span className="sm:hidden"><Calendar className="w-5 h-5 bg-transparent" /></span>
-                    <span className="hidden sm:inline">Leaves</span>
+                    <span className="hidden sm:inline">{t.messages.LABELS.LEAVES}</span>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="flex items-center justify-center" 
-                    title="View appointments" 
+                    title={t.messages.LABELS.APPOINTMENTS}
                     onClick={() => onViewAppointments(doctor.name)}
                   >
                     <span className="sm:hidden"><CalendarCheck className="w-5 h-5 bg-transparent" /></span>
-                    <span className="hidden sm:inline">Appointments</span>
+                    <span className="hidden sm:inline">{t.messages.LABELS.APPOINTMENTS}</span>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="flex items-center justify-center" 
-                    title="Edit" 
+                    title={t.messages.LABELS.EDIT}
                     onClick={() => { 
                       setEditingDoctor(doctor); 
                       setIsAddDoctorOpen(true); 
                     }}
                   >
                     <span className="sm:hidden"><Edit className="w-5 h-5 bg-transparent" /></span>
-                    <span className="hidden sm:inline">Edit</span>
+                    <span className="hidden sm:inline">{t.messages.LABELS.EDIT}</span>
                   </Button>
                   <Button 
                     variant="destructive" 
                     size="sm" 
                     onClick={() => onDeleteClick(doctor.id)} 
                     className="flex items-center justify-center" 
-                    title="Delete"
+                    title={t.messages.LABELS.DELETE}
                   >
                     <span className="sm:hidden"><Trash2 className="w-5 h-5 bg-transparent" /></span>
-                    <span className="hidden sm:inline">Delete</span>
+                    <span className="hidden sm:inline">{t.messages.LABELS.DELETE}</span>
                   </Button>
                 </div>
               </div>

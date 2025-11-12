@@ -4,6 +4,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Stethoscope, Trash2, Edit, Calendar, CalendarDays } from 'lucide-react';
 import { DoctorDTO } from '../../api/doctor';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface DoctorCardProps {
   doctor: DoctorDTO;
@@ -20,6 +21,7 @@ export function DoctorCard({
   onManageSlots, 
   onManageLeaves 
 }: DoctorCardProps) {
+  const { t } = useLocale();
   const fullName = `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim() || doctor.name || 'Unknown';
   const initials = fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   
@@ -98,18 +100,18 @@ export function DoctorCard({
 
         <div className="mt-4 pt-4 border-t grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Email:</span>
+            <span className="text-gray-500">{t.messages.LABELS.EMAIL}:</span>
             <p className="font-medium truncate">{doctor.email}</p>
           </div>
           <div>
-            <span className="text-gray-500">Phone:</span>
+            <span className="text-gray-500">{t.messages.LABELS.PHONE}:</span>
             <p className="font-medium">{doctor.phoneNumber}</p>
           </div>
         </div>
 
         {doctor.qualifications && (
           <div className="mt-3 pt-3 border-t">
-            <span className="text-xs text-gray-500">Qualifications:</span>
+            <span className="text-xs text-gray-500">{t.messages.LABELS.QUALIFICATIONS}:</span>
             <p className="text-sm text-gray-700 mt-1">{doctor.qualifications}</p>
           </div>
         )}

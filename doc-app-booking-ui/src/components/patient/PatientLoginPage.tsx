@@ -5,12 +5,13 @@ import { PhoneInput } from "../ui/phone-input";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { InlineMessage } from "../ui/inline-message";
-import { AuthMessages } from "../../constants/messages";
 import { 
   validateAndFormatPhone, 
   removeCountryCode, 
   sanitizePhoneInput 
 } from '../../utils/phoneUtils';
+import { useLocale } from "../../contexts/LocaleContext";
+import { LanguageSwitcher } from "../common/LanguageSwitcher";
 import {
   User,
   Stethoscope,
@@ -29,6 +30,8 @@ interface PatientLoginPage {
 }
 
 export function LoginPage({ onLogin }: PatientLoginPage) {
+  const { t } = useLocale();
+  
   // Use docPhoneNumber from URL path or localStorage if present
   // Get patient phone from path (for login input)
   const getPatientPhoneFromPath = () => {
@@ -99,7 +102,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     const validation = validateAndFormatPhone(mobile);
     
     if (!validation.isValid) {
-      setMobileError(validation.error || 'Invalid phone number');
+      setMobileError(validation.error || t.ui.invalidPhone);
       setLoading(false);
       return;
     }
@@ -110,12 +113,12 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
       const res = await sendPatientOtp(phone);
       if (res.success) {
         setStep('otp');
-        setInfo(AuthMessages.OTP_SENT);
+        setInfo(t.messages.AUTH.OTP_SENT);
       } else {
-        setError(AuthMessages.OTP_SEND_FAILED);
+        setError(t.messages.AUTH.OTP_SEND_FAILED);
       }
     } catch (err) {
-      setError(AuthMessages.OTP_SEND_FAILED);
+      setError(t.messages.AUTH.OTP_SEND_FAILED);
     } finally {
       setLoading(false);
     }
@@ -131,13 +134,13 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     
     // Validate OTP
     if (!otp || otp.trim() === '') {
-      setOtpError('OTP is required');
+      setOtpError(t.messages.VALIDATION.PHONE_REQUIRED);
       setLoading(false);
       return;
     }
     
     if (otp.length < 4) {
-      setOtpError('Please enter a valid OTP');
+      setOtpError(t.messages.AUTH.OTP_INVALID);
       setLoading(false);
       return;
     }
@@ -160,7 +163,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
       // You may want to pass token/user to parent here
       onLogin(phone, '', activeRole); // password is empty, not used
     } catch (err) {
-      setError(AuthMessages.OTP_INVALID);
+      setError(t.messages.AUTH.OTP_INVALID);
     } finally {
       setLoading(false);
     }
@@ -179,6 +182,11 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
 
   return (
     <div className="min-h-screen flex">
+      {/* Language Switcher - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
+      
       {/* Left Side - Branding & Info */}
       <div
         className={`hidden lg:flex lg:w-1/2 bg-gradient-to-br ${activeConfig.bgGradient} relative overflow-hidden transition-all duration-500`}
@@ -194,11 +202,11 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                 <Stethoscope className="w-8 h-8 text-white bg-transparent" />
               </div>
               <h1 className="text-3xl text-gray-900">
-                HealthCare
+                {t.auth.healthCare}
               </h1>
             </div>
             <p className="text-gray-600 ml-1">
-              Your health, our priority
+              {t.auth.brandTagline}
             </p>
           </div>
 
@@ -211,19 +219,19 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                 <ActiveIcon className="w-16 h-16 text-white bg-transparent" />
               </div>
               <h2 className="text-4xl mb-4 text-gray-900">
-                Welcome {activeConfig.label}
+                {t.auth.welcomePatient}
               </h2>
               <p className="text-lg text-gray-600">
-                {activeConfig.description}
+                {t.auth.patientTagline}
               </p>
             </div>
 
             {/* Features */}
             <div className="space-y-3">
               {[
-                "Secure & Private",
-                "Easy to Use",
-                "24/7 Access",
+                t.auth.securePrivate,
+                t.auth.easyToUse,
+                t.auth.access24x7,
               ].map((feature) => (
                 <div
                   key={feature}
@@ -244,7 +252,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
 
           {/* Footer */}
           <p className="text-sm text-gray-500">
-            © 2025 HealthCare Portal. All rights reserved.
+            {t.auth.copyrightText}
           </p>
         </div>
       </div>
@@ -262,16 +270,16 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl text-gray-900">
-                HealthCare
+                {t.auth.healthCare}
               </h1>
             </div>
 
             <div className="mb-8">
               <h2 className="text-3xl mb-2 text-gray-900">
-                Patient Sign In
+                {t.portals.patientSignIn}
               </h2>
               <p className="text-gray-600">
-                Enter your mobile number to receive an OTP
+                {t.auth.enterMobileOTP}
               </p>
             </div>
           </div>
@@ -282,7 +290,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
               <form onSubmit={handleSendOtp} className="space-y-5">
                 <PhoneInput
                   id="mobile"
-                  label="Mobile Number"
+                  label={t.auth.mobileNumber}
                   value={mobile}
                   onChange={handleMobileChange}
                   error={mobileError}
@@ -294,7 +302,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                   className={`w-full h-12 bg-gradient-to-r ${activeConfig.gradient} text-white rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group`}
                   disabled={loading}
                 >
-                  {loading ? AuthMessages.SENDING_OTP : `Send OTP as ${activeConfig.label}`}
+                  {loading ? t.auth.sendingOTP : t.auth.sendOTP}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform bg-transparent" />
                 </button>
                 {error && (
@@ -308,11 +316,11 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
             {step === 'otp' && (
               <form onSubmit={handleVerifyOtp} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="otp">Enter OTP</Label>
+                  <Label htmlFor="otp">{t.auth.enterOTP}</Label>
                   <Input
                     id="otp"
                     type="text"
-                    placeholder="Enter the OTP sent to your mobile"
+                    placeholder={t.auth.enterOTP}
                     value={otp}
                     onChange={(e) => { setOtp(e.target.value); setOtpError(null); }}
                     className="h-12"
@@ -327,7 +335,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                   className={`w-full h-12 bg-gradient-to-r ${activeConfig.gradient} text-white rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group`}
                   disabled={loading}
                 >
-                  {loading ? AuthMessages.VERIFYING_OTP : `Verify OTP as ${activeConfig.label}`}
+                  {loading ? t.auth.verifying : t.auth.verifyOTP}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform bg-transparent" />
                 </button>
                 <button
@@ -336,7 +344,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                   onClick={() => { setStep('mobile'); setOtp(''); setError(null); setInfo(null); setOtpError(null); }}
                   disabled={loading}
                 >
-                  Change mobile number
+                  {t.common.changeMobileNumber}
                 </button>
                 {error && (
                   <InlineMessage type="error" message={error} className="mt-4" />

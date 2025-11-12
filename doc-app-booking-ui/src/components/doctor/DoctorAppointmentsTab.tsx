@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react';
 import AppointmentsList from '../common/AppointmentsList';
 import { fetchDoctorAppointmentsByDateRange } from '../../api/appointments';
 import { AppointmentMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
+import { getAppointmentStatusOptions, getAppointmentStatusLabel } from '../../constants/dropdownOptions';
 
 interface DoctorAppointmentsTabProps {
   doctorId: string | number;
 }
 
 export function DoctorAppointmentsTab({ doctorId }: DoctorAppointmentsTabProps) {
+  const { t } = useLocale();
+  
   const [appointments, setAppointments] = useState<any[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<any[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
@@ -23,14 +27,12 @@ export function DoctorAppointmentsTab({ doctorId }: DoctorAppointmentsTabProps) 
     };
   });
 
-  const statusOptions = [
-    { key: 'ALL', label: 'All' },
-    { key: 'SCHEDULED', label: 'Scheduled' },
-    { key: 'COMPLETED', label: 'Completed' },
-    { key: 'CANCELLED', label: 'Cancelled' },
-    { key: 'RESCHEDULED', label: 'Rescheduled' },
-    { key: 'PENDING', label: 'Pending' },
-  ];
+  const statusOptions = getAppointmentStatusOptions(t, true).map(opt => ({
+    key: opt.key,
+    label: opt.label,
+  })).filter(opt =>
+    opt.key === 'ALL' || ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'RESCHEDULED', 'PENDING'].includes(opt.key)
+  );
 
   const [cancelMsg, setCancelMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [cancelDialog, setCancelDialog] = useState<{ open: boolean; appt?: any }>({ open: false });
@@ -86,8 +88,7 @@ export function DoctorAppointmentsTab({ doctorId }: DoctorAppointmentsTabProps) 
 
   // Status label helper
   const getStatusLabel = (key: string) => {
-    const found = statusOptions.find((opt) => opt.key === key);
-    return found ? found.label : key;
+    return getAppointmentStatusLabel(key, t);
   };
 
   // Cancel handler

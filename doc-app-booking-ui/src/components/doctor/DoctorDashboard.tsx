@@ -7,6 +7,8 @@ import { Calendar as CalendarIcon, Clock, LogOut, Stethoscope } from 'lucide-rea
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { DoctorAppointmentsTab } from './DoctorAppointmentsTab';
 import { DoctorMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 
 interface DoctorDashboardProps {
   user: User;
@@ -28,6 +30,8 @@ export function DoctorDashboard({
   onUpdateAppointmentStatus,
   onAddPrescription,
 }: DoctorDashboardProps) {
+  const { t } = useLocale();
+  
   // Clear localStorage on window/tab close
   useEffect(() => {
     const handleUnload = () => {
@@ -84,10 +88,11 @@ export function DoctorDashboard({
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Stethoscope className="w-6 h-6 text-green-500" />
-            <h1 className="text-lg sm:text-xl">Doctor Portal</h1>
+            <h1 className="text-lg sm:text-xl">{t.portals.doctorPortal}</h1>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm">{user.name}</span>
+            <LanguageSwitcher />
             <button
               onClick={() => {
                 localStorage.clear();
@@ -109,14 +114,14 @@ export function DoctorDashboard({
             <CardContent className="p-4 flex flex-col items-center justify-center">
               <CalendarIcon className="w-8 h-8 text-blue-500 mb-2" />
               <p className="text-2xl">{loadingStats ? '...' : statsError ? '--' : todayCount}</p>
-              <p className="text-xs text-gray-500">Today</p>
+              <p className="text-xs text-gray-500">{t.dateTime.today}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 flex flex-col items-center justify-center">
               <Clock className="w-8 h-8 text-green-500 mb-2" />
               <p className="text-2xl">{loadingStats ? '...' : statsError ? '--' : freeSlotsCount}</p>
-              <p className="text-xs text-gray-500">Free Slots</p>
+              <p className="text-xs text-gray-500">{t.doctor.freeSlots}</p>
             </CardContent>
           </Card>
         </div>
@@ -124,8 +129,8 @@ export function DoctorDashboard({
         {/* Tabs */}
         <Tabs defaultValue="appointments" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
-            <TabsTrigger value="slots">My Slots</TabsTrigger>
+            <TabsTrigger value="appointments">{t.appointments.appointments}</TabsTrigger>
+            <TabsTrigger value="slots">{t.doctor.mySlots}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="appointments" className="space-y-3 mt-4">

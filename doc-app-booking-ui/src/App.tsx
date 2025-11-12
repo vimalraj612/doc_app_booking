@@ -6,6 +6,7 @@ import { DoctorDashboard } from './components/doctor/DoctorDashboard';
 import { HospitalDashboard } from './components/hospital/HospitalDashboard';
 import { deleteDoctor as apiDeleteDoctor } from './api/doctor';
 import { HospitalLoginPage } from './components/hospital/HospitalLoginPage';
+import { LocaleProvider } from './contexts/LocaleContext';
 
 export type UserRole = 'patient' | 'doctor' | 'hospital' | 'superadmin' | null;
 
@@ -365,15 +366,16 @@ function App() {
     // Simple routing for /login/doctor, /doctor/dashboard, /doctor, /login/hospital
     const path = window.location.pathname;
     if (path === '/login/doctor' || path === '/doctor/dashboard' || path === '/doctor') {
-      return <DoctorLoginPage />;
+      return <LocaleProvider><DoctorLoginPage /></LocaleProvider>;
     }
     if (path === '/login/hospital' || path === '/hospital/dashboard' || path === '/hospital') {
-      return <HospitalLoginPage />;
+      return <LocaleProvider><HospitalLoginPage /></LocaleProvider>;
     }
-    return <LoginPage onLogin={handleLogin} />;
+    return <LocaleProvider><LoginPage onLogin={handleLogin} /></LocaleProvider>;
   }
 
   return (
+    <LocaleProvider>
     <div className="min-h-screen bg-gray-50">
       {currentUser.role === 'patient' && (
         <PatientDashboard onLogout={handleLogout} />
@@ -400,6 +402,7 @@ function App() {
         />
       )}
     </div>
+    </LocaleProvider>
   );
 }
 

@@ -8,7 +8,7 @@ import { InlineMessage } from '../ui/inline-message';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { LayoutTemplate, Edit, Trash2 } from 'lucide-react';
 import { fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO } from '../../api/doctor';
-import { ValidationMessages, SlotTemplateMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface SlotTemplatesDialogProps {
   open: boolean;
@@ -17,6 +17,22 @@ interface SlotTemplatesDialogProps {
 }
 
 export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTemplatesDialogProps) {
+  const { t } = useLocale();
+  
+  // Helper function to get localized day names
+  const getDayName = (day: string) => {
+    const dayMap: Record<string, string> = {
+      'MONDAY': t.messages.LABELS.DAY_MONDAY,
+      'TUESDAY': t.messages.LABELS.DAY_TUESDAY,
+      'WEDNESDAY': t.messages.LABELS.DAY_WEDNESDAY,
+      'THURSDAY': t.messages.LABELS.DAY_THURSDAY,
+      'FRIDAY': t.messages.LABELS.DAY_FRIDAY,
+      'SATURDAY': t.messages.LABELS.DAY_SATURDAY,
+      'SUNDAY': t.messages.LABELS.DAY_SUNDAY,
+    };
+    return dayMap[day] || day;
+  };
+  
   const [slotTemplates, setSlotTemplates] = useState<SlotTemplateDTO[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -76,16 +92,16 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
       const [h, m] = t.split(':').map(Number);
       return h * 60 + m;
     };
-    if (!templateForm.startTime) errs.startTime = ValidationMessages.START_TIME_REQUIRED;
-    if (!templateForm.endTime) errs.endTime = ValidationMessages.END_TIME_REQUIRED;
+    if (!templateForm.startTime) errs.startTime = t.messages.VALIDATION.START_TIME_REQUIRED;
+    if (!templateForm.endTime) errs.endTime = t.messages.VALIDATION.END_TIME_REQUIRED;
     if (templateForm.startTime && templateForm.endTime) {
       const s = toMinutes(templateForm.startTime);
       const e = toMinutes(templateForm.endTime);
-      if (e <= s) errs.endTime = ValidationMessages.END_TIME_AFTER_START;
-      if (e - s < templateForm.slotDurationMinutes) errs.endTime = ValidationMessages.DURATION_MUST_FIT;
+      if (e <= s) errs.endTime = t.messages.VALIDATION.END_TIME_AFTER_START;
+      if (e - s < templateForm.slotDurationMinutes) errs.endTime = t.messages.VALIDATION.DURATION_MUST_FIT;
     }
     if (!templateForm.slotDurationMinutes || templateForm.slotDurationMinutes < 5) {
-      errs.slotDurationMinutes = ValidationMessages.DURATION_MIN_5;
+      errs.slotDurationMinutes = t.messages.VALIDATION.DURATION_MIN_5;
     }
     setTemplateErrors(errs);
     return Object.keys(errs).length === 0;
@@ -100,7 +116,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
       setSlotTemplates(data);
     } catch (e: any) {
       console.error('Failed to fetch slot templates', e);
-      setError(extractErrorMessage(e) || SlotTemplateMessages.LOADING_FAILED);
+      setError(extractErrorMessage(e) || t.messages.SLOT_TEMPLATE.LOADING_FAILED);
       window.setTimeout(() => setError(''), 3500);
       setSlotTemplates(null);
     } finally {
@@ -108,9 +124,9 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
     }
   };
 
-  const saveSlotTemplate = async () => {
+  const onSaveTemplate = async () => {
     if (!doctorId) {
-      setError(SlotTemplateMessages.NO_DOCTOR_SELECTED);
+      setError(t.messages.SLOT_TEMPLATE.NO_DOCTOR_SELECTED);
       window.setTimeout(() => setError(''), 3500);
       return;
     }
@@ -139,12 +155,12 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
       resetTemplateForm();
       setTemplateErrors({});
       
-      const msg = (resp && (resp.message || (resp.data && (resp.data.message || undefined)))) || SlotTemplateMessages.SAVED_SUCCESS;
+      const msg = (resp && (resp.message || (resp.data && (resp.data.message || undefined)))) || t.messages.SLOT_TEMPLATE.DELETED_SUCCESS;
       setSuccessMessage(msg);
       window.setTimeout(() => setSuccessMessage(null), 3500);
     } catch (e: any) {
-      console.error('Failed to save slot template', e);
-      setError(extractErrorMessage(e) || SlotTemplateMessages.SAVE_FAILED);
+      console.error('Failed to delete slot template', e);
+      setError(extractErrorMessage(e) || t.messages.SLOT_TEMPLATE.DELETE_FAILED);
       window.setTimeout(() => setError(''), 3500);
     } finally {
       setLoading(false);
@@ -161,7 +177,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
     const templateId = confirmTargetId;
     if (!templateId) return setConfirmOpen(false);
     if (!doctorId) {
-      setError(SlotTemplateMessages.NO_DOCTOR_SELECTED);
+      setError(t.messages.SLOT_TEMPLATE.NO_DOCTOR_SELECTED);
       window.setTimeout(() => setError(''), 3500);
       setConfirmOpen(false);
       setConfirmTargetId(null);
@@ -173,12 +189,12 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
       const resp: any = await deleteSlotTemplate(templateId);
       const data = await fetchSlotTemplatesByDoctorId(doctorId);
       setSlotTemplates(data);
-      const msg = (resp && (resp.message || (resp.data && (resp.data.message || undefined)))) || SlotTemplateMessages.DELETED_SUCCESS;
+      const msg = (resp && (resp.message || (resp.data && (resp.data.message || undefined)))) || t.messages.SLOT_TEMPLATE.DELETED_SUCCESS;
       setSuccessMessage(msg);
       window.setTimeout(() => setSuccessMessage(null), 3500);
     } catch (e: any) {
       console.error('Failed to delete slot template', e);
-      setError(extractErrorMessage(e) || SlotTemplateMessages.DELETE_FAILED);
+      setError(extractErrorMessage(e) || t.messages.SLOT_TEMPLATE.DELETE_FAILED);
       window.setTimeout(() => setError(''), 3500);
     } finally {
       setLoading(false);
@@ -209,8 +225,8 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Slot Templates</DialogTitle>
-            <DialogDescription>Manage recurring slot templates for the selected doctor.</DialogDescription>
+            <DialogTitle>{t.messages.LABELS.SLOT_TEMPLATES}</DialogTitle>
+            <DialogDescription>{t.messages.LABELS.MANAGE_SLOT_TEMPLATES}</DialogDescription>
           </DialogHeader>
 
           {loading && (
@@ -240,7 +256,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
             <div className="p-2">
               <InlineMessage type="error" message={error} />
               <div className="flex gap-2 justify-end mt-3">
-                <Button variant="outline" onClick={() => setError('')}>Dismiss</Button>
+                <Button variant="outline" onClick={() => setError('')}>{t.messages.LABELS.DISMISS}</Button>
               </div>
             </div>
           )}
@@ -254,38 +270,38 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
               {/* Add / Edit Template Section */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
-                  {templateForm.id ? 'Edit Template' : 'Add New Template'}
+                  {templateForm.id ? t.messages.LABELS.EDIT_TEMPLATE : t.messages.LABELS.ADD_NEW_TEMPLATE}
                 </h3>
                 
-                <form onSubmit={(e) => { e.preventDefault(); saveSlotTemplate(); }} className="space-y-4">
+                <form onSubmit={(e) => { e.preventDefault(); onSaveTemplate(); }} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="dayOfWeek" className="text-sm font-medium">Day of Week *</Label>
+                      <Label htmlFor="dayOfWeek" className="text-sm font-medium">{t.messages.LABELS.DAY_OF_WEEK} {t.messages.LABELS.REQUIRED}</Label>
                       <select 
                         id="dayOfWeek"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2" 
                         value={templateForm.dayOfWeek} 
                         onChange={e => setTemplateForm(f => ({ ...f, dayOfWeek: e.target.value }))}
                       >
-                        <option value="MONDAY">Monday</option>
-                        <option value="TUESDAY">Tuesday</option>
-                        <option value="WEDNESDAY">Wednesday</option>
-                        <option value="THURSDAY">Thursday</option>
-                        <option value="FRIDAY">Friday</option>
-                        <option value="SATURDAY">Saturday</option>
-                        <option value="SUNDAY">Sunday</option>
+                        <option value="MONDAY">{t.messages.LABELS.DAY_MONDAY}</option>
+                        <option value="TUESDAY">{t.messages.LABELS.DAY_TUESDAY}</option>
+                        <option value="WEDNESDAY">{t.messages.LABELS.DAY_WEDNESDAY}</option>
+                        <option value="THURSDAY">{t.messages.LABELS.DAY_THURSDAY}</option>
+                        <option value="FRIDAY">{t.messages.LABELS.DAY_FRIDAY}</option>
+                        <option value="SATURDAY">{t.messages.LABELS.DAY_SATURDAY}</option>
+                        <option value="SUNDAY">{t.messages.LABELS.DAY_SUNDAY}</option>
                       </select>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="slotDuration" className="text-sm font-medium">Duration (minutes) *</Label>
+                      <Label htmlFor="slotDuration" className="text-sm font-medium">{t.messages.LABELS.DURATION_MINUTES} {t.messages.LABELS.REQUIRED}</Label>
                       <Input 
                         id="slotDuration"
                         type="number" 
                         min={5} 
                         value={templateForm.slotDurationMinutes} 
                         onChange={e => setTemplateForm(f => ({ ...f, slotDurationMinutes: Number(e.target.value || 0) }))}
-                        placeholder="e.g. 15, 30, 60"
+                        placeholder={t.messages.LABELS.PLACEHOLDER_DURATION}
                       />
                       {templateErrors.slotDurationMinutes && <div className="text-red-500 text-xs">{templateErrors.slotDurationMinutes}</div>}
                     </div>
@@ -293,7 +309,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="startTime" className="text-sm font-medium">Start Time *</Label>
+                      <Label htmlFor="startTime" className="text-sm font-medium">{t.messages.LABELS.START_TIME} {t.messages.LABELS.REQUIRED}</Label>
                       <Input 
                         id="startTime"
                         type="time" 
@@ -304,7 +320,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="endTime" className="text-sm font-medium">End Time *</Label>
+                      <Label htmlFor="endTime" className="text-sm font-medium">{t.messages.LABELS.END_TIME} {t.messages.LABELS.REQUIRED}</Label>
                       <Input 
                         id="endTime"
                         type="time" 
@@ -323,7 +339,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                       onChange={e => setTemplateForm(f => ({ ...f, active: e.target.checked }))}
                       className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
                     />
-                    <label htmlFor="tpl-active" className="text-sm font-medium text-gray-700">Active template</label>
+                    <label htmlFor="tpl-active" className="text-sm font-medium text-gray-700">{t.messages.LABELS.ACTIVE_TEMPLATE}</label>
                   </div>
 
                   {/* Action Buttons */}
@@ -368,8 +384,8 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                             <th className="p-3 text-left font-semibold text-gray-700">Day</th>
                             <th className="p-3 text-left font-semibold text-gray-700">Start Time</th>
                             <th className="p-3 text-left font-semibold text-gray-700">End Time</th>
-                            <th className="p-3 text-center font-semibold text-gray-700">Duration</th>
-                            <th className="p-3 text-right font-semibold text-gray-700">Actions</th>
+                            <th className="p-3 text-center font-semibold text-gray-700">{t.messages.LABELS.DURATION}</th>
+                            <th className="p-3 text-right font-semibold text-gray-700">{t.messages.LABELS.ACTIONS}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -391,23 +407,23 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                                     variant="outline"
                                     size="sm"
                                     className="flex items-center gap-1"
-                                    title="Edit template"
+                                    title={t.messages.LABELS.EDIT_TEMPLATE_ACTION}
                                     aria-label={`Edit template ${tpl.id}`}
                                     onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
                                   >
                                     <Edit className="w-4 h-4 bg-transparent" />
-                                    <span>Edit</span>
+                                    <span>{t.messages.LABELS.EDIT}</span>
                                   </Button>
                                   <Button
                                     variant="destructive"
                                     size="sm"
                                     className="flex items-center gap-1"
-                                    title="Delete template"
+                                    title={t.messages.LABELS.DELETE_TEMPLATE}
                                     aria-label={`Delete template ${tpl.id}`}
                                     onClick={() => handleDeleteTemplate(tpl.id)}
                                   >
                                     <Trash2 className="w-4 h-4 bg-transparent" />
-                                    <span>Delete</span>
+                                    <span>{t.messages.LABELS.DELETE}</span>
                                   </Button>
                                 </div>
                               </td>
@@ -433,7 +449,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                                   <span>{tpl.startTime} – {tpl.endTime}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="font-medium">Duration:</span>
+                                  <span className="font-medium">{t.messages.LABELS.DURATION}:</span>
                                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {tpl.slotDurationMinutes} min
                                   </span>
@@ -445,23 +461,23 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                                 variant="outline"
                                 size="sm"
                                 className="w-full flex items-center justify-center gap-1"
-                                title="Edit template"
+                                title={t.messages.LABELS.EDIT_TEMPLATE_ACTION}
                                 aria-label={`Edit template ${tpl.id}`}
                                 onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
                               >
                                 <Edit className="w-4 h-4 bg-transparent" />
-                                <span className="text-xs">Edit</span>
+                                <span className="text-xs">{t.messages.LABELS.EDIT}</span>
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 className="w-full flex items-center justify-center gap-1"
-                                title="Delete template"
+                                title={t.messages.LABELS.DELETE_TEMPLATE}
                                 aria-label={`Delete template ${tpl.id}`}
                                 onClick={() => handleDeleteTemplate(tpl.id)}
                               >
                                 <Trash2 className="w-4 h-4 bg-transparent" />
-                                <span className="text-xs">Delete</span>
+                                <span className="text-xs">{t.messages.LABELS.DELETE}</span>
                               </Button>
                             </div>
                           </div>

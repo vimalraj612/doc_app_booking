@@ -7,13 +7,17 @@ import PatientProfile from './PatientProfile';
 import { BookAppointmentTab } from './BookAppointmentTab';
 import { PatientAppointmentsTab } from './PatientAppointmentsTab';
 import { getPatientUserProfile, updatePatientProfile, PatientProfile as PatientProfileType } from '../../api/user';
-import { ProfileMessages, AppointmentMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { getAppointmentStatusOptions, getAppointmentStatusLabel } from '../../constants/dropdownOptions';
 
 export interface PatientDashboardProps {
   onLogout: () => void;
 }
 
 export function PatientDashboard({ onLogout }: PatientDashboardProps) {
+  const { t } = useLocale();
+  
   // Clear localStorage on logout
   const handleLogout = () => {
     window.localStorage.removeItem('userId');
@@ -42,7 +46,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
       const resp = await getPatientUserProfile(userId);
       setProfile(resp && resp.data ? resp.data : null);
     } catch (e) {
-      setProfileMsg(ProfileMessages.LOADING_FAILED);
+      setProfileMsg(t.messages.PROFILE.LOADING_FAILED);
     } finally {
       setProfileLoading(false);
     }
@@ -71,10 +75,10 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     setProfileMsg(null);
     try {
       await updatePatientProfile(userId, profile);
-      setProfileMsg(ProfileMessages.UPDATED_SUCCESS);
+      setProfileMsg(t.messages.PROFILE.UPDATED_SUCCESS);
       setTimeout(() => setProfileMsg(null), 2000);
     } catch (e) {
-      setProfileMsg(ProfileMessages.UPDATE_FAILED);
+      setProfileMsg(t.messages.PROFILE.UPDATE_FAILED);
     } finally {
       setProfileLoading(false);
     }
@@ -124,11 +128,11 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
             setDoctorError('');
           } else {
             setSelectedDoctor(null);
-            setDoctorError('Doctor not found');
+            setDoctorError(t.messages.DOCTOR.DETAILS_FAILED);
           }
         })
         .catch((e: any) => {
-          setDoctorError(e?.message || 'Failed to load doctor details');
+          setDoctorError(e?.message || t.messages.DOCTOR.DETAILS_FAILED);
           setSelectedDoctor(null);
         })
         .finally(() => setDoctorLoading(false));
@@ -139,7 +143,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(false);
   const [appointmentsError, setAppointmentsError] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => {
     const today = new Date();
     const yesterday = new Date(today);
@@ -173,7 +177,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         setAppointmentsError('');
       }
     } catch (e: any) {
-      setAppointmentsError(e?.message || AppointmentMessages.LOADING_FAILED);
+      setAppointmentsError(e?.message || t.messages.APPOINTMENT.LOADING_FAILED);
       setAppointments([]);
     } finally {
       setAppointmentsLoading(false);
@@ -181,25 +185,18 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   };
 
   const getStatusLabel = (status: string) => {
-    const map: Record<string, string> = {
-      BOOKED: 'Booked',
-      CANCELLED: 'Cancelled',
-      COMPLETED: 'Completed',
-      NO_SHOW: 'No Show',
-    };
-    return map[status] || status;
+    return getAppointmentStatusLabel(status, t);
   };
 
-  const statusOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'BOOKED', label: 'Booked' },
-    { value: 'CANCELLED', label: 'Cancelled' },
-    { value: 'COMPLETED', label: 'Completed' },
-    { value: 'NO_SHOW', label: 'No Show' },
-  ];
+  const statusOptions = getAppointmentStatusOptions(t, true).filter(opt => 
+    opt.key === 'ALL' || ['SCHEDULED', 'CANCELLED', 'COMPLETED', 'NO_SHOW'].includes(opt.key)
+  ).map(opt => ({
+    key: opt.key,
+    label: opt.label,
+  }));
 
   const filteredAppointments =
-    statusFilter === 'all' ? appointments : appointments.filter((a) => a.status === statusFilter);
+    statusFilter === 'ALL' ? appointments : appointments.filter((a) => a.status === statusFilter);
 
   // Tab state
   const [activeTab, setActiveTab] = useState('details');
@@ -225,10 +222,11 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
                 d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
               />
             </svg>
-            <span className="font-semibold text-blue-600">Patient Portal</span>
+            <span className="font-semibold text-blue-600">{t.portals.patientPortal}</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm">{user.name}</span>
+            <LanguageSwitcher />
             <button onClick={handleLogout} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <LogOut className="w-5 h-5 text-gray-600 bg-transparent" />
             </button>
@@ -267,10 +265,10 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
         >
           <TabsList className="w-full flex">
             <TabsTrigger value="details" className="flex-1">
-              Doctor Details
+              {t.doctor.doctorDetails}
             </TabsTrigger>
             <TabsTrigger value="appointments" className="flex-1">
-              Appointments
+              {t.appointments.appointments}
             </TabsTrigger>
           </TabsList>
 

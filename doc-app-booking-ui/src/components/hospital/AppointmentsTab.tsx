@@ -2,7 +2,8 @@ import { TabsContent } from '../ui/tabs';
 import { Button } from '../ui/button';
 import AppointmentsList from '../common/AppointmentsList';
 import { updateAppointmentStatusApi } from '../../api/appointments';
-import { AppointmentMessages } from '../../constants/messages';
+import { getAppointmentStatusLabel } from '../../constants/dropdownOptions';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface AppointmentsTabProps {
   hospitalAppointments: any[];
@@ -39,6 +40,8 @@ export function AppointmentsTab({
   selectedDoctorFilter,
   setSelectedDoctorFilter,
 }: AppointmentsTabProps) {
+  const { t } = useLocale();
+
   return (
     <TabsContent value="appointments" className="space-y-3 mt-4">
       {/* Show a header when appointments are filtered by a doctor */}
@@ -66,21 +69,18 @@ export function AppointmentsTab({
           try {
             // mark appointment as completed from hospital view
             await updateAppointmentStatusApi(appt.id, 'COMPLETED');
-            setCancelMsg({ type: 'success', text: AppointmentMessages.COMPLETE_SUCCESS });
+            setCancelMsg({ type: 'success', text: t.messages.APPOINTMENT.COMPLETE_SUCCESS });
             setCancelDialog({ open: false });
             await fetchAppointments({ start: dateRange.start, end: dateRange.end });
           } catch (e: any) {
-            setCancelMsg({ type: 'error', text: e?.message || AppointmentMessages.COMPLETE_FAILED });
+            setCancelMsg({ type: 'error', text: e?.message || t.messages.APPOINTMENT.COMPLETE_FAILED });
             setCancelDialog({ open: false });
           }
           setTimeout(() => setCancelMsg(null), 2500);
         }}
         cancelDialog={cancelDialog}
         setCancelDialog={setCancelDialog}
-        getStatusLabel={(key: string) => {
-          const found = statusOptions.find((opt) => opt.key === key);
-          return found ? found.label : key;
-        }}
+        getStatusLabel={(key: string) => getAppointmentStatusLabel(key, t)}
         fetchAppointments={fetchAppointments}
         isDoctor={true}
       />

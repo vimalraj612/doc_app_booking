@@ -4,6 +4,7 @@ import { User as UserIcon, MapPin, Stethoscope } from 'lucide-react';
 import React from 'react';
 import { Button } from '../ui/button';
 import { InlineMessage } from '../ui/inline-message';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface DoctorDetailsProps {
   selectedDoctor: any;
@@ -13,10 +14,13 @@ interface DoctorDetailsProps {
   docPhoneNumber: string;
 }
 
-const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, error, onShowSlots, docPhoneNumber }) => (
+const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, error, onShowSlots, docPhoneNumber }) => {
+  const { t } = useLocale();
+  
+  return (
   <div>
     {loading ? (
-      <div>Loading doctor details...</div>
+      <div>{t.doctor.loadingDoctorDetails}</div>
     ) : error ? (
       <InlineMessage type="error" message={error} />
     ) : selectedDoctor ? (
@@ -55,14 +59,14 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
 
                 {selectedDoctor.experienceYears != null && selectedDoctor.experienceYears !== '' && (
                   <span className="flex items-center gap-2">
-                    <span className="font-semibold">Experience:</span>
-                    <span>{selectedDoctor.experienceYears} years</span>
+                    <span className="font-semibold">{t.doctor.experience}:</span>
+                    <span>{selectedDoctor.experienceYears} {t.doctor.years}</span>
                   </span>
                 )}
 
                 {selectedDoctor.qualifications && (
                   <span className="flex items-center gap-2">
-                    <span className="font-semibold">Qualifications:</span>
+                    <span className="font-semibold">{t.doctor.qualifications}:</span>
                     <span>{selectedDoctor.qualifications}</span>
                   </span>
                 )}
@@ -71,9 +75,9 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                 <div className="flex items-start gap-2">
                   <UserIcon className="w-4 h-4 text-gray-500 bg-transparent mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm mb-1">Contact</p>
-                    {selectedDoctor.email && <p className="text-sm text-gray-600">Email: {selectedDoctor.email}</p>}
-                    {docPhoneNumber && <p className="text-sm text-gray-600">Phone: {docPhoneNumber}</p>}
+                    <p className="text-sm mb-1">{t.doctor.contact}</p>
+                    {selectedDoctor.email && <p className="text-sm text-gray-600">{t.profileFields.email}: {selectedDoctor.email}</p>}
+                    {docPhoneNumber && <p className="text-sm text-gray-600">{t.profileFields.phone}: {docPhoneNumber}</p>}
                   </div>
                 </div>
               )}
@@ -88,18 +92,19 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                 variant="default"
                 size="sm"
                 onClick={onShowSlots}
-                title="Book Now"
+                title={t.doctor.bookNow}
               >
-                Book Now
+                {t.doctor.bookNow}
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
     ) : (
-      <div className="space-y-4">No doctor details found.</div>
+      <div className="space-y-4">{t.doctor.noDoctorDetails}</div>
     )}
   </div>
-);
+  );
+};
 
 export default DoctorDetails;

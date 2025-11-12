@@ -4,6 +4,7 @@ import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 import { Button } from '../ui/button';
 import { Trash2, LayoutTemplate } from 'lucide-react';
 import { InlineMessage } from '../ui/inline-message';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface Slot {
   slotId: string | number;
@@ -38,6 +39,7 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
   successMsg,
   formatTime,
 }) => {
+  const { t } = useLocale();
   const todayStr = new Date().toISOString().slice(0, 10);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -69,7 +71,7 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
         const res = await fetchSlotsByDoctorIdAndDate(userId, todayStr);
         setSlots(res.data);
       } catch (err: any) {
-        setSlotsError(err.message || 'Failed to load slots');
+        setSlotsError(err.message || t.messages.SLOT.LOADING_FAILED);
       } finally {
         setLoadingSlots(false);
       }
@@ -81,9 +83,9 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 w-full max-w-2xl mx-auto flex flex-col items-center border border-blue-100 overflow-y-auto no-scrollbar">
-      <h3 className="text-xl font-bold mb-4 text-gray-800">Today's Slots ({todayStr})</h3>
+      <h3 className="text-xl font-bold mb-4 text-gray-800">{t.messages.LABELS.TODAYS_SLOTS} ({todayStr})</h3>
       <div className="overflow-y-auto flex-1 w-full pr-1 pb-2 no-scrollbar">
-        {loadingSlots && <div>Loading...</div>}
+        {loadingSlots && <div>{t.messages.GENERIC.LOADING}</div>}
         {slotsError && <InlineMessage type="error" message={slotsError} />}
         {!loadingSlots && !slotsError && (
           <>
@@ -104,7 +106,7 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
                   >
                     {(!slotsByDate[todayStr] || slotsByDate[todayStr].length === 0) ? (
                       <div className="text-gray-500 italic text-center py-2 text-xs">
-                        No slots for today
+                        {t.messages.LABELS.NO_SLOTS_TODAY}
                       </div>
                     ) : (
                       <div
@@ -155,12 +157,12 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
 
                             if (isReserved) status = 'RESERVED';
 
-                            const statusMap: any = {
-                              AVAILABLE: { label: 'Available' },
-                              SCHEDULED: { label: 'Scheduled' },
-                              RESERVED: { label: 'Reserved' },
-                              COMPLETED: { label: 'Completed' },
-                              CANCELLED: { label: 'Cancelled' },
+                            const statusMap: Record<string, { label: string }> = {
+                              AVAILABLE: { label: t.messages.LABELS.STATUS_AVAILABLE },
+                              SCHEDULED: { label: t.messages.LABELS.STATUS_SCHEDULED },
+                              RESERVED: { label: t.messages.LABELS.STATUS_RESERVED },
+                              COMPLETED: { label: t.messages.LABELS.STATUS_COMPLETED },
+                              CANCELLED: { label: t.messages.LABELS.STATUS_CANCELLED },
                             };
 
                             const colorHexMap: Record<string, { bg: string; border: string; text: string }> = {

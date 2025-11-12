@@ -4,6 +4,7 @@ import PatientAvailableSlots from './PatientAvailableSlots';
 import { apiFetch } from '../../api/http';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 import { AppointmentMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface BookAppointmentTabProps {
   selectedDoctor: any;
@@ -18,6 +19,7 @@ export function BookAppointmentTab({
   doctorError,
   docPhoneNumber,
 }: BookAppointmentTabProps) {
+  const { t } = useLocale();
   // Slots state
   const [showSlots, setShowSlots] = useState(false);
   const [slots, setSlots] = useState<any[]>([]);
@@ -45,10 +47,10 @@ export function BookAppointmentTab({
         setSlotsError(null);
       } else {
         setSlots([]);
-        setSlotsError('No slots available for the selected date.');
+        setSlotsError(t.ui.noSlotsForDate);
       }
     } catch (e: any) {
-      setSlotsError(e?.message || 'Failed to fetch slots.');
+      setSlotsError(e?.message || t.messages.SLOT.LOADING_FAILED);
       setSlots([]);
     } finally {
       setLoadingSlots(false);

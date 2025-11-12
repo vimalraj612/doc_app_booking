@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { InlineMessage } from '../ui/inline-message';
 import { ValidationMessages, SlotMessages } from '../../constants/messages';
 import { validateAndFormatPhone, sanitizePhoneInput } from '../../utils/phoneUtils';
+import { useLocale } from '../../contexts/LocaleContext';
+import { getGenderOptions } from '../../constants/dropdownOptions';
 
 interface Slot {
   slotId: string | number;
@@ -53,6 +55,9 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   successMsg,
   formatTime,
 }) => {
+  const { t } = useLocale();
+  const genderOptions = getGenderOptions(t);
+  
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState('');
@@ -151,9 +156,9 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
       <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="space-y-3">
-            <DialogTitle className="text-2xl font-bold text-gray-900">Available Slots</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-gray-900">{t.ui.availableSlots}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">
-              Select a date to view available appointment slots
+              {t.ui.selectDateToView}
             </DialogDescription>
           </DialogHeader>
 
@@ -162,7 +167,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
               <div className="flex items-center justify-center py-8">
                 <div className="inline-flex items-center gap-2 text-sm text-gray-500">
                   <span className="animate-spin">⏳</span>
-                  Loading slots...
+                  {t.ui.loadingSlots}
                 </div>
               </div>
             )}
@@ -172,7 +177,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
               <div className="space-y-4">
                 {/* Date Picker Section */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Select Date</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.selectDate}</h3>
                   <div className="flex justify-center">
                     <Input
                       id="slot-date-picker"
@@ -191,7 +196,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
 
                 {/* Slots Grid Section */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Available Time Slots</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.availableTimeSlots}</h3>
                   <div className="flex justify-center">
                     <div className="w-full">
                       <AnimatePresence mode="wait">
@@ -205,12 +210,12 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                             className="w-full"
                           >
                             {(!slotsByDate[selectedDate] || slotsByDate[selectedDate].length === 0) ? (
-                              <div className="text-gray-500 italic text-center py-2 text-xs">No slots for this date</div>
+                              <div className="text-gray-500 italic text-center py-2 text-xs">{t.ui.noSlotsForDate}</div>
                             ) : (
                               <>
                                 {leaveDates.has(selectedDate) ? (
                                   <div className="text-center py-2 w-full">
-                                    <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">Doctor is on leave this day — booking disabled.</div>
+                                    <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">{t.ui.doctorOnLeave}</div>
                                   </div>
                                 ) : (
                                   <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
@@ -311,11 +316,11 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
         <Dialog open={confirmOpen} onOpenChange={(open) => !open && handleCancelBook()}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader className="space-y-3">
-              <DialogTitle className="text-2xl font-bold text-gray-900">Book Appointment</DialogTitle>
+              <DialogTitle className="text-2xl font-bold text-gray-900">{t.ui.bookAppointment}</DialogTitle>
               <DialogDescription className="text-sm text-gray-600">
                 {pendingSlot && (
                   <>
-                    Book your appointment for <span className="font-semibold text-gray-900">{formatTime(pendingSlot.start)} - {formatTime(pendingSlot.end)}</span> on{' '}
+                    {t.ui.bookYourAppointment} <span className="font-semibold text-gray-900">{formatTime(pendingSlot.start)} - {formatTime(pendingSlot.end)}</span> {t.ui.on}{' '}
                     <span className="font-semibold text-gray-900">{selectedDate}</span>
                   </>
                 )}
@@ -379,16 +384,16 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
             >
               {/* Appointee Information Section */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Appointee Information</h3>
+                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.appointeeInformation}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="appointeeName" className="text-sm font-medium text-gray-700">
-                      Full Name <span className="text-red-500">*</span>
+                      {t.ui.fullName} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="appointeeName"
                       type="text"
-                      placeholder="John Doe"
+                      placeholder={t.ui.namePlaceholder}
                       value={appointeeName}
                       onChange={e => {
                         setAppointeeName(e.target.value);
@@ -403,12 +408,12 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
 
                   <div className="space-y-2">
                     <Label htmlFor="appointeeAge" className="text-sm font-medium text-gray-700">
-                      Age <span className="text-red-500">*</span>
+                      {t.ui.age} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="appointeeAge"
                       type="number"
-                      placeholder="30"
+                      placeholder={t.ui.agePlaceholder}
                       value={appointeeAge}
                       onChange={e => {
                         setAppointeeAge(e.target.value);
@@ -427,21 +432,21 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                   <div className="space-y-2">
                     <PhoneInput
                       id="appointeePhone"
-                      label="Phone Number"
+                      label={t.ui.phoneNumber}
                       value={appointeePhone}
                       onChange={(value) => {
                         setAppointeePhone(value);
                         if (appointeePhoneError) setAppointeePhoneError('');
                       }}
                       error={appointeePhoneError}
-                      placeholder="Enter 10 digit mobile number"
+                      placeholder={t.ui.phonePlaceholder}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="appointeeGender" className="text-sm font-medium text-gray-700">
-                      Gender <span className="text-red-500">*</span>
+                      {t.ui.gender} <span className="text-red-500">*</span>
                     </Label>
                     <select
                       id="appointeeGender"
@@ -452,10 +457,10 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       }}
                       className={`flex h-10 w-full rounded-md border ${appointeeGenderError ? 'border-red-500' : 'border-gray-300'} bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2`}
                     >
-                      <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
+                      <option value="">{t.ui.selectGender}</option>
+                      {genderOptions.map(opt => (
+                        <option key={opt.key} value={opt.key}>{opt.label}</option>
+                      ))}
                     </select>
                     {appointeeGenderError && (
                       <p className="text-xs text-red-500">{appointeeGenderError}</p>

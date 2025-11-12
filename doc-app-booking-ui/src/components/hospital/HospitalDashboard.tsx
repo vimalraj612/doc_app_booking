@@ -5,7 +5,6 @@ import { LogOut, Stethoscope, CalendarCheck, Building2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { DoctorMessages } from '../../constants/messages';
 
 import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, SlotTemplateDTO, DoctorDTO } from '../../api/doctor';
 import { fetchHospitalAppointmentsByDateRange, fetchHospitalTodaysAppointmentCount } from '../../api/appointments';
@@ -14,6 +13,9 @@ import { AppointmentsTab } from './AppointmentsTab';
 import { SlotTemplatesDialog } from './SlotTemplatesDialog';
 import DoctorAvailableSlot from './DoctorAvailableSlot';
 import DoctorLeaves from './DoctorLeaves';
+import { useLocale } from '../../contexts/LocaleContext';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { getAppointmentStatusOptions } from '../../constants/dropdownOptions';
 
 interface HospitalDashboardProps {
   user: User;
@@ -30,6 +32,8 @@ export function HospitalDashboard({
   onLogout,
   onDeleteDoctor
 }: HospitalDashboardProps) {
+  const { t } = useLocale();
+  
   const [isAddDoctorOpen, setIsAddDoctorOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Partial<DoctorDTO> | Partial<Doctor> | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -66,14 +70,12 @@ export function HospitalDashboard({
     };
   });
   
-  const statusOptions = [
-    { key: 'ALL', label: 'All' },
-    { key: 'SCHEDULED', label: 'Scheduled' },
-    { key: 'COMPLETED', label: 'Completed' },
-    { key: 'CANCELLED', label: 'Cancelled' },
-    { key: 'RESCHEDULED', label: 'Rescheduled' },
-    { key: 'PENDING', label: 'Pending' },
-  ];
+  const statusOptions = getAppointmentStatusOptions(t, true).map(opt => ({
+    key: opt.key,
+    label: opt.label,
+  })).filter(opt =>
+    opt.key === 'ALL' || ['SCHEDULED', 'COMPLETED', 'CANCELLED', 'RESCHEDULED', 'PENDING'].includes(opt.key)
+  );
   
   const [cancelMsg, setCancelMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [cancelDialog, setCancelDialog] = useState<{ open: boolean; appt?: any }>({ open: false });
@@ -157,7 +159,7 @@ export function HospitalDashboard({
         const count = resp && typeof resp === 'object' && 'data' in resp ? resp.data : (typeof resp === 'number' ? resp : 0);
         setHospitalTodayCount(Number(count || 0));
       } catch (e: any) {
-        setHospitalTodayError(extractErrorMessage(e) || DoctorMessages.TODAY_COUNT_FAILED);
+        setHospitalTodayError(extractErrorMessage(e) || t.messages.DOCTOR.TODAY_COUNT_FAILED);
         setHospitalTodayCount(null);
       } finally {
         setHospitalTodayLoading(false);
@@ -209,7 +211,7 @@ export function HospitalDashboard({
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Building2 className="w-6 h-6 text-purple-500 bg-transparent" />
-            <h1 className="text-lg sm:text-xl">Hospital Portal</h1>
+            <h1 className="text-lg sm:text-xl">{t.portals.hospitalPortal}</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2">
@@ -223,6 +225,7 @@ export function HospitalDashboard({
               <AvatarImage src={hospital?.photo} alt={hospital?.name} />
               <AvatarFallback>{(hospital?.name || 'H').split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
+            <LanguageSwitcher />
             <button onClick={onLogout} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <LogOut className="w-5 h-5 text-gray-600 bg-transparent" />
             </button>
@@ -237,14 +240,14 @@ export function HospitalDashboard({
             <CardContent className="p-4 flex flex-col items-center justify-center">
               <Stethoscope className="w-8 h-8 text-green-500 mb-2 bg-transparent" />
               <p className="text-2xl">{doctors.length}</p>
-              <p className="text-xs text-gray-500">Doctors</p>
+              <p className="text-xs text-gray-500">{t.doctor.doctors}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 flex flex-col items-center justify-center">
               <CalendarCheck className="w-8 h-8 text-purple-500 mb-2 bg-transparent" />
               <p className="text-2xl">{hospitalTodayLoading ? '...' : (hospitalTodayCount !== null ? hospitalTodayCount : appointments.length)}</p>
-              <p className="text-xs text-gray-500">Total Appts</p>
+              <p className="text-xs text-gray-500">{t.appointments.appointments}</p>
             </CardContent>
           </Card>
         </div>
@@ -252,8 +255,8 @@ export function HospitalDashboard({
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="doctors">Doctors</TabsTrigger>
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
+            <TabsTrigger value="doctors">{t.doctor.doctors}</TabsTrigger>
+            <TabsTrigger value="appointments">{t.appointments.appointments}</TabsTrigger>
           </TabsList>
 
           <DoctorsTab
@@ -266,7 +269,7 @@ export function HospitalDashboard({
             setEditingDoctor={setEditingDoctor}
             onAddDoctor={handleAddDoctor}
             onUpdateDoctor={handleUpdateDoctor}
-            onSlotTemplateClick={handleSlotTemplateClick}
+            onSlotTemplatesClick={handleSlotTemplateClick}
             onSlotsClick={(doctorId) => {
               setSlotsDoctorId(doctorId);
               setDoctorSlotsOpen(true);
@@ -341,10 +344,10 @@ export function HospitalDashboard({
       {/* Delete doctor confirmation */}
       <ConfirmDialog
         open={doctorConfirmOpen}
-        title="Delete doctor"
-        message={doctorToDelete ? "Are you sure you want to delete this doctor and all related data?" : ''}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t.messages.LABELS.DELETE_DOCTOR}
+        message={doctorToDelete ? t.messages.CONFIRM.DELETE_DOCTOR : ''}
+        confirmText={t.common.delete}
+        cancelText={t.common.cancel}
         onConfirm={async () => {
           if (doctorToDelete) {
             try {

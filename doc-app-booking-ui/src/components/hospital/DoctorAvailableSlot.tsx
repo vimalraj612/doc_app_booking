@@ -7,7 +7,7 @@ import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate, reserveAppointment } from '../../api/appointments';
 import { fetchDoctorLeavesForDoctor } from '../../api/doctorLeaves';
 import { InlineMessage } from '../ui/inline-message';
-import { SlotMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface Slot {
     slotId: string | number;
@@ -24,6 +24,7 @@ interface Props {
 }
 
 const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, hospitalName }) => {
+    const { t } = useLocale();
     const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
     const [slots, setSlots] = useState<Slot[]>([]);
     const [loading, setLoading] = useState(false);
@@ -66,7 +67,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                 const res = await fetchSlotsByDoctorIdAndDate(doctorId, date);
                 setSlots(res.data || []);
             } catch (e: any) {
-                setError(e?.message || SlotMessages.LOADING_FAILED);
+                setError(e?.message || t.messages.SLOT.LOADING_FAILED);
             } finally {
                 setLoading(false);
             }
@@ -123,7 +124,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                 reserved: true,
             });
             // Show success message
-            setSuccess(SlotMessages.RESERVED_SUCCESS);
+            setSuccess(t.messages.SLOT.RESERVED_SUCCESS);
             window.setTimeout(() => setSuccess(null), 3000);
             // keep the confirmation panel open inside the dialog so user sees the reserved state
             // we do not clear selectedSlot here so the panel can show details; user can close when ready
@@ -131,7 +132,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
             const res = await fetchSlotsByDoctorIdAndDate(doctorId as any, date);
             setSlots(res.data || []);
         } catch (e: any) {
-            const errorMsg = e?.message || SlotMessages.RESERVE_FAILED;
+            const errorMsg = e?.message || t.messages.SLOT.RESERVE_FAILED;
             setError(errorMsg);
         } finally {
             setBooking(false);
@@ -142,13 +143,13 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
     // previously caused a parser error in the build step.
     const renderSlotsContent = () => {
         if (!slots || slots.length === 0) {
-            return <div className="text-gray-500 italic text-center py-2 text-sm">No slots for this date</div>;
+            return <div className="text-gray-500 italic text-center py-2 text-sm">{t.messages.SLOT.NO_SLOTS}</div>;
         }
 
         if (leaveDates.has(date)) {
             return (
                 <div className="text-center py-2">
-                    <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">Doctor is on leave this day — booking disabled.</div>
+                    <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">{t.messages.LABELS.DOCTOR_ON_LEAVE}</div>
                     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar mt-2" style={{ maxHeight: '62vh' }}>
                         {slots
                             .slice()

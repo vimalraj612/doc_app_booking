@@ -7,7 +7,7 @@ import { Calendar, Trash2 } from 'lucide-react';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { createDoctorLeave, fetchDoctorLeavesForDoctor, deleteDoctorLeave, DoctorLeaveResponse } from '../../api/doctorLeaves';
 import { InlineMessage } from '../ui/inline-message';
-import { LeaveMessages, ValidationMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
 
 interface DoctorLeavesProps {
   doctorId: string | number | null;
@@ -17,6 +17,7 @@ interface DoctorLeavesProps {
 }
 
 const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open, onOpenChange }) => {
+  const { t } = useLocale();
   const [leaves, setLeaves] = useState<DoctorLeaveResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
       const data = await fetchDoctorLeavesForDoctor(doctorId);
       setLeaves(data || []);
     } catch (e: any) {
-      setError(e?.message || LeaveMessages.LOADING_FAILED);
+      setError(e?.message || t.messages.LEAVE.LOADING_FAILED);
     } finally {
       setLoading(false);
     }
@@ -49,20 +50,20 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
   const handleCreate = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!doctorId || !date) {
-      setError(ValidationMessages.DATE_REQUIRED);
+      setError(t.messages.VALIDATION.DATE_REQUIRED);
       return;
     }
     setSubmitting(true);
     setError(null);
     try {
       await createDoctorLeave({ doctorId, date, reason });
-      setSuccessMsg(LeaveMessages.CREATED_SUCCESS);
+      setSuccessMsg(t.messages.LEAVE.CREATED_SUCCESS);
       setDate('');
       setReason('');
       await loadLeaves();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (e: any) {
-      setError(e?.message || LeaveMessages.CREATE_FAILED);
+      setError(e?.message || t.messages.LEAVE.CREATE_FAILED);
     } finally {
       setSubmitting(false);
     }
@@ -72,11 +73,11 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
     if (!id) return setConfirm({ open: false });
     try {
       await deleteDoctorLeave(id);
-      setSuccessMsg(LeaveMessages.DELETED_SUCCESS);
+      setSuccessMsg(t.messages.LEAVE.DELETED_SUCCESS);
       await loadLeaves();
       setTimeout(() => setSuccessMsg(null), 2500);
     } catch (e: any) {
-      setError(e?.message || LeaveMessages.DELETE_FAILED);
+      setError(e?.message || t.messages.LEAVE.DELETE_FAILED);
     } finally {
       setConfirm({ open: false });
     }
@@ -86,7 +87,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Doctor Leaves</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">{t.messages.LABELS.DOCTOR_LEAVES}</DialogTitle>
           <DialogDescription className="text-sm text-gray-600">
             Manage leave dates for {doctorName || 'the doctor'}
           </DialogDescription>
@@ -99,17 +100,17 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
           {/* Add New Leave Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Add New Leave</h3>
+            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.ADD_NEW_LEAVE}</h3>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="leaveDate" className="text-sm font-medium">Date *</Label>
+                  <Label htmlFor="leaveDate" className="text-sm font-medium">{t.messages.LABELS.DATE} {t.messages.LABELS.REQUIRED}</Label>
                   <Input 
                     id="leaveDate"
                     type="date" 
                     value={date} 
                     onChange={e => setDate(e.target.value)}
-                    placeholder="Select date"
+                    placeholder={t.messages.LABELS.PLACEHOLDER_SELECT_DATE}
                     disabled={submitting}
                   />
                 </div>
@@ -119,7 +120,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                     id="leaveReason"
                     value={reason} 
                     onChange={e => setReason(e.target.value)} 
-                    placeholder="e.g. Medical appointment, Personal"
+                    placeholder={t.messages.LABELS.PLACEHOLDER_REASON}
                     disabled={submitting}
                     maxLength={500}
                   />
@@ -169,8 +170,8 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
               <div className="p-6 text-center text-gray-600">
                 <div className="flex flex-col items-center gap-3">
                   <Calendar className="w-12 h-12 text-gray-400 bg-transparent" />
-                  <p className="font-medium">No leaves scheduled</p>
-                  <p className="text-sm">Add a leave date above to get started</p>
+                  <p className="font-medium">{t.messages.LEAVE.NO_LEAVES}</p>
+                  <p className="text-sm">{t.messages.LABELS.ADD_LEAVE_TO_START}</p>
                 </div>
               </div>
             ) : (
@@ -196,10 +197,10 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                       size="sm" 
                       onClick={() => setConfirm({ open: true, id: l.id })}
                       className="flex items-center gap-2 flex-shrink-0"
-                      title="Delete leave"
+                      title={t.messages.LABELS.DELETE_LEAVE}
                     >
                       <Trash2 className="w-4 h-4 bg-transparent" />
-                      <span className="hidden sm:inline">Delete</span>
+                      <span className="hidden sm:inline">{t.common.delete}</span>
                     </Button>
                   </div>
                 ))}
@@ -210,10 +211,10 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
         <ConfirmDialog
           open={confirm.open}
-          title="Delete leave"
-          message="Are you sure you want to delete this leave entry? This action cannot be undone."
-          confirmText="Delete"
-          cancelText="Cancel"
+          title={t.messages.LABELS.DELETE_LEAVE}
+          message={t.messages.CONFIRM.DELETE_LEAVE}
+          confirmText={t.common.delete}
+          cancelText={t.common.cancel}
           onConfirm={() => handleDelete(confirm.id)}
           onCancel={() => setConfirm({ open: false })}
         />

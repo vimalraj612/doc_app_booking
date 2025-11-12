@@ -5,7 +5,7 @@ import { PhoneInput } from '../ui/phone-input';
 import SPECIALIZATION_OPTIONS from '../../constants/specializations';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
-import { ValidationMessages } from '../../constants/messages';
+import { useLocale } from '../../contexts/LocaleContext';
 import { validateAndFormatPhone, removeCountryCode } from '../../utils/phoneUtils';
 import { DoctorDTO } from '../../api/doctor';
 
@@ -26,6 +26,7 @@ export function AddDoctorForm({
   hospital, 
   user 
 }: AddDoctorFormProps) {
+  const { t } = useLocale();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -45,39 +46,39 @@ export function AddDoctorForm({
   const validate = () => {
     const errs: { [k: string]: string } = {};
     
-    if (!firstName || !firstName.trim()) errs.firstName = ValidationMessages.FIRST_NAME_REQUIRED;
-    else if (firstName.length > 100) errs.firstName = ValidationMessages.FIRST_NAME_MAX;
-    else if (!namePattern.test(firstName)) errs.firstName = ValidationMessages.FIRST_NAME_INVALID;
+    if (!firstName || !firstName.trim()) errs.firstName = t.messages.VALIDATION.FIRST_NAME_REQUIRED;
+    else if (firstName.length > 100) errs.firstName = t.messages.VALIDATION.FIRST_NAME_MAX;
+    else if (!namePattern.test(firstName)) errs.firstName = t.messages.VALIDATION.FIRST_NAME_INVALID;
 
-    if (!lastName || !lastName.trim()) errs.lastName = ValidationMessages.LAST_NAME_REQUIRED;
-    else if (lastName.length > 100) errs.lastName = ValidationMessages.LAST_NAME_MAX;
-    else if (!namePattern.test(lastName)) errs.lastName = ValidationMessages.LAST_NAME_INVALID;
+    if (!lastName || !lastName.trim()) errs.lastName = t.messages.VALIDATION.LAST_NAME_REQUIRED;
+    else if (lastName.length > 100) errs.lastName = t.messages.VALIDATION.LAST_NAME_MAX;
+    else if (!namePattern.test(lastName)) errs.lastName = t.messages.VALIDATION.LAST_NAME_INVALID;
 
-    if (!email || !email.trim()) errs.email = ValidationMessages.EMAIL_REQUIRED;
-    else if (email.length > 200) errs.email = ValidationMessages.EMAIL_MAX;
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = ValidationMessages.EMAIL_INVALID;
+    if (!email || !email.trim()) errs.email = t.messages.VALIDATION.EMAIL_REQUIRED;
+    else if (email.length > 200) errs.email = t.messages.VALIDATION.EMAIL_MAX;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = t.messages.VALIDATION.EMAIL_INVALID;
 
     if (!phoneNumber || !phoneNumber.trim()) {
-      errs.phoneNumber = ValidationMessages.PHONE_REQUIRED;
+      errs.phoneNumber = t.messages.VALIDATION.PHONE_REQUIRED;
     } else {
       const validation = validateAndFormatPhone(phoneNumber);
       if (!validation.isValid) {
-        errs.phoneNumber = validation.error || ValidationMessages.PHONE_INVALID;
+        errs.phoneNumber = validation.error || t.messages.VALIDATION.PHONE_INVALID;
       }
     }
 
-    if (!specialization || !specialization.trim()) errs.specialization = ValidationMessages.SPECIALIZATION_REQUIRED;
-    else if (specialization.length > 200) errs.specialization = ValidationMessages.SPECIALIZATION_MAX;
-    else if (!SPECIALIZATION_OPTIONS.find(o => o.value === specialization)) errs.specialization = ValidationMessages.SPECIALIZATION_INVALID;
+    if (!specialization || !specialization.trim()) errs.specialization = t.messages.VALIDATION.SPECIALIZATION_REQUIRED;
+    else if (specialization.length > 200) errs.specialization = t.messages.VALIDATION.SPECIALIZATION_MAX;
+    else if (!SPECIALIZATION_OPTIONS.find(o => o.value === specialization)) errs.specialization = t.messages.VALIDATION.SPECIALIZATION_INVALID;
 
-    if (department && department.length > 200) errs.department = ValidationMessages.DEPARTMENT_MAX;
-    else if (department && !departmentPattern.test(department)) errs.department = ValidationMessages.DEPARTMENT_INVALID;
+    if (department && department.length > 200) errs.department = t.messages.VALIDATION.DEPARTMENT_MAX;
+    else if (department && !departmentPattern.test(department)) errs.department = t.messages.VALIDATION.DEPARTMENT_INVALID;
 
-    if (experienceYears !== '' && (Number(experienceYears) < 0 || Number(experienceYears) > 70)) errs.experienceYears = ValidationMessages.EXPERIENCE_RANGE;
+    if (experienceYears !== '' && (Number(experienceYears) < 0 || Number(experienceYears) > 70)) errs.experienceYears = t.messages.VALIDATION.EXPERIENCE_RANGE;
 
-    if (qualifications && qualifications.length > 1000) errs.qualifications = ValidationMessages.QUALIFICATIONS_MAX;
+    if (qualifications && qualifications.length > 1000) errs.qualifications = t.messages.VALIDATION.QUALIFICATIONS_MAX;
 
-    if (imageContentType && imageContentType.length > 100) errs.imageContentType = ValidationMessages.IMAGE_TYPE_MAX;
+    if (imageContentType && imageContentType.length > 100) errs.imageContentType = t.messages.VALIDATION.IMAGE_TYPE_MAX;
 
     // Image size validation is handled in handleImage function
 
@@ -236,25 +237,25 @@ export function AddDoctorForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Personal Information Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Personal Information</h3>
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PERSONAL_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName" className="text-sm font-medium">First name *</Label>
+            <Label htmlFor="firstName" className="text-sm font-medium">{t.messages.LABELS.FIRST_NAME} {t.messages.LABELS.REQUIRED}</Label>
             <Input 
               id="firstName" 
               value={firstName} 
               onChange={e => setFirstName(e.target.value)} 
-              placeholder="Enter first name" 
+              placeholder={t.messages.LABELS.PLACEHOLDER_FIRST_NAME} 
             />
             {errors.firstName && <div className="text-red-500 text-xs">{errors.firstName}</div>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName" className="text-sm font-medium">Last name *</Label>
+            <Label htmlFor="lastName" className="text-sm font-medium">{t.messages.LABELS.LAST_NAME} {t.messages.LABELS.REQUIRED}</Label>
             <Input 
               id="lastName" 
               value={lastName} 
               onChange={e => setLastName(e.target.value)} 
-              placeholder="Enter last name" 
+              placeholder={t.messages.LABELS.PLACEHOLDER_LAST_NAME} 
             />
             {errors.lastName && <div className="text-red-500 text-xs">{errors.lastName}</div>}
           </div>
@@ -263,25 +264,25 @@ export function AddDoctorForm({
 
       {/* Contact Information Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Contact Information</h3>
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_CONTACT_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+            <Label htmlFor="email" className="text-sm font-medium">{t.messages.LABELS.EMAIL} {t.messages.LABELS.REQUIRED}</Label>
             <Input 
               id="email" 
               type="email" 
               value={email} 
               onChange={e => setEmail(e.target.value)} 
-              placeholder="doctor@example.com" 
+              placeholder={t.messages.LABELS.PLACEHOLDER_EMAIL} 
             />
             {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
           </div>
           <PhoneInput 
             id="phone" 
-            label="Phone Number"
+            label={t.messages.LABELS.PHONE_NUMBER}
             value={phoneNumber} 
             onChange={(value) => setPhoneNumber(value)} 
-            placeholder="Enter 10 digit mobile number"
+            placeholder={t.messages.LABELS.PLACEHOLDER_PHONE}
             error={errors.phoneNumber}
             required
           />
@@ -290,17 +291,17 @@ export function AddDoctorForm({
 
       {/* Professional Information Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Professional Information</h3>
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PROFESSIONAL_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="specialization" className="text-sm font-medium">Specialization *</Label>
+            <Label htmlFor="specialization" className="text-sm font-medium">{t.messages.LABELS.SPECIALIZATION} {t.messages.LABELS.REQUIRED}</Label>
             <select 
               id="specialization"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={specialization}
               onChange={e => setSpecialization(e.target.value)}
             >
-              <option value="">Select specialization</option>
+              <option value="">{t.messages.LABELS.PLACEHOLDER_SELECT_SPECIALIZATION}</option>
               {SPECIALIZATION_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
@@ -308,23 +309,23 @@ export function AddDoctorForm({
             {errors.specialization && <div className="text-red-500 text-xs">{errors.specialization}</div>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="department" className="text-sm font-medium">Department</Label>
+            <Label htmlFor="department" className="text-sm font-medium">{t.messages.LABELS.DEPARTMENT}</Label>
             <Input 
               id="department" 
               value={department} 
               onChange={e => setDepartment(e.target.value)} 
-              placeholder="Enter department" 
+              placeholder={t.messages.LABELS.PLACEHOLDER_DEPARTMENT} 
             />
             {errors.department && <div className="text-red-500 text-xs">{errors.department}</div>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="experienceYears" className="text-sm font-medium">Experience (years)</Label>
+            <Label htmlFor="experienceYears" className="text-sm font-medium">{t.messages.LABELS.EXPERIENCE_YEARS}</Label>
             <Input 
               id="experienceYears" 
               type="number" 
               value={experienceYears} 
               onChange={e => setExperienceYears(e.target.value === '' ? '' : Number(e.target.value))} 
-              placeholder="0" 
+              placeholder={t.messages.LABELS.PLACEHOLDER_EXPERIENCE} 
             />
             {errors.experienceYears && <div className="text-red-500 text-xs">{errors.experienceYears}</div>}
           </div>
@@ -333,20 +334,20 @@ export function AddDoctorForm({
 
       {/* Additional Information */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Additional Information</h3>
+        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_ADDITIONAL_INFO}</h3>
         <div className="space-y-2">
-          <Label htmlFor="qualifications" className="text-sm font-medium">Qualifications</Label>
+          <Label htmlFor="qualifications" className="text-sm font-medium">{t.messages.LABELS.QUALIFICATIONS}</Label>
           <textarea 
             id="qualifications"
             className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={qualifications}
             onChange={e => setQualifications(e.target.value)}
-            placeholder="Enter qualifications (e.g., MBBS, MD)"
+            placeholder={t.messages.LABELS.PLACEHOLDER_QUALIFICATIONS}
           />
           {errors.qualifications && <div className="text-red-500 text-xs">{errors.qualifications}</div>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="profileImage" className="text-sm font-medium">Profile Image</Label>
+          <Label htmlFor="profileImage" className="text-sm font-medium">{t.messages.LABELS.PROFILE_IMAGE}</Label>
           <Input 
             id="profileImage" 
             type="file" 
@@ -362,8 +363,8 @@ export function AddDoctorForm({
                 className="w-16 h-16 rounded-full object-cover border-2 border-purple-200 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-700">Profile image uploaded</p>
-                <p className="text-xs text-gray-500 mt-1">Preview shows how it will appear</p>
+                <p className="text-sm font-medium text-gray-700">{t.messages.LABELS.PROFILE_IMAGE_UPLOADED}</p>
+                <p className="text-xs text-gray-500 mt-1">{t.messages.LABELS.PREVIEW_DESCRIPTION}</p>
               </div>
             </div>
           )}
