@@ -2,6 +2,7 @@
 
 package com.doc_app.booking.service.impl;
 
+import com.doc_app.booking.constant.MessageKeys;
 import com.doc_app.booking.dto.HospitalDTO;
 import com.doc_app.booking.dto.request.CreateHospitalRequest;
 import com.doc_app.booking.dto.request.UpdateHospitalRequest;
@@ -10,6 +11,7 @@ import com.doc_app.booking.dto.mapper.EntityMapper;
 import com.doc_app.booking.model.Hospital;
 import com.doc_app.booking.repository.HospitalRepository;
 import com.doc_app.booking.service.HospitalService;
+import com.doc_app.booking.util.LocaleManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,11 +31,13 @@ public class HospitalServiceImpl implements HospitalService {
 
     private final HospitalRepository hospitalRepository;
     private final EntityMapper mapper;
+    private final LocaleManager localeManager;
 
     @Override
     public HospitalDTO createHospital(CreateHospitalRequest request) {
         if (hospitalRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Hospital with email " + request.getEmail() + " already exists");
+            throw new IllegalArgumentException(
+                    localeManager.getMessage(MessageKeys.HOSPITAL_ALREADY_EXISTS_EMAIL, request.getEmail()));
         }
         Hospital hospital = mapper.toHospital(request);
         hospital = hospitalRepository.save(hospital);
@@ -43,7 +47,8 @@ public class HospitalServiceImpl implements HospitalService {
     @Override
     public HospitalDTO updateHospital(Long id, UpdateHospitalRequest request) {
         Hospital hospital = hospitalRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Hospital not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.HOSPITAL_NOT_FOUND_ID, id)));
 
         mapper.updateHospital(hospital, request);
         hospital = hospitalRepository.save(hospital);
@@ -54,7 +59,8 @@ public class HospitalServiceImpl implements HospitalService {
     @Transactional(readOnly = true)
     public HospitalDTO getHospitalById(Long id) {
         Hospital hospital = hospitalRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Hospital not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.HOSPITAL_NOT_FOUND_ID, id)));
         return mapper.toHospitalDTO(hospital);
     }
 
@@ -83,7 +89,8 @@ public class HospitalServiceImpl implements HospitalService {
     @Override
     public void deleteHospital(Long id) {
         Hospital hospital = hospitalRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Hospital not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.HOSPITAL_NOT_FOUND_ID, id)));
         hospitalRepository.delete(hospital);
     }
 
@@ -91,7 +98,8 @@ public class HospitalServiceImpl implements HospitalService {
     @Transactional(readOnly = true)
     public HospitalDTO getHospitalByEmail(String email) {
         Hospital hospital = hospitalRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Hospital not found with email: " + email));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.HOSPITAL_NOT_FOUND_EMAIL, email)));
         return mapper.toHospitalDTO(hospital);
     }
 
@@ -99,7 +107,8 @@ public class HospitalServiceImpl implements HospitalService {
     @Transactional(readOnly = true)
     public HospitalDTO getHospitalByPhoneNumber(String phoneNumber) {
         Hospital hospital = hospitalRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new EntityNotFoundException("Hospital not found with phone number: " + phoneNumber));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.HOSPITAL_NOT_FOUND_PHONE, phoneNumber)));
         return mapper.toHospitalDTO(hospital);
     }
 

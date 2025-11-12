@@ -1,5 +1,6 @@
 package com.doc_app.booking.service.impl;
 
+import com.doc_app.booking.constant.MessageKeys;
 import com.doc_app.booking.dto.AppointmentDTO;
 import com.doc_app.booking.dto.PageResponse;
 import com.doc_app.booking.dto.request.CreateAppointmentRequest;
@@ -15,6 +16,7 @@ import com.doc_app.booking.repository.DoctorRepository;
 import com.doc_app.booking.repository.PatientRepository;
 import com.doc_app.booking.service.AppointmentService;
 import com.doc_app.booking.service.PatientService;
+import com.doc_app.booking.util.LocaleManager;
 import jakarta.persistence.EntityNotFoundException;
 import com.doc_app.booking.exception.SlotAlreadyBookedException;
 import com.doc_app.booking.exception.PatientNotFoundException;
@@ -56,12 +58,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final PatientRepository patientRepository;
     private final PatientService patientService;
     private final EntityMapper mapper;
+    private final LocaleManager localeManager;
     private final com.doc_app.booking.repository.SlotRepository slotRepository;
 
     @Override
     public AppointmentDTO createAppointment(CreateAppointmentRequest request) {
         if (request.getDoctorId() == null) {
-            throw new IllegalArgumentException("Doctor ID must not be null");
+            throw new IllegalArgumentException(
+                    localeManager.getMessage(MessageKeys.DOCTOR_ID_REQUIRED));
         }
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new DoctorNotFoundException(request.getDoctorId()));
@@ -84,9 +88,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         // If slotId is provided, lock the slot and book it
         if (request.getSlotId() != null) {
             var slotOpt = slotRepository.findByIdForUpdate(request.getSlotId());
-            var slot = slotOpt.orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+            var slot = slotOpt.orElseThrow(() -> new IllegalArgumentException(
+                    localeManager.getMessage(MessageKeys.SLOT_NOT_FOUND)));
             if (!slot.isAvailable()) {
-                throw new SlotAlreadyBookedException("Slot already booked");
+                throw new SlotAlreadyBookedException(
+                        localeManager.getMessage(MessageKeys.SLOT_ALREADY_BOOKED));
             }
 
             // mark slot unavailable and save
@@ -109,7 +115,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // fallback: legacy behavior using appointmentDateTime
         if (!isDoctorAvailable(request.getDoctorId(), request.getAppointmentDateTime())) {
-            throw new IllegalStateException("Doctor is not available at the requested time");
+            throw new IllegalStateException(
+                    localeManager.getMessage(MessageKeys.DOCTOR_NOT_AVAILABLE));
         }
 
         Appointment appointment = mapper.toAppointment(request);
@@ -126,12 +133,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentDTO updateAppointment(Long id, UpdateAppointmentRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.APPOINTMENT_NOT_FOUND_ID, id)));
 
         if (request.getAppointmentDateTime() != null &&
                 !request.getAppointmentDateTime().equals(appointment.getAppointmentDateTime()) &&
                 !isDoctorAvailable(appointment.getDoctor().getId(), request.getAppointmentDateTime())) {
-            throw new IllegalStateException("Doctor is not available at the requested time");
+            throw new IllegalStateException(
+                    localeManager.getMessage(MessageKeys.DOCTOR_NOT_AVAILABLE));
         }
 
         mapper.updateAppointment(appointment, request);
@@ -142,7 +151,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public AppointmentDTO updateAppointmentStatus(Long id, AppointmentStatusUpdateRequest request) {
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.APPOINTMENT_NOT_FOUND_ID, id)));
 
         appointment.setStatus(request.getStatus());
         if (request.getNotes() != null) {
@@ -162,7 +172,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional(readOnly = true)
     public AppointmentDTO getAppointmentById(Long id) {
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.APPOINTMENT_NOT_FOUND_ID, id)));
         return mapper.toAppointmentDTO(appointment);
     }
 
@@ -191,7 +202,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public void deleteAppointment(Long id) {
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.APPOINTMENT_NOT_FOUND_ID, id)));
         appointmentRepository.delete(appointment);
     }
 

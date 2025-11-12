@@ -1,5 +1,6 @@
 package com.doc_app.booking.dto.request;
 
+import com.doc_app.booking.constant.MessageKeys;
 import com.doc_app.booking.validation.ValidPhoneNumber;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -9,36 +10,36 @@ import java.math.BigDecimal;
 @Data
 public class CreateHospitalRequest {
     // Hospital Information
-    @NotBlank(message = "Hospital name is required")
-    @Size(max = 200, message = "Hospital name must not exceed 200 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9\\s\\-.'&]+$", message = "Hospital name contains invalid characters")
+    @NotBlank(message = "{" + MessageKeys.HOSPITAL_NAME_REQUIRED + "}")
+    @Size(max = 200, message = "{" + MessageKeys.HOSPITAL_NAME_SIZE + "}")
+    @Pattern(regexp = "^[a-zA-Z0-9\\s\\-.'&]+$", message = "{" + MessageKeys.HOSPITAL_NAME_INVALID + "}")
     private String name;
 
-    @NotBlank(message = "Hospital type is required")
-    @Size(max = 50, message = "Hospital type must not exceed 50 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s\\-]+$", message = "Hospital type contains invalid characters")
+    @NotBlank(message = "{" + MessageKeys.HOSPITAL_TYPE_REQUIRED + "}")
+    @Size(max = 50, message = "{" + MessageKeys.HOSPITAL_TYPE_SIZE + "}")
+    @Pattern(regexp = "^[a-zA-Z\\s\\-]+$", message = "{" + MessageKeys.HOSPITAL_TYPE_INVALID + "}")
     private String hospitalType;
 
-    @NotNull(message = "Established year is required")
-    @Min(value = 1800, message = "Established year must be after 1800")
-    @Max(value = 2100, message = "Established year cannot be in the future")
+    @NotNull(message = "{" + MessageKeys.ESTABLISHED_YEAR_REQUIRED + "}")
+    @Min(value = 1800, message = "{" + MessageKeys.ESTABLISHED_YEAR_MIN + "}")
+    @Max(value = 2100, message = "{" + MessageKeys.ESTABLISHED_YEAR_MAX + "}")
     private Integer establishedYear;
 
-    @NotNull(message = "Bed capacity is required")
-    @Min(value = 1, message = "Bed capacity must be at least 1")
-    @Max(value = 10000, message = "Bed capacity cannot exceed 10,000")
+    @NotNull(message = "{" + MessageKeys.BED_CAPACITY_REQUIRED + "}")
+    @Min(value = 1, message = "{" + MessageKeys.BED_CAPACITY_MIN + "}")
+    @Max(value = 10000, message = "{" + MessageKeys.BED_CAPACITY_MAX + "}")
     private Integer bedCapacity;
 
-    @Size(max = 1000, message = "Hospital description must not exceed 1000 characters")
+    @Size(max = 1000, message = "{" + MessageKeys.DESCRIPTION_SIZE + "}")
     private String description;
 
     // Contact Information
-    @NotBlank(message = "Email is required")
-    @Email(message = "Please provide a valid email address")
-    @Size(max = 200, message = "Email must not exceed 200 characters")
+    @NotBlank(message = "{" + MessageKeys.EMAIL_REQUIRED + "}")
+    @Email(message = "{" + MessageKeys.EMAIL_INVALID + "}")
+    @Size(max = 200, message = "{" + MessageKeys.EMAIL_SIZE + "}")
     private String email;
 
-    @NotBlank(message = "Phone number is required")
+    @NotBlank(message = "{" + MessageKeys.PHONE_REQUIRED + "}")
     @ValidPhoneNumber
     private String phoneNumber;
 
@@ -46,64 +47,64 @@ public class CreateHospitalRequest {
     private String alternatePhone;
 
     @Pattern(regexp = "^$|^(https?://)?(www\\.)?[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.[a-zA-Z]{2,}(/.*)?$", 
-             message = "Please provide a valid website URL")
-    @Size(max = 200, message = "Website URL must not exceed 200 characters")
+             message = "{" + MessageKeys.WEBSITE_INVALID + "}")
+    @Size(max = 200, message = "{" + MessageKeys.WEBSITE_SIZE + "}")
     private String website;
 
     // Address Information
-    @NotBlank(message = "Address is required")
-    @Size(max = 500, message = "Address must not exceed 500 characters")
+    @NotBlank(message = "{" + MessageKeys.ADDRESS_REQUIRED + "}")
+    @Size(max = 500, message = "{" + MessageKeys.ADDRESS_SIZE + "}")
     private String address;
 
-    @NotBlank(message = "City is required")
-    @Size(max = 100, message = "City name must not exceed 100 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "City name contains invalid characters")
+    @NotBlank(message = "{" + MessageKeys.CITY_REQUIRED + "}")
+    @Size(max = 100, message = "{" + MessageKeys.CITY_SIZE + "}")
+    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "{" + MessageKeys.CITY_INVALID + "}")
     private String city;
 
-    @NotBlank(message = "State is required")
-    @Size(max = 100, message = "State name must not exceed 100 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "State name contains invalid characters")
+    @NotBlank(message = "{" + MessageKeys.STATE_REQUIRED + "}")
+    @Size(max = 100, message = "{" + MessageKeys.STATE_SIZE + "}")
+    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "{" + MessageKeys.STATE_INVALID + "}")
     private String state;
 
-    @NotBlank(message = "Zip code is required")
-    @Pattern(regexp = "^[0-9]{5,10}$", message = "Please provide a valid zip code (5-10 digits)")
+    @NotBlank(message = "{" + MessageKeys.ZIP_CODE_REQUIRED + "}")
+    @Pattern(regexp = "^[0-9]{5,10}$", message = "{" + MessageKeys.ZIP_CODE_INVALID + "}")
     private String zipCode;
 
-    @NotBlank(message = "Country is required")
-    @Size(max = 100, message = "Country name must not exceed 100 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "Country name contains invalid characters")
+    @NotBlank(message = "{" + MessageKeys.COUNTRY_REQUIRED + "}")
+    @Size(max = 100, message = "{" + MessageKeys.COUNTRY_SIZE + "}")
+    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "{" + MessageKeys.COUNTRY_INVALID + "}")
     private String country;
 
     // Admin Information
-    @NotBlank(message = "Admin first name is required")
-    @Size(max = 100, message = "Admin first name must not exceed 100 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "Admin first name contains invalid characters")
+    @NotBlank(message = "{" + MessageKeys.ADMIN_FIRST_NAME_REQUIRED + "}")
+    @Size(max = 100, message = "{" + MessageKeys.ADMIN_FIRST_NAME_SIZE + "}")
+    @Pattern(regexp = "^[a-zA-Z\\s\\-.']+$", message = "{" + MessageKeys.ADMIN_FIRST_NAME_INVALID + "}")
     private String adminFirstName;
 
-    @Size(max = 100, message = "Admin last name must not exceed 100 characters")
-    @Pattern(regexp = "^[a-zA-Z\\s\\-.']*$", message = "Admin last name contains invalid characters")
+    @Size(max = 100, message = "{" + MessageKeys.ADMIN_LAST_NAME_SIZE + "}")
+    @Pattern(regexp = "^[a-zA-Z\\s\\-.']*$", message = "{" + MessageKeys.ADMIN_LAST_NAME_INVALID + "}")
     private String adminLastName;
 
-    @NotBlank(message = "Admin email is required")
-    @Email(message = "Please provide a valid admin email address")
-    @Size(max = 200, message = "Admin email must not exceed 200 characters")
+    @NotBlank(message = "{" + MessageKeys.ADMIN_EMAIL_REQUIRED + "}")
+    @Email(message = "{" + MessageKeys.EMAIL_INVALID + "}")
+    @Size(max = 200, message = "{" + MessageKeys.EMAIL_SIZE + "}")
     private String adminEmail;
 
-    @NotBlank(message = "Admin phone number is required")
+    @NotBlank(message = "{" + MessageKeys.ADMIN_PHONE_REQUIRED + "}")
     @ValidPhoneNumber
     private String adminPhone;
 
     // Services
-    @NotNull(message = "Emergency services information is required")
+    @NotNull(message = "{" + MessageKeys.EMERGENCY_SERVICES_REQUIRED + "}")
     private Boolean emergencyServices = false;
 
     // Geo Location fields
-    @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
-    @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
+    @DecimalMin(value = "-90.0", message = "{" + MessageKeys.LATITUDE_RANGE + "}")
+    @DecimalMax(value = "90.0", message = "{" + MessageKeys.LATITUDE_RANGE + "}")
     private BigDecimal latitude;
 
-    @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
-    @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
+    @DecimalMin(value = "-180.0", message = "{" + MessageKeys.LONGITUDE_RANGE + "}")
+    @DecimalMax(value = "180.0", message = "{" + MessageKeys.LONGITUDE_RANGE + "}")
     private BigDecimal longitude;
 
     // Copy options (for frontend convenience)

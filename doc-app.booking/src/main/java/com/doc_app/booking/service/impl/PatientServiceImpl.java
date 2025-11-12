@@ -1,5 +1,6 @@
 package com.doc_app.booking.service.impl;
 
+import com.doc_app.booking.constant.MessageKeys;
 import com.doc_app.booking.dto.PatientDTO;
 import com.doc_app.booking.dto.PageResponse;
 import com.doc_app.booking.dto.request.CreatePatientRequest;
@@ -10,6 +11,7 @@ import com.doc_app.booking.model.Patient;
 import com.doc_app.booking.repository.DoctorRepository;
 import com.doc_app.booking.repository.PatientRepository;
 import com.doc_app.booking.service.PatientService;
+import com.doc_app.booking.util.LocaleManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,12 +30,13 @@ public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final EntityMapper mapper;
+    private final LocaleManager localeManager;
 
     @Override
     public PatientDTO createPatient(CreatePatientRequest request) {
         if (patientRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
             throw new IllegalArgumentException(
-                    "Patient with phone number " + request.getPhoneNumber() + " already exists");
+                    localeManager.getMessage(MessageKeys.PATIENT_ALREADY_EXISTS_PHONE, request.getPhoneNumber()));
         }
         Patient patient = new Patient();
         patient.setPhoneNumber(request.getPhoneNumber());
@@ -53,7 +56,8 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public PatientDTO updatePatient(Long id, UpdatePatientRequest request) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.PATIENT_NOT_FOUND_ID, id)));
 
         mapper.updatePatient(patient, request);
         patient = patientRepository.save(patient);
@@ -64,7 +68,8 @@ public class PatientServiceImpl implements PatientService {
     @Transactional(readOnly = true)
     public PatientDTO getPatientById(Long id) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.PATIENT_NOT_FOUND_ID, id)));
         return mapper.toPatientDTO(patient);
     }
 
@@ -89,7 +94,8 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public void deletePatient(Long id) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.PATIENT_NOT_FOUND_ID, id)));
         patientRepository.delete(patient);
     }
 
@@ -97,7 +103,8 @@ public class PatientServiceImpl implements PatientService {
     @Transactional(readOnly = true)
     public PatientDTO getPatientByEmail(String email) {
         Patient patient = patientRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with email: " + email));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.PATIENT_NOT_FOUND_EMAIL, email)));
         return mapper.toPatientDTO(patient);
     }
 
@@ -117,10 +124,12 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public void updateLastVisitedDoctor(Long patientId, Long doctorId) {
         Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.PATIENT_NOT_FOUND_ID, patientId)));
 
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + doctorId));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_ID, doctorId)));
 
         patient.setLastVisitedDoctor(doctor);
         patientRepository.save(patient);
@@ -130,7 +139,8 @@ public class PatientServiceImpl implements PatientService {
     @Transactional(readOnly = true)
     public PatientDTO getPatientWithLastVisitedDoctor(Long patientId) {
         Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        localeManager.getMessage(MessageKeys.PATIENT_NOT_FOUND_ID, patientId)));
         return mapper.toPatientDTO(patient);
     }
 

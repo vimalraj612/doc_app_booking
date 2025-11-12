@@ -1,5 +1,6 @@
 package com.doc_app.booking.dto.request;
 
+import com.doc_app.booking.constant.MessageKeys;
 import com.doc_app.booking.validation.ValidPhoneNumber;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
@@ -10,8 +11,8 @@ import java.time.LocalDateTime;
 
 @Data
 public class CreateAppointmentRequest {
-    @NotNull
-    @Positive
+    @NotNull(message = "{" + MessageKeys.DOCTOR_ID_REQUIRED + "}")
+    @Positive(message = "{" + MessageKeys.DOCTOR_ID_POSITIVE + "}")
     private Long doctorId;
 
     // Patient identification by phone number (unique identifier, optional for
@@ -20,11 +21,11 @@ public class CreateAppointmentRequest {
     private String patientPhone;
 
     // Optional for reserved appointments
-    @Size(min = 2, max = 150, message = "Patient name must be between 2-150 characters")
+    @Size(min = 2, max = 150, message = "{" + MessageKeys.PATIENT_NAME_SIZE + "}")
     private String patientName;
 
-    @NotNull
-    @FutureOrPresent
+    @NotNull(message = "{" + MessageKeys.APPOINTMENT_DATE_TIME_REQUIRED + "}")
+    @FutureOrPresent(message = "{" + MessageKeys.APPOINTMENT_DATE_TIME_FUTURE + "}")
     private LocalDateTime appointmentDateTime;
 
     private String appointeeName;
@@ -36,10 +37,10 @@ public class CreateAppointmentRequest {
     private String appointeeGender;
 
     // optional: if provided, book this slot
-    @Positive
+    @Positive(message = "{" + MessageKeys.SLOT_ID_POSITIVE + "}")
     private Long slotId;
 
-    @Size(max = 1000)
+    @Size(max = 1000, message = "{" + MessageKeys.NOTES_SIZE + "}")
     private String notes;
 
     private LocalDateTime followUpDate;

@@ -1,5 +1,6 @@
 package com.doc_app.booking.service.impl;
 
+import com.doc_app.booking.constant.MessageKeys;
 import com.doc_app.booking.dto.DoctorDTO;
 import com.doc_app.booking.dto.PageResponse;
 import com.doc_app.booking.dto.request.CreateDoctorRequest;
@@ -10,6 +11,7 @@ import com.doc_app.booking.model.Hospital;
 import com.doc_app.booking.repository.DoctorRepository;
 import com.doc_app.booking.repository.HospitalRepository;
 import com.doc_app.booking.service.DoctorService;
+import com.doc_app.booking.util.LocaleManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,18 +32,19 @@ public class DoctorServiceImpl implements DoctorService {
         private final DoctorRepository doctorRepository;
         private final HospitalRepository hospitalRepository;
         private final EntityMapper mapper;
+        private final LocaleManager localeManager;
 
         @Override
         public DoctorDTO createDoctor(CreateDoctorRequest request) {
                 if (doctorRepository.existsByEmail(request.getEmail())) {
                         throw new IllegalArgumentException(
-                                        "Doctor with email " + request.getEmail() + " already exists");
+                                        localeManager.getMessage(MessageKeys.DOCTOR_ALREADY_EXISTS_EMAIL, request.getEmail()));
                 }
 
                 Hospital hospital = hospitalRepository.findById(request.getHospitalId())
                                 .orElseThrow(
-                                                () -> new EntityNotFoundException("Hospital not found with id: "
-                                                                + request.getHospitalId()));
+                                                () -> new EntityNotFoundException(localeManager.getMessage(
+                                                                MessageKeys.HOSPITAL_NOT_FOUND_ID, request.getHospitalId())));
 
                 Doctor doctor = mapper.toDoctor(request);
                 doctor.setHospital(hospital);
@@ -52,12 +55,13 @@ public class DoctorServiceImpl implements DoctorService {
         @Override
         public DoctorDTO updateDoctor(Long id, UpdateDoctorRequest request) {
                 Doctor doctor = doctorRepository.findById(id)
-                                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                                localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_ID, id)));
 
                 if (request.getHospitalId() != null && !request.getHospitalId().equals(doctor.getHospital().getId())) {
                         Hospital newHospital = hospitalRepository.findById(request.getHospitalId())
                                         .orElseThrow(() -> new EntityNotFoundException(
-                                                        "Hospital not found with id: " + request.getHospitalId()));
+                                                        localeManager.getMessage(MessageKeys.HOSPITAL_NOT_FOUND_ID, request.getHospitalId())));
                         doctor.setHospital(newHospital);
                 }
 
@@ -70,7 +74,8 @@ public class DoctorServiceImpl implements DoctorService {
         @Transactional(readOnly = true)
         public DoctorDTO getDoctorById(Long id) {
                 Doctor doctor = doctorRepository.findById(id)
-                                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                                localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_ID, id)));
                 return mapper.toDoctorDTO(doctor);
         }
 
@@ -144,7 +149,8 @@ public class DoctorServiceImpl implements DoctorService {
         @Override
         public void deleteDoctor(Long id) {
                 Doctor doctor = doctorRepository.findById(id)
-                                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + id));
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                                localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_ID, id)));
                 doctorRepository.delete(doctor);
         }
 
@@ -169,7 +175,7 @@ public class DoctorServiceImpl implements DoctorService {
         public DoctorDTO getDoctorByEmail(String email) {
                 Doctor doctor = doctorRepository.findByEmail(email)
                                 .orElseThrow(() -> new EntityNotFoundException(
-                                                "Doctor not found with email: " + email));
+                                                localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_EMAIL, email)));
                 return mapper.toDoctorDTO(doctor);
         }
 
@@ -178,7 +184,7 @@ public class DoctorServiceImpl implements DoctorService {
         public DoctorDTO getDoctorByContact(String contact) {
                 Doctor doctor = doctorRepository.findByContact(contact)
                                 .orElseThrow(() -> new EntityNotFoundException(
-                                                "Doctor not found with contact: " + contact));
+                                                localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_CONTACT, contact)));
                 return mapper.toDoctorDTO(doctor);
         }
 
