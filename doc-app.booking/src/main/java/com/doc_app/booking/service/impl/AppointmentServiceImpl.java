@@ -56,6 +56,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final com.doc_app.booking.repository.PatientHospitalRepository patientHospitalRepository;
     private final PatientService patientService;
     private final EntityMapper mapper;
     private final LocaleManager localeManager;
@@ -106,6 +107,20 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setAppointmentDateTime(LocalDateTime.of(slot.getDate(), slot.getStartTime()));
             if (patient != null) {
                 appointment.setPatient(patient);
+                // ensure patient-hospital mapping exists; create if missing
+                try {
+                    Long patientId = patient.getId();
+                    Long hospitalId = doctor.getHospital() != null ? doctor.getHospital().getId() : null;
+                    if (patientId != null && hospitalId != null &&
+                            !patientHospitalRepository.existsByPatientIdAndHospitalId(patientId, hospitalId)) {
+                        com.doc_app.booking.model.PatientHospital ph = new com.doc_app.booking.model.PatientHospital();
+                        ph.setPatient(patient);
+                        ph.setHospital(doctor.getHospital());
+                        patientHospitalRepository.save(ph);
+                    }
+                } catch (Exception ex) {
+                    log.warn("Failed to create patient-hospital mapping: {}", ex.getMessage());
+                }
             }
             // Set status to RESERVED if no patient, else SCHEDULED
             appointment.setStatus(isReserved ? AppointmentStatus.RESERVED : AppointmentStatus.SCHEDULED);
@@ -123,6 +138,20 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setDoctor(doctor);
         if (patient != null) {
             appointment.setPatient(patient);
+            // ensure patient-hospital mapping exists; create if missing
+            try {
+                Long patientId = patient.getId();
+                Long hospitalId = doctor.getHospital() != null ? doctor.getHospital().getId() : null;
+                if (patientId != null && hospitalId != null &&
+                        !patientHospitalRepository.existsByPatientIdAndHospitalId(patientId, hospitalId)) {
+                    com.doc_app.booking.model.PatientHospital ph = new com.doc_app.booking.model.PatientHospital();
+                    ph.setPatient(patient);
+                    ph.setHospital(doctor.getHospital());
+                    patientHospitalRepository.save(ph);
+                }
+            } catch (Exception ex) {
+                log.warn("Failed to create patient-hospital mapping: {}", ex.getMessage());
+            }
         }
         // Set status to RESERVED if no patient, else SCHEDULED
         appointment.setStatus(isReserved ? AppointmentStatus.RESERVED : AppointmentStatus.SCHEDULED);
@@ -157,6 +186,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(request.getStatus());
         if (request.getNotes() != null) {
             appointment.setNotes(request.getNotes());
+        }
+        if (request.getFollowUpDate() != null) {
+            appointment.setFollowUpDate(request.getFollowUpDate());
         }
 
         // Update last visited doctor when appointment is completed

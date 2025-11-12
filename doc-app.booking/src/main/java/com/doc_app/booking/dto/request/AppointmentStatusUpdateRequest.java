@@ -12,4 +12,6 @@ public class AppointmentStatusUpdateRequest {
 
     @Size(max = 1000)
     private String notes;
+
+    private java.time.LocalDateTime followUpDate;
 }
