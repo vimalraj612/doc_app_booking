@@ -4,3 +4,4 @@ export * from './http';
 export * from './auth';
 export * from './appointments';
 export * from './user';
+export * from './patientRelations';

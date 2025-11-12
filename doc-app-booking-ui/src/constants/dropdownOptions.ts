@@ -127,6 +127,69 @@ export const getGenderOptions = (t: Translations) => {
   });
 };
 
+// ==================== RELATIONSHIP OPTIONS ====================
+export const RELATIONSHIP_KEYS = {
+  SPOUSE: 'SPOUSE',
+  FATHER: 'FATHER',
+  MOTHER: 'MOTHER',
+  SON: 'SON',
+  DAUGHTER: 'DAUGHTER',
+  BROTHER: 'BROTHER',
+  SISTER: 'SISTER',
+  GRANDFATHER: 'GRANDFATHER',
+  GRANDMOTHER: 'GRANDMOTHER',
+  GRANDSON: 'GRANDSON',
+  GRANDDAUGHTER: 'GRANDDAUGHTER',
+  UNCLE: 'UNCLE',
+  AUNT: 'AUNT',
+  NEPHEW: 'NEPHEW',
+  NIECE: 'NIECE',
+  COUSIN: 'COUSIN',
+  FRIEND: 'FRIEND',
+  OTHER: 'OTHER',
+} as const;
+
+export type RelationshipKey = typeof RELATIONSHIP_KEYS[keyof typeof RELATIONSHIP_KEYS];
+
+export const RELATIONSHIP_OPTIONS = [
+  { key: RELATIONSHIP_KEYS.SPOUSE, translationKey: 'relationships.spouse' as const },
+  { key: RELATIONSHIP_KEYS.FATHER, translationKey: 'relationships.father' as const },
+  { key: RELATIONSHIP_KEYS.MOTHER, translationKey: 'relationships.mother' as const },
+  { key: RELATIONSHIP_KEYS.SON, translationKey: 'relationships.son' as const },
+  { key: RELATIONSHIP_KEYS.DAUGHTER, translationKey: 'relationships.daughter' as const },
+  { key: RELATIONSHIP_KEYS.BROTHER, translationKey: 'relationships.brother' as const },
+  { key: RELATIONSHIP_KEYS.SISTER, translationKey: 'relationships.sister' as const },
+  { key: RELATIONSHIP_KEYS.GRANDFATHER, translationKey: 'relationships.grandfather' as const },
+  { key: RELATIONSHIP_KEYS.GRANDMOTHER, translationKey: 'relationships.grandmother' as const },
+  { key: RELATIONSHIP_KEYS.GRANDSON, translationKey: 'relationships.grandson' as const },
+  { key: RELATIONSHIP_KEYS.GRANDDAUGHTER, translationKey: 'relationships.granddaughter' as const },
+  { key: RELATIONSHIP_KEYS.UNCLE, translationKey: 'relationships.uncle' as const },
+  { key: RELATIONSHIP_KEYS.AUNT, translationKey: 'relationships.aunt' as const },
+  { key: RELATIONSHIP_KEYS.NEPHEW, translationKey: 'relationships.nephew' as const },
+  { key: RELATIONSHIP_KEYS.NIECE, translationKey: 'relationships.niece' as const },
+  { key: RELATIONSHIP_KEYS.COUSIN, translationKey: 'relationships.cousin' as const },
+  { key: RELATIONSHIP_KEYS.FRIEND, translationKey: 'relationships.friend' as const },
+  { key: RELATIONSHIP_KEYS.OTHER, translationKey: 'relationships.other' as const },
+];
+
+/**
+ * Get relationship options with localized labels for dropdowns
+ */
+export const getRelationshipOptions = (t: Translations) => {
+  return RELATIONSHIP_OPTIONS.map(opt => {
+    const parts = opt.translationKey.split('.');
+    let label: any = t;
+    for (const part of parts) {
+      label = label[part];
+    }
+    return {
+      key: opt.key,
+      value: opt.key,
+      label: label || opt.key,
+    };
+  });
+};
+
 // ==================== HELPER FUNCTIONS ====================
 
 /**

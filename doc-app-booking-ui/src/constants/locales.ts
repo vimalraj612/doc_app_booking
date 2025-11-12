@@ -8,6 +8,28 @@ import { MESSAGES, MESSAGES_TA } from './messages';
 export type Locale = 'en' | 'ta';
 
 export interface Translations {
+  // Patient Relations
+  patientRelations: {
+    title: string;
+    addRelation: string;
+    editRelation: string;
+    deleteSuccess: string;
+    deleteError: string;
+    createSuccess: string;
+    createError: string;
+    updateSuccess: string;
+    updateError: string;
+    fetchError: string;
+    loading: string;
+    noRelations: string;
+    fullName: string;
+    age: string;
+    phoneNumber: string;
+    gender: string;
+    relationship: string;
+    dialogDescription: string;
+    selectRelationship: string;
+  };
   // Common
   common: {
     save: string;
@@ -30,6 +52,7 @@ export interface Translations {
     next: string;
     previous: string;
     changeMobileNumber: string;
+    actions: string;
   };
 
   // Date & Time
@@ -258,6 +281,28 @@ export interface Translations {
     other: string;
   };
 
+  // Relationships
+  relationships: {
+    spouse: string;
+    father: string;
+    mother: string;
+    son: string;
+    daughter: string;
+    brother: string;
+    sister: string;
+    grandfather: string;
+    grandmother: string;
+    grandson: string;
+    granddaughter: string;
+    uncle: string;
+    aunt: string;
+    nephew: string;
+    niece: string;
+    cousin: string;
+    friend: string;
+    other: string;
+  };
+
   // Days
   days: {
     monday: string;
@@ -326,6 +371,27 @@ export interface Translations {
 
 export const translations: Record<Locale, Translations> = {
   en: {
+    patientRelations: {
+      title: 'Patient Relations',
+      addRelation: 'Add Relation',
+      editRelation: 'Edit Relation',
+      deleteSuccess: 'Relation deleted successfully.',
+      deleteError: 'Failed to delete relation.',
+      createSuccess: 'Relation added successfully.',
+      createError: 'Failed to add relation.',
+      updateSuccess: 'Relation updated successfully.',
+      updateError: 'Failed to update relation.',
+      fetchError: 'Failed to fetch relations.',
+      loading: 'Loading relations...',
+      noRelations: 'No relations added yet.',
+      fullName: 'Full Name',
+      age: 'Age',
+      phoneNumber: 'Phone Number',
+      gender: 'Gender',
+      relationship: 'Relationship',
+      dialogDescription: 'Add or edit a relation for this patient.',
+      selectRelationship: 'Select relationship',
+    },
     common: {
       save: 'Save',
       cancel: 'Cancel',
@@ -346,7 +412,8 @@ export const translations: Record<Locale, Translations> = {
       back: 'Back',
       next: 'Next',
       previous: 'Previous',
-      changeMobileNumber: 'Change mobile number',
+  changeMobileNumber: 'Change mobile number',
+  actions: 'Actions',
     },
 
     dateTime: {
@@ -562,6 +629,27 @@ export const translations: Record<Locale, Translations> = {
       other: 'Other',
     },
 
+    relationships: {
+      spouse: 'Spouse',
+      father: 'Father',
+      mother: 'Mother',
+      son: 'Son',
+      daughter: 'Daughter',
+      brother: 'Brother',
+      sister: 'Sister',
+      grandfather: 'Grandfather',
+      grandmother: 'Grandmother',
+      grandson: 'Grandson',
+      granddaughter: 'Granddaughter',
+      uncle: 'Uncle',
+      aunt: 'Aunt',
+      nephew: 'Nephew',
+      niece: 'Niece',
+      cousin: 'Cousin',
+      friend: 'Friend',
+      other: 'Other',
+    },
+
     days: {
       monday: 'Monday',
       tuesday: 'Tuesday',
@@ -624,6 +712,27 @@ export const translations: Record<Locale, Translations> = {
   },
 
   ta: {
+    patientRelations: {
+      title: 'உறவுகள்',
+      addRelation: 'உறவை சேர்',
+      editRelation: 'உறவை திருத்து',
+      deleteSuccess: 'உறவு வெற்றிகரமாக நீக்கப்பட்டது.',
+      deleteError: 'உறவை நீக்குவதில் தோல்வி.',
+      createSuccess: 'உறவு வெற்றிகரமாக சேர்க்கப்பட்டது.',
+      createError: 'உறவை சேர்ப்பதில் தோல்வி.',
+      updateSuccess: 'உறவு வெற்றிகரமாக புதுப்பிக்கப்பட்டது.',
+      updateError: 'உறவை புதுப்பிப்பதில் தோல்வி.',
+      fetchError: 'உறவுகளை பெறுவதில் தோல்வி.',
+      loading: 'உறவுகள் ஏற்றப்படுகின்றன...',
+      noRelations: 'இன்னும் உறவுகள் சேர்க்கப்படவில்லை.',
+      fullName: 'முழு பெயர்',
+      age: 'வயது',
+      phoneNumber: 'தொலைபேசி எண்',
+      gender: 'பாலினம்',
+      relationship: 'உறவு',
+      dialogDescription: 'இந்த நோயாளிக்கான உறவை சேர்க்கவும் அல்லது திருத்தவும்.',
+      selectRelationship: 'உறவை தேர்ந்தெடுக்கவும்',
+    },
     common: {
       save: 'சேமி',
       cancel: 'ரத்து',
@@ -644,7 +753,8 @@ export const translations: Record<Locale, Translations> = {
       back: 'பின்',
       next: 'அடுத்து',
       previous: 'முந்தைய',
-      changeMobileNumber: 'மொபைல் எண்ணை மாற்று',
+  changeMobileNumber: 'மொபைல் எண்ணை மாற்று',
+  actions: 'செயல்கள்',
     },
 
     dateTime: {
@@ -857,6 +967,27 @@ export const translations: Record<Locale, Translations> = {
     gender: {
       male: 'ஆண்',
       female: 'பெண்',
+      other: 'மற்றவை',
+    },
+
+    relationships: {
+      spouse: 'மனைவி/கணவர்',
+      father: 'அப்பா',
+      mother: 'அம்மா',
+      son: 'மகன்',
+      daughter: 'மகள்',
+      brother: 'அண்ணன்/தம்பி',
+      sister: 'அக்கா/தங்கை',
+      grandfather: 'தாத்தா',
+      grandmother: 'பாட்டி',
+      grandson: 'பேரன்',
+      granddaughter: 'பேத்தி',
+      uncle: 'மாமா/சித்தப்பா',
+      aunt: 'அத்தை/மாமி',
+      nephew: 'மருமகன்',
+      niece: 'மருமகள்',
+      cousin: 'உறவினர்',
+      friend: 'நண்பர்',
       other: 'மற்றவை',
     },
 

@@ -71,13 +71,13 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                   </span>
                 )}
               </div>
-              {(selectedDoctor.email || docPhoneNumber) && (
+              {(selectedDoctor.email || selectedDoctor.phoneNumber) && (
                 <div className="flex items-start gap-2">
                   <UserIcon className="w-4 h-4 text-gray-500 bg-transparent mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm mb-1">{t.doctor.contact}</p>
                     {selectedDoctor.email && <p className="text-sm text-gray-600">{t.profileFields.email}: {selectedDoctor.email}</p>}
-                    {docPhoneNumber && <p className="text-sm text-gray-600">{t.profileFields.phone}: {docPhoneNumber}</p>}
+                    {selectedDoctor.phoneNumber && <p className="text-sm text-gray-600">{t.profileFields.phone}: {selectedDoctor.phoneNumber}</p>}
                   </div>
                 </div>
               )}

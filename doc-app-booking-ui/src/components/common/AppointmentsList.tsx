@@ -86,7 +86,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         completeDialog.appt.id, 
         'COMPLETED', 
         completeNotes,
-        followUpDate || undefined
+        followUpDate ? `${followUpDate}T00:00:00` : undefined
       );
       setCompleteMsg({ type: 'success', text: 'Appointment marked as completed.' });
       setCompleteDialog({ open: false });
