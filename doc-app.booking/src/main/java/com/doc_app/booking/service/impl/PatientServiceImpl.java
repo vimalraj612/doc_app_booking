@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@SuppressWarnings("null")
 public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;

@@ -16,6 +16,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@SuppressWarnings("null")
 public class DoctorLeaveServiceImpl implements DoctorLeaveService {
 
     private final DoctorLeaveRepository leaveRepository;

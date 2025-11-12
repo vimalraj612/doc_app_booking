@@ -26,7 +26,11 @@ public class DoctorLeaveController {
         DoctorLeave created = leaveService.createLeave(req.getDoctorId(), req.getDate(), req.getReason());
         DoctorLeaveResponse resp = new DoctorLeaveResponse(created.getId(), created.getDoctor().getId(),
                 created.getDate(), created.getReason());
-        return ResponseEntity.created(URI.create("/api/v1/doctor-leaves/" + created.getId())).body(resp);
+        URI location = URI.create("/api/v1/doctor-leaves/" + created.getId());
+        if (location == null) {
+            throw new IllegalStateException("Location URI must not be null");
+        }
+        return ResponseEntity.created(location).body(resp);
     }
 
     @GetMapping("/doctor/{doctorId}")

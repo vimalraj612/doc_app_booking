@@ -68,10 +68,14 @@ public interface EntityMapper {
 
     @Mapping(target = "appointments", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "lastVisitedDoctor", ignore = true)
     Patient toPatient(CreatePatientRequest request);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "appointments", ignore = true)
+    @Mapping(target = "lastVisitedDoctor", ignore = true)
+    @Mapping(target = "latitude", ignore = true)
+    @Mapping(target = "longitude", ignore = true)
     void updatePatient(@MappingTarget Patient patient, UpdatePatientRequest request);
 
     @Mapping(target = "doctorId", source = "doctor.id")
@@ -91,6 +95,7 @@ public interface EntityMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "slot", ignore = true)
     @Mapping(target = "appointmentDateTime", source = "appointmentDateTime")
     @Mapping(target = "appointeeName", source = "appointeeName")
     @Mapping(target = "appointeeAge", source = "appointeeAge")
@@ -103,6 +108,11 @@ public interface EntityMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "doctor", ignore = true)
     @Mapping(target = "patient", ignore = true)
+    @Mapping(target = "slot", ignore = true)
+    @Mapping(target = "appointeeName", ignore = true)
+    @Mapping(target = "appointeeAge", ignore = true)
+    @Mapping(target = "appointeePhone", ignore = true)
+    @Mapping(target = "appointeeGender", ignore = true)
     @Mapping(target = "appointmentDateTime", source = "appointmentDateTime")
     void updateAppointment(@MappingTarget Appointment appointment, UpdateAppointmentRequest request);
 

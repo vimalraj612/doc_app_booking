@@ -6,9 +6,6 @@ import com.doc_app.booking.dto.ApiResponse;
 import com.doc_app.booking.dto.request.SendOTPRequest;
 import com.doc_app.booking.dto.request.VerifyOTPRequest;
 import com.doc_app.booking.dto.response.AuthResponse;
-import com.doc_app.booking.model.Doctor;
-import com.doc_app.booking.model.Hospital;
-import com.doc_app.booking.model.Patient;
 import com.doc_app.booking.model.Role;
 import com.doc_app.booking.service.DoctorService;
 import com.doc_app.booking.service.HospitalService;
@@ -23,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -251,20 +247,6 @@ public class AuthController {
             }
             case SUPERADMIN -> new UserInfo(superadminId, superadminRole, superadminName);
         };
-    }
-
-    private String buildPatientName(Patient p) {
-        if (p.getFirstName() != null && p.getLastName() != null) {
-            return p.getFirstName() + " " + p.getLastName();
-        }
-        return p.getFirstName() != null ? p.getFirstName() : (p.getLastName() != null ? p.getLastName() : "");
-    }
-
-    private String buildDoctorName(Doctor d) {
-        if (d.getFirstName() != null && d.getLastName() != null) {
-            return d.getFirstName() + " " + d.getLastName();
-        }
-        return d.getFirstName() != null ? d.getFirstName() : (d.getLastName() != null ? d.getLastName() : "");
     }
 
     // Helper class for user information

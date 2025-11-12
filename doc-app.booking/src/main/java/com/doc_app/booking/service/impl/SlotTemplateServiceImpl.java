@@ -20,11 +20,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class SlotTemplateServiceImpl implements SlotTemplateService {
 
     @Override
     @Transactional
     public void deleteSlotTemplateById(Long slotTemplateId) {
+        if (slotTemplateId == null) {
+            throw new IllegalArgumentException("Slot template ID must not be null");
+        }
         if (!slotTemplateRepository.existsById(slotTemplateId)) {
             throw new EntityNotFoundException("Slot template not found");
         }

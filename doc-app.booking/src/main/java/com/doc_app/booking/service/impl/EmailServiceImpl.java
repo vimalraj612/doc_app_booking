@@ -18,6 +18,7 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;

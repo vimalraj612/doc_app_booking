@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Utility class for phone number operations including formatting, validation, and normalization.
+ * Utility class for phone number operations including formatting, validation,
+ * and normalization.
  */
 @Component
 public class PhoneNumberUtil {
@@ -58,26 +59,23 @@ public class PhoneNumberUtil {
         }
 
         String normalized = normalize(phoneNumber);
-        
-        // For Indian numbers: +91 XXXXX XXXXX
+
         if (normalized.startsWith("+91") && normalized.length() == 13) {
-            return normalized.substring(0, 3) + " " + 
-                   normalized.substring(3, 8) + " " + 
-                   normalized.substring(8);
+            return normalized.substring(0, 3) + " " +
+                    normalized.substring(3, 8) + " " +
+                    normalized.substring(8);
         }
 
-        // For US numbers: +1 XXX XXX XXXX
         if (normalized.startsWith("+1") && normalized.length() == 12) {
-            return normalized.substring(0, 2) + " " + 
-                   normalized.substring(2, 5) + " " + 
-                   normalized.substring(5, 8) + " " + 
-                   normalized.substring(8);
+            return normalized.substring(0, 2) + " " +
+                    normalized.substring(2, 5) + " " +
+                    normalized.substring(5, 8) + " " +
+                    normalized.substring(8);
         }
 
         // Default: just add space after country code
         if (normalized.startsWith("+")) {
-            int codeEnd = normalized.indexOf(' ') > 0 ? normalized.indexOf(' ') : 
-                         (normalized.length() > 4 ? 3 : 2);
+            int codeEnd = normalized.indexOf(' ') > 0 ? normalized.indexOf(' ') : (normalized.length() > 4 ? 3 : 2);
             if (codeEnd < normalized.length()) {
                 return normalized.substring(0, codeEnd) + " " + normalized.substring(codeEnd);
             }

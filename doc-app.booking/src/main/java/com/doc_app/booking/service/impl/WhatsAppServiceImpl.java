@@ -17,6 +17,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class WhatsAppServiceImpl implements WhatsAppService {
 
     private final RestTemplate restTemplate = new RestTemplate();

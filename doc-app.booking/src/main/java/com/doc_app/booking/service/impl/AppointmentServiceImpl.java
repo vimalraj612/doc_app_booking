@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 @Slf4j
+@SuppressWarnings("null")
 public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
@@ -59,6 +60,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public AppointmentDTO createAppointment(CreateAppointmentRequest request) {
+        if (request.getDoctorId() == null) {
+            throw new IllegalArgumentException("Doctor ID must not be null");
+        }
         Doctor doctor = doctorRepository.findById(request.getDoctorId())
                 .orElseThrow(() -> new DoctorNotFoundException(request.getDoctorId()));
 
