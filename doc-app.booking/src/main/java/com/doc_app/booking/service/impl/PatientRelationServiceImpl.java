@@ -41,7 +41,7 @@ public class PatientRelationServiceImpl implements PatientRelationService {
         PatientRelation relation = new PatientRelation();
         relation.setPatient(patient);
         relation.setFullName(request.getFullName());
-        relation.setAge(request.getAge());
+        relation.setDateOfBirth(request.getDateOfBirth());
         relation.setPhoneNumber(request.getPhoneNumber());
         relation.setGender(request.getGender());
         relation.setRelationship(request.getRelationship());
@@ -57,7 +57,12 @@ public class PatientRelationServiceImpl implements PatientRelationService {
                 .orElseThrow(() -> new EntityNotFoundException(localeManager.getMessage(MessageKeys.NOTIFICATION_NOT_FOUND_ID, id)));
 
         if (request.getFullName() != null) relation.setFullName(request.getFullName());
-        if (request.getAge() != null) relation.setAge(request.getAge());
+        
+        // Update DOB if provided
+        if (request.getDateOfBirth() != null) {
+            relation.setDateOfBirth(request.getDateOfBirth());
+        }
+        
         if (request.getPhoneNumber() != null) relation.setPhoneNumber(request.getPhoneNumber());
         if (request.getGender() != null) relation.setGender(request.getGender());
         if (request.getRelationship() != null) relation.setRelationship(request.getRelationship());
@@ -90,7 +95,9 @@ public class PatientRelationServiceImpl implements PatientRelationService {
         dto.setId(relation.getId());
         dto.setPatientId(relation.getPatient() != null ? relation.getPatient().getId() : null);
         dto.setFullName(relation.getFullName());
-        dto.setAge(relation.getAge());
+        dto.setDateOfBirth(relation.getDateOfBirth());
+        // Return calculated age (from DOB if available, otherwise manual age)
+        dto.setAge(relation.getCurrentAge());
         dto.setPhoneNumber(relation.getPhoneNumber());
         dto.setGender(relation.getGender());
         dto.setRelationship(relation.getRelationship());

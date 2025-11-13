@@ -64,6 +64,7 @@ public interface EntityMapper {
     void updateDoctor(@MappingTarget Doctor doctor, UpdateDoctorRequest request);
 
     @Mapping(target = "appointments", ignore = true)
+    @Mapping(target = "age", expression = "java(patient.getCurrentAge())")
     PatientDTO toPatientDTO(Patient patient);
 
     @Mapping(target = "appointments", ignore = true)

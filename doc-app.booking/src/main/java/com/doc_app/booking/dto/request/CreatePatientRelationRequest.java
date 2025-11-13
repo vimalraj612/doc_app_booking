@@ -2,7 +2,9 @@ package com.doc_app.booking.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Past;
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 public class CreatePatientRelationRequest {
@@ -10,7 +12,8 @@ public class CreatePatientRelationRequest {
     @Size(max = 200)
     private String fullName;
 
-    private Integer age;
+    @Past(message = "Date of birth must be in the past")
+    private LocalDate dateOfBirth;
 
     @Size(max = 20)
     private String phoneNumber;

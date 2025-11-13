@@ -5,6 +5,10 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,4 +61,45 @@ public class Patient {
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<com.doc_app.booking.model.PatientRelation> relations = new ArrayList<>();
+
+    /**
+     * Calculate age based on date of birth string (yyyy-MM-dd format expected)
+     */
+    public Integer calculateAge() {
+        if (dateOfBirth == null || dateOfBirth.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            LocalDate dob = LocalDate.parse(dateOfBirth, DateTimeFormatter.ISO_LOCAL_DATE);
+            return Period.between(dob, LocalDate.now()).getYears();
+        } catch (DateTimeParseException e) {
+            // Try alternative formats like dd/MM/yyyy or dd-MM-yyyy
+            try {
+                DateTimeFormatter[] formatters = {
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                    DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+                    DateTimeFormatter.ofPattern("MM/dd/yyyy"),
+                    DateTimeFormatter.ofPattern("yyyy/MM/dd")
+                };
+                for (DateTimeFormatter formatter : formatters) {
+                    try {
+                        LocalDate dob = LocalDate.parse(dateOfBirth, formatter);
+                        return Period.between(dob, LocalDate.now()).getYears();
+                    } catch (DateTimeParseException ignored) {
+                        // Continue to next format
+                    }
+                }
+            } catch (Exception ignored) {
+                // Ignore all parsing errors
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Get current age (calculated from DOB string)
+     */
+    public Integer getCurrentAge() {
+        return calculateAge();
+    }
 }

@@ -15,6 +15,7 @@ public class PatientDTO {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String dateOfBirth;
+    private Integer age; // Calculated from dateOfBirth
     private String gender;
     private DoctorDTO lastVisitedDoctor;
     private List<AppointmentDTO> appointments;
