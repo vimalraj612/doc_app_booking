@@ -85,7 +85,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
             </div>
           </div>
 
-          {/* Footer with Book Now button aligned to bottom-left */}
+          {/* Footer with Book Now button full width */}
           <div className="mt-4">
             <div className="flex items-center justify-start">
               <Button
@@ -93,6 +93,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                 size="sm"
                 onClick={onShowSlots}
                 title={t.doctor.bookNow}
+                className="w-full !bg-blue-600 hover:!bg-blue-700 !text-white !border-blue-600 hover:!border-blue-700"
               >
                 {t.doctor.bookNow}
               </Button>

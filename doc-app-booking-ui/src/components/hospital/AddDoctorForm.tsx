@@ -297,7 +297,15 @@ export function AddDoctorForm({
             <Label htmlFor="specialization" className="text-sm font-medium">{t.messages.LABELS.SPECIALIZATION} {t.messages.LABELS.REQUIRED}</Label>
             <select 
               id="specialization"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-8 text-sm appearance-none bg-white"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 8px center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '16px',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none'
+              }}
               value={specialization}
               onChange={e => setSpecialization(e.target.value)}
             >

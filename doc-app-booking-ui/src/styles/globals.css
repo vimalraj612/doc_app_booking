@@ -253,3 +253,93 @@ html {
 [data-theme] svg[fill="none"] {
   background: transparent !important;
 }
+
+/* Mobile dropdown fixes to prevent out-of-screen issues */
+@media (max-width: 640px) {
+  /* Ensure all dropdowns stay within viewport */
+  select {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Radix UI Select dropdown positioning fixes for mobile */
+  [data-radix-popper-content-wrapper] {
+    max-width: 100vw !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: calc(100vw - 16px) !important;
+  }
+  
+  /* Radix UI Dropdown Menu fixes for mobile */
+  [role="menu"] {
+    max-width: calc(100vw - 32px) !important;
+    left: 16px !important;
+    right: 16px !important;
+  }
+  
+  /* Ensure select dropdowns don't overflow */
+  select option {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  
+  /* Fix for native select on mobile browsers */
+  select::-ms-expand {
+    display: none;
+  }
+  
+  /* Ensure proper z-index for mobile dropdowns */
+  .radix-popover-content,
+  .radix-dropdown-content,
+  [data-slot="select-content"] {
+    z-index: 9999 !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+}
+
+/* Universal select arrow removal for custom styling */
+select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Hide default arrows across all browsers */
+select::-ms-expand {
+  display: none;
+}
+
+/* Firefox specific fix */
+select {
+  text-indent: 1px;
+  text-overflow: '';
+}
+
+/* WebKit browsers (Chrome, Safari) */
+select::-webkit-appearance {
+  -webkit-appearance: none;
+}
+
+/* Additional mobile viewport fixes */
+@media (max-width: 480px) {
+  /* Extra small screen fixes */
+  [data-radix-popper-content-wrapper] {
+    left: 4px !important;
+    right: 4px !important;
+    width: calc(100vw - 8px) !important;
+  }
+  
+  [role="menu"] {
+    max-width: calc(100vw - 16px) !important;
+    left: 8px !important;
+    right: 8px !important;
+  }
+  
+  .radix-popover-content,
+  .radix-dropdown-content,
+  [data-slot="select-content"] {
+    max-width: calc(100vw - 16px) !important;
+  }
+}

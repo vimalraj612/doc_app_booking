@@ -252,13 +252,20 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 </div>
                 <div className="space-y-1 sm:space-y-2">
                   <Label htmlFor="gender" className="text-xs sm:text-sm font-medium">{t.profileFields.gender}</Label>
-                  <select 
-                    id="gender"
-                    name="gender" 
-                    value={mappedProfile.gender || ''} 
+                  <select
+                    name="gender"
+                    value={mappedProfile.gender || ''}
                     onChange={onChange}
                     disabled={loading}
-                    className="flex h-8 sm:h-9 md:h-10 w-full rounded-md border border-input bg-background px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 8px center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '16px',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none'
+                    }}
                   >
                     <option value="">{t.profileFields.selectGender}</option>
                     {genderOptions.map(opt => (
@@ -492,7 +499,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
         {/* Relation Add/Edit Dialog */}
         <Dialog open={showRelationDialog} onOpenChange={setShowRelationDialog}>
-          <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader className="pb-1 sm:pb-2 md:pb-3">
               <DialogTitle className="text-sm sm:text-base md:text-lg font-semibold">
                 {editingRelation ? t.patientRelations.editRelation : t.patientRelations.addRelation}
@@ -506,7 +513,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             {relationFormMsg && <InlineMessage type="success" message={relationFormMsg} />}
             
             <div className="space-y-6 py-4">
-              <form onSubmit={handleRelationFormSubmit} className="space-y-2 sm:space-y-3 md:space-y-4 px-1 sm:px-2">
+              <form onSubmit={handleRelationFormSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="fullName" className="text-xs sm:text-sm font-medium">{t.patientRelations.fullName} *</Label>
@@ -539,7 +546,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   </div>
                 </div>
                 
-                <div className="px-1">
+                <div>
                   <PhoneInput
                     id="phoneNumber"
                     label={`${t.patientRelations.phoneNumber} *`}
@@ -552,17 +559,23 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   />
                 </div>
                 
-                <div className="space-y-2 sm:space-y-3 md:space-y-4 px-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="gender" className="text-xs sm:text-sm font-medium">{t.patientRelations.gender} *</Label>
-                    <select 
-                      id="gender" 
-                      name="gender" 
-                      value={relationForm.gender} 
-                      onChange={handleRelationFormChange} 
-                      disabled={relationFormLoading} 
-                      required 
-                      className="flex h-8 sm:h-9 md:h-10 w-full rounded-md border border-input bg-background px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    <select
+                      name="gender"
+                      value={relationForm.gender || ''}
+                      onChange={handleRelationFormChange}
+                      disabled={relationFormLoading}
+                      className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: 'right 8px center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: '16px',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none'
+                      }}
                     >
                       <option value="">{t.profileFields.selectGender}</option>
                       {genderOptions.map(opt => (
@@ -573,14 +586,20 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="relationship" className="text-xs sm:text-sm font-medium">{t.patientRelations.relationship} *</Label>
-                    <select 
-                      id="relationship" 
-                      name="relationship" 
-                      value={relationForm.relationship} 
-                      onChange={handleRelationFormChange} 
-                      disabled={relationFormLoading} 
-                      required 
-                      className="flex h-8 sm:h-9 md:h-10 w-full rounded-md border border-input bg-background px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    <select
+                      name="relationship"
+                      value={relationForm.relationship || ''}
+                      onChange={handleRelationFormChange}
+                      disabled={relationFormLoading}
+                      className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: 'right 8px center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: '16px',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none'
+                      }}
                     >
                       <option value="">{t.patientRelations.selectRelationship}</option>
                       {relationshipOptions.map(opt => (

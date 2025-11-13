@@ -455,7 +455,15 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                         setAppointeeGender(e.target.value);
                         if (appointeeGenderError) setAppointeeGenderError('');
                       }}
-                      className={`flex h-10 w-full rounded-md border ${appointeeGenderError ? 'border-red-500' : 'border-gray-300'} bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2`}
+                      className={`flex h-10 w-full rounded-md border ${appointeeGenderError ? 'border-red-500' : 'border-gray-300'} bg-background px-3 py-2 pr-8 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 appearance-none bg-white`}
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: 'right 8px center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: '16px',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none'
+                      }}
                     >
                       <option value="">{t.ui.selectGender}</option>
                       {genderOptions.map(opt => (

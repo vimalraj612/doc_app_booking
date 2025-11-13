@@ -18,7 +18,14 @@ export function LanguageSwitcher() {
           <Globe className="w-5 h-5 text-gray-600" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent 
+        align="end" 
+        className="z-[9999] min-w-[120px]"
+        side="bottom"
+        sideOffset={4}
+        avoidCollisions={true}
+        collisionPadding={16}
+      >
         <DropdownMenuItem
           onClick={() => setLocale('en')}
           className={locale === 'en' ? 'bg-blue-50 font-medium' : ''}
