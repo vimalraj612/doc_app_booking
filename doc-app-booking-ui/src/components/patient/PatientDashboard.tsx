@@ -278,6 +278,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
               doctorLoading={doctorLoading}
               doctorError={doctorError}
               docPhoneNumber={docPhoneNumber}
+              profile={profile}
             />
           </TabsContent>
 

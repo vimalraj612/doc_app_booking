@@ -3,7 +3,8 @@ import { apiFetch } from './http';
 export interface PatientRelation {
   id: string;
   fullName: string;
-  age: number;
+  age: number; // Read-only, calculated from dateOfBirth
+  dateOfBirth: string;
   phoneNumber: string;
   gender: string;
   relationship: string;
@@ -11,7 +12,7 @@ export interface PatientRelation {
 
 export interface CreatePatientRelationRequest {
   fullName: string;
-  age: number;
+  dateOfBirth: string;
   phoneNumber: string;
   gender: string;
   relationship: string;

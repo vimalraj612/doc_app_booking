@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 import { fetchDoctorLeavesForDoctor } from '../../api/doctorLeaves';
+import { getPatientRelations, PatientRelation } from '../../api';
+import { PatientProfile } from '../../api/user';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
@@ -12,7 +14,7 @@ import { InlineMessage } from '../ui/inline-message';
 import { ValidationMessages, SlotMessages } from '../../constants/messages';
 import { validateAndFormatPhone, sanitizePhoneInput } from '../../utils/phoneUtils';
 import { useLocale } from '../../contexts/LocaleContext';
-import { getGenderOptions } from '../../constants/dropdownOptions';
+import { getGenderOptions, getRelationshipOptions } from '../../constants/dropdownOptions';
 
 interface Slot {
   slotId: string | number;
@@ -37,6 +39,7 @@ interface PatientAvailableSlotsProps {
   handleCancelBook: () => void;
   successMsg: string;
   formatTime: (time: string) => string;
+  profile: PatientProfile | null;
 }
 
 const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
@@ -54,15 +57,23 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   handleCancelBook,
   successMsg,
   formatTime,
+  profile,
 }) => {
   const { t } = useLocale();
   const genderOptions = getGenderOptions(t);
+  const relationshipOptions = getRelationshipOptions(t);
 
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState('');
   const [leaveDates, setLeaveDates] = useState<Set<string>>(new Set());
   const [leaveLoading, setLeaveLoading] = useState(true);
+  
+  // Relations and selection state
+  const [relations, setRelations] = useState<PatientRelation[]>([]);
+  const [loadingRelations, setLoadingRelations] = useState(false);
+  const [selectedRelation, setSelectedRelation] = useState('');
+  
   // Appointee fields
   const [appointeeName, setAppointeeName] = useState('');
   const [appointeeAge, setAppointeeAge] = useState('');
@@ -72,6 +83,69 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   const [appointeeAgeError, setAppointeeAgeError] = useState('');
   const [appointeePhoneError, setAppointeePhoneError] = useState('');
   const [appointeeGenderError, setAppointeeGenderError] = useState('');
+
+  // Fetch relations when component opens
+  useEffect(() => {
+    if (open && profile && profile.id) {
+      setLoadingRelations(true);
+      getPatientRelations(String(profile.id))
+        .then((data: PatientRelation[]) => setRelations(data))
+        .catch(() => setRelations([]))
+        .finally(() => setLoadingRelations(false));
+    }
+  }, [open, profile]);
+
+  // Auto-populate form when relation selection changes
+  useEffect(() => {
+    if (selectedRelation === 'self' && profile) {
+      // Remove +91 prefix from phone number
+      const phoneWithoutPrefix = profile.phoneNumber?.replace(/^\+91/, '') || '';
+      // Create full name from firstName and lastName
+      const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
+      // Calculate age from dateOfBirth
+      const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : '';
+      
+      setAppointeeName(fullName);
+      setAppointeeAge(String(age));
+      setAppointeePhone(phoneWithoutPrefix);
+      setAppointeeGender(profile.gender?.toUpperCase() || '');
+    } else if (selectedRelation && selectedRelation !== 'self') {
+      const relation = relations.find(r => r.id === selectedRelation);
+      if (relation) {
+        // Remove +91 prefix from phone number
+        const phoneWithoutPrefix = relation.phoneNumber?.replace(/^\+91/, '') || '';
+        setAppointeeName(relation.fullName || '');
+        setAppointeeAge(String(relation.age || ''));
+        setAppointeePhone(phoneWithoutPrefix);
+        setAppointeeGender(relation.gender?.toUpperCase() || '');
+      }
+    } else if (!selectedRelation) {
+      // Clear form when no relation selected
+      setAppointeeName('');
+      setAppointeeAge('');
+      setAppointeePhone('');
+      setAppointeeGender('');
+    }
+    // Clear any validation errors when auto-populating
+    setAppointeeNameError('');
+    setAppointeeAgeError('');
+    setAppointeePhoneError('');
+    setAppointeeGenderError('');
+  }, [selectedRelation, profile, relations]);
+
+  // Helper function to calculate age from date of birth
+  const calculateAge = (dateOfBirth: string): number => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
 
   // Reload slots only when appointment is booked successfully (avoid infinite reloads)
   useEffect(() => {
@@ -385,6 +459,36 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
               {/* Appointee Information Section */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.appointeeInformation}</h3>
+                
+                {/* Relation Selection */}
+                <div className="space-y-2">
+                  <Label htmlFor="relationSelection" className="text-sm font-medium text-gray-700">
+                    {t.patientRelations.selectRelationship} <span className="text-red-500">*</span>
+                  </Label>
+                  <select
+                    id="relationSelection"
+                    value={selectedRelation}
+                    onChange={(e) => setSelectedRelation(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 appearance-none"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 8px center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '16px',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none'
+                    }}
+                  >
+                    <option value="">Select who this appointment is for</option>
+                    <option value="self">Self</option>
+                    {relations.map(relation => (
+                      <option key={relation.id} value={relation.id}>
+                        {relation.fullName} ({relation.relationship})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="appointeeName" className="text-sm font-medium text-gray-700">

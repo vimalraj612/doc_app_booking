@@ -47,7 +47,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   const [editingRelation, setEditingRelation] = useState<PatientRelation | null>(null);
   const [relationForm, setRelationForm] = useState({
     fullName: '',
-    age: '',
+    dateOfBirth: '',
     phoneNumber: '',
     gender: '',
     relationship: '',
@@ -69,7 +69,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   // Handlers
   const handleAddRelation = () => {
     setEditingRelation(null);
-    setRelationForm({ fullName: '', age: '', phoneNumber: '', gender: '', relationship: '' });
+    setRelationForm({ fullName: '', dateOfBirth: '', phoneNumber: '', gender: '', relationship: '' });
     setShowRelationDialog(true);
     setRelationFormMsg('');
     setRelationError('');
@@ -79,7 +79,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     setEditingRelation(relation);
     setRelationForm({
       fullName: relation.fullName,
-      age: String(relation.age),
+      dateOfBirth: relation.dateOfBirth || '',
       phoneNumber: relation.phoneNumber,
       gender: relation.gender,
       relationship: relation.relationship,
@@ -117,8 +117,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
       setRelationError('Full name is required');
       return;
     }
-    if (!relationForm.age || Number(relationForm.age) <= 0) {
-      setRelationError('Valid age is required');
+    if (!relationForm.dateOfBirth) {
+      setRelationError('Date of birth is required');
       return;
     }
     if (!relationForm.phoneNumber.trim()) {
@@ -149,7 +149,6 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     
     const payload = {
       ...relationForm,
-      age: Number(relationForm.age),
       phoneNumber: formattedPhone,
     };
     if (editingRelation) {
@@ -529,18 +528,15 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     />
                   </div>
                   <div className="space-y-1 sm:space-y-2">
-                    <Label htmlFor="age" className="text-xs sm:text-sm font-medium">{t.patientRelations.age} *</Label>
+                    <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth} *</Label>
                     <Input 
-                      id="age" 
-                      name="age" 
-                      type="number" 
-                      min="0" 
-                      max="120"
-                      value={relationForm.age} 
+                      id="dateOfBirth" 
+                      name="dateOfBirth" 
+                      type="date" 
+                      value={relationForm.dateOfBirth} 
                       onChange={handleRelationFormChange} 
                       required 
                       disabled={relationFormLoading}
-                      placeholder="Age"
                       className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                     />
                   </div>

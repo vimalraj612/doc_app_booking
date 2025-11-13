@@ -5,12 +5,14 @@ import { apiFetch } from '../../api/http';
 import { fetchSlotsByDoctorIdAndDate } from '../../api/appointments';
 import { AppointmentMessages } from '../../constants/messages';
 import { useLocale } from '../../contexts/LocaleContext';
+import { PatientProfile } from '../../api/user';
 
 interface BookAppointmentTabProps {
   selectedDoctor: any;
   doctorLoading: boolean;
   doctorError: string;
   docPhoneNumber: string;
+  profile: PatientProfile | null;
 }
 
 export function BookAppointmentTab({
@@ -18,6 +20,7 @@ export function BookAppointmentTab({
   doctorLoading,
   doctorError,
   docPhoneNumber,
+  profile,
 }: BookAppointmentTabProps) {
   const { t } = useLocale();
   // Slots state
@@ -167,6 +170,7 @@ export function BookAppointmentTab({
         handleConfirmBook={handleConfirmBook}
         handleCancelBook={handleCancelBook}
         formatTime={formatTime}
+        profile={profile}
       />
     </>
   );
