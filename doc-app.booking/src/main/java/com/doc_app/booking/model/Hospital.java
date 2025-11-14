@@ -43,6 +43,8 @@ public class Hospital {
     @Column(name = "alternate_phone", length = 20)
     private String alternatePhone;
 
+    @NotNull
+    @NotBlank
     @Column(nullable = false, unique = true, length = 200)
     private String email;
 

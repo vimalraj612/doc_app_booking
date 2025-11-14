@@ -29,6 +29,7 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+    private final com.doc_app.booking.service.EmailService emailService;
     private final EntityMapper mapper;
     private final LocaleManager localeManager;
 
@@ -50,6 +51,10 @@ public class PatientServiceImpl implements PatientService {
         patient.setLatitude(request.getLatitude());
         patient.setLongitude(request.getLongitude());
         patient = patientRepository.save(patient);
+        
+        // Send welcome email if patient has email
+        emailService.sendPatientRegistrationConfirmation(patient);
+        
         return mapper.toPatientDTO(patient);
     }
 

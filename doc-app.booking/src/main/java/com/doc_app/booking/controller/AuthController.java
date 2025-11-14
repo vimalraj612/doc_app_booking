@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -44,10 +43,6 @@ public class AuthController {
     private final DoctorService doctorService;
     private final HospitalService hospitalService;
 
-    // In-memory OTP store for superadmin (for demo; replace with a real OTP service
-    // in production)
-    private String superadminOtp = null;
-
     @Operation(summary = "Send OTP for login")
     @PostMapping("/send-otp")
     public ResponseEntity<ApiResponse<AuthResponse>> sendOTP(@Valid @RequestBody SendOTPRequest request) {
@@ -61,12 +56,10 @@ public class AuthController {
                                 " found with this phone number"));
             }
 
-            // TODO: Re-enable OTP generation and sending
-            // String otp = otpService.generateAndSendOTP(request.getPhoneNumber(),
-            // request.getRole());
+            // Generate and send OTP
+            otpService.generateAndSendOTP(request.getPhoneNumber(), request.getRole());
 
-            log.info("OTP bypassed for {} with role {} (OTP verification disabled)", request.getPhoneNumber(),
-                    request.getRole());
+            log.info("OTP generated and sent for {} with role {}", request.getPhoneNumber(), request.getRole());
 
             return ResponseEntity.ok(
                     ApiResponse.success(AuthResponse.otpSent(request.getPhoneNumber())));
@@ -82,17 +75,13 @@ public class AuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<AuthResponse>> verifyOTP(@Valid @RequestBody VerifyOTPRequest request) {
         try {
-            // TODO: Re-enable OTP validation
-            // boolean isValidOTP = otpService.validateOTP(request.getPhoneNumber(),
-            // request.getOtp());
-            //
-            // if (!isValidOTP) {
-            // return ResponseEntity.badRequest()
-            // .body(ApiResponse.error("Invalid or expired OTP"));
-            // }
+            boolean isValidOTP = otpService.validateOTP(request.getPhoneNumber(),
+                    request.getOtp());
 
-            // TEMPORARY: Accept any OTP for development (bypass validation)
-            log.info("OTP validation bypassed for {} (OTP verification disabled)", request.getPhoneNumber());
+            if (!isValidOTP) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid or expired OTP"));
+            }
 
             // Special handling for SUPERADMIN: skip DB lookup, use config
             if ("SUPERADMIN".equalsIgnoreCase(request.getRole()) && superadminPhone.equals(request.getPhoneNumber())) {

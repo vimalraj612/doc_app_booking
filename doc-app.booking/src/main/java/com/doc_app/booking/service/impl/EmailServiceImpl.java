@@ -32,6 +32,14 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendAppointmentConfirmation(Appointment appointment) {
+        // Check if patient has email before sending
+        if (appointment.getPatient() == null || 
+            appointment.getPatient().getEmail() == null || 
+            appointment.getPatient().getEmail().trim().isEmpty()) {
+            log.info("Skipping appointment confirmation email - patient has no email address");
+            return;
+        }
+        
         try {
             Context context = new Context();
             context.setVariable("patient", appointment.getPatient());
@@ -43,7 +51,7 @@ public class EmailServiceImpl implements EmailService {
             
             sendEmail(
                 appointment.getPatient().getEmail(),
-                "Appointment Confirmation - " + appointment.getDoctor().getName(),
+                "Appointment Confirmation - " + appointment.getDoctor().getFirstName() + " " + appointment.getDoctor().getLastName(),
                 htmlContent
             );
             
@@ -56,6 +64,14 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendAppointmentReminder(Appointment appointment) {
+        // Check if patient has email before sending
+        if (appointment.getPatient() == null || 
+            appointment.getPatient().getEmail() == null || 
+            appointment.getPatient().getEmail().trim().isEmpty()) {
+            log.info("Skipping appointment reminder email - patient has no email address");
+            return;
+        }
+        
         try {
             Context context = new Context();
             context.setVariable("patient", appointment.getPatient());
@@ -67,7 +83,7 @@ public class EmailServiceImpl implements EmailService {
             
             sendEmail(
                 appointment.getPatient().getEmail(),
-                "Appointment Reminder - " + appointment.getDoctor().getName(),
+                "Appointment Reminder - " + appointment.getDoctor().getFirstName() + " " + appointment.getDoctor().getLastName(),
                 htmlContent
             );
             
@@ -80,6 +96,14 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendAppointmentCancellation(Appointment appointment) {
+        // Check if patient has email before sending
+        if (appointment.getPatient() == null || 
+            appointment.getPatient().getEmail() == null || 
+            appointment.getPatient().getEmail().trim().isEmpty()) {
+            log.info("Skipping appointment cancellation email - patient has no email address");
+            return;
+        }
+        
         try {
             Context context = new Context();
             context.setVariable("patient", appointment.getPatient());
@@ -91,7 +115,7 @@ public class EmailServiceImpl implements EmailService {
             
             sendEmail(
                 appointment.getPatient().getEmail(),
-                "Appointment Cancelled - " + appointment.getDoctor().getName(),
+                "Appointment Cancelled - " + appointment.getDoctor().getFirstName() + " " + appointment.getDoctor().getLastName(),
                 htmlContent
             );
             
@@ -104,6 +128,14 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendPatientRegistrationConfirmation(Patient patient) {
+        // Check if patient has email before sending
+        if (patient == null || 
+            patient.getEmail() == null || 
+            patient.getEmail().trim().isEmpty()) {
+            log.info("Skipping patient registration confirmation email - patient has no email address");
+            return;
+        }
+        
         try {
             Context context = new Context();
             context.setVariable("patient", patient);
@@ -142,6 +174,34 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             log.error("Failed to send email to: {} with subject: {}", to, subject, e);
             throw new RuntimeException("Failed to send email", e);
+        }
+    }
+    
+    @Override
+    public void sendOTPNotification(String email, String otp, String roleDisplayName, int expiryMinutes) {
+        // Check if email is provided
+        if (email == null || email.trim().isEmpty()) {
+            log.info("Skipping OTP email - no email address provided");
+            return;
+        }
+        
+        try {
+            Context context = new Context();
+            context.setVariable("otp", otp);
+            context.setVariable("roleDisplayName", roleDisplayName);
+            context.setVariable("expiryMinutes", expiryMinutes);
+
+            String htmlContent = templateEngine.process("email/otp-notification", context);
+            
+            sendEmail(
+                email,
+                "🔐 Login OTP - " + roleDisplayName,
+                htmlContent
+            );
+            
+            log.info("OTP email sent to: {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send OTP email to: {}", email, e);
         }
     }
 }

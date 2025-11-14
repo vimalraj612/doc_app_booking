@@ -55,12 +55,11 @@ public class DoctorController {
                 // Doctor doesn't exist, proceed with OTP
             }
 
-            // TODO: Re-enable OTP generation and sending
-            // otpService.generateAndSendOTP(phoneNumber, "DOCTOR");
+            otpService.generateAndSendOTP(phoneNumber, "DOCTOR");
 
             return ResponseEntity.ok(
                     ApiResponse.success(
-                            "OTP bypassed. Proceed to complete doctor registration (OTP verification disabled)."));
+                            "OTP sent. Proceed to complete doctor registration."));
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -75,16 +74,12 @@ public class DoctorController {
             @RequestParam String otp,
             @Valid @RequestBody CreateDoctorRequest request) {
         try {
-            // TODO: Re-enable OTP validation
-            // boolean isValidOTP = otpService.validateOTP(phoneNumber, otp);
-            //
-            // if (!isValidOTP) {
-            // return ResponseEntity.badRequest()
-            // .body(ApiResponse.error("Invalid or expired OTP"));
-            // }
+            boolean isValidOTP = otpService.validateOTP(phoneNumber, otp);
 
-            // TEMPORARY: Accept any OTP for development (bypass validation)
-            log.info("OTP validation bypassed for doctor signup: {} (OTP verification disabled)", phoneNumber);
+            if (!isValidOTP) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid or expired OTP"));
+            }
 
             // Ensure phone number matches (Doctor uses 'contact' field)
             if (!phoneNumber.equals(request.getPhoneNumber())) {

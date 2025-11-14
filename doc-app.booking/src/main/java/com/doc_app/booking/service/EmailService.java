@@ -11,6 +11,8 @@ public interface EmailService {
     void sendAppointmentCancellation(Appointment appointment);
 
     void sendPatientRegistrationConfirmation(Patient patient);
+    
+    void sendOTPNotification(String email, String otp, String roleDisplayName, int expiryMinutes);
 
     void sendEmail(String to, String subject, String htmlContent);
 }

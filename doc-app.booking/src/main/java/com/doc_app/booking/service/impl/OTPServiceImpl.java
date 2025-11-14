@@ -2,6 +2,10 @@ package com.doc_app.booking.service.impl;
 
 import com.doc_app.booking.service.OTPService;
 import com.doc_app.booking.service.WhatsAppService;
+import com.doc_app.booking.service.EmailService;
+import com.doc_app.booking.service.PatientService;
+import com.doc_app.booking.service.DoctorService;
+import com.doc_app.booking.service.HospitalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OTPServiceImpl implements OTPService {
 
     private final WhatsAppService whatsAppService;
+    private final EmailService emailService;
+    private final PatientService patientService;
+    private final DoctorService doctorService;
+    private final HospitalService hospitalService;
     
     // In-memory OTP storage (use Redis in production)
     private final ConcurrentHashMap<String, OTPData> otpStorage = new ConcurrentHashMap<>();
@@ -36,6 +44,9 @@ public class OTPServiceImpl implements OTPService {
         
         // Send OTP via WhatsApp
         sendOTPViaWhatsApp(phoneNumber, otp, role);
+        
+        // Send OTP via Email (if available)
+        sendOTPViaEmail(phoneNumber, otp, role);
         
         log.info("OTP generated and sent to phone: {} for role: {}", phoneNumber, role);
         
@@ -103,6 +114,46 @@ public class OTPServiceImpl implements OTPService {
         } catch (Exception e) {
             log.error("Failed to send OTP via WhatsApp to: {}", phoneNumber, e);
             // In production, you might want to fall back to SMS
+        }
+    }
+    
+    private void sendOTPViaEmail(String phoneNumber, String otp, String role) {
+        try {
+            String email = getUserEmailByPhoneAndRole(phoneNumber, role);
+            
+            if (email != null && !email.trim().isEmpty()) {
+                String roleDisplayName = getRoleDisplayName(role);
+                
+                emailService.sendOTPNotification(email, otp, roleDisplayName, OTP_EXPIRY_MINUTES);
+                log.info("OTP sent via email to user with phone: {} and role: {}", phoneNumber, role);
+            } else {
+                log.info("No email found for user with phone: {} and role: {}, skipping email notification", phoneNumber, role);
+            }
+        } catch (Exception e) {
+            log.error("Failed to send OTP via email for phone: {} and role: {}", phoneNumber, role, e);
+        }
+    }
+    
+    private String getUserEmailByPhoneAndRole(String phoneNumber, String role) {
+        try {
+            return switch (role.toUpperCase()) {
+                case "PATIENT" -> {
+                    var patient = patientService.getPatientByPhoneNumber(phoneNumber);
+                    yield (patient != null) ? patient.getEmail() : null;
+                }
+                case "DOCTOR" -> {
+                    var doctor = doctorService.getDoctorByContact(phoneNumber);
+                    yield (doctor != null) ? doctor.getEmail() : null;
+                }
+                case "HOSPITAL_ADMIN" -> {
+                    var hospital = hospitalService.getHospitalByPhoneNumber(phoneNumber);
+                    yield (hospital != null) ? hospital.getEmail() : null;
+                }
+                default -> null;
+            };
+        } catch (Exception e) {
+            log.error("Failed to get email for phone: {} and role: {}", phoneNumber, role, e);
+            return null;
         }
     }
 

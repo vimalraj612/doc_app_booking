@@ -58,6 +58,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final PatientRepository patientRepository;
     private final com.doc_app.booking.repository.PatientHospitalRepository patientHospitalRepository;
     private final PatientService patientService;
+    private final com.doc_app.booking.service.EmailService emailService;
     private final EntityMapper mapper;
     private final LocaleManager localeManager;
     private final com.doc_app.booking.repository.SlotRepository slotRepository;
@@ -125,6 +126,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             // Set status to RESERVED if no patient, else SCHEDULED
             appointment.setStatus(isReserved ? AppointmentStatus.RESERVED : AppointmentStatus.SCHEDULED);
             appointment = appointmentRepository.save(appointment);
+            
+            // Send email confirmation if patient has email
+            if (patient != null && !isReserved) {
+                emailService.sendAppointmentConfirmation(appointment);
+            }
+            
             return mapper.toAppointmentDTO(appointment);
         }
 
@@ -156,6 +163,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Set status to RESERVED if no patient, else SCHEDULED
         appointment.setStatus(isReserved ? AppointmentStatus.RESERVED : AppointmentStatus.SCHEDULED);
         appointment = appointmentRepository.save(appointment);
+        
+        // Send email confirmation if patient has email
+        if (patient != null && !isReserved) {
+            emailService.sendAppointmentConfirmation(appointment);
+        }
+        
         return mapper.toAppointmentDTO(appointment);
     }
 
@@ -194,6 +207,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Update last visited doctor when appointment is completed
         if (request.getStatus() == AppointmentStatus.COMPLETED) {
             patientService.updateLastVisitedDoctor(appointment.getPatient().getId(), appointment.getDoctor().getId());
+        }
+        
+        // Send email notification for status changes
+        if (request.getStatus() == AppointmentStatus.CANCELLED) {
+            emailService.sendAppointmentCancellation(appointment);
         }
 
         appointment = appointmentRepository.save(appointment);
