@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -31,6 +32,7 @@ public class EmailServiceImpl implements EmailService {
     private String baseUrl;
 
     @Override
+    @Async("emailTaskExecutor")
     public void sendAppointmentConfirmation(Appointment appointment) {
         // Check if patient has email before sending
         if (appointment.getPatient() == null || 
@@ -63,6 +65,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    @Async("emailTaskExecutor")
     public void sendAppointmentReminder(Appointment appointment) {
         // Check if patient has email before sending
         if (appointment.getPatient() == null || 
@@ -95,6 +98,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    @Async("emailTaskExecutor")
     public void sendAppointmentCancellation(Appointment appointment) {
         // Check if patient has email before sending
         if (appointment.getPatient() == null || 
@@ -127,6 +131,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
+    @Async("emailTaskExecutor")
     public void sendPatientRegistrationConfirmation(Patient patient) {
         // Check if patient has email before sending
         if (patient == null || 
@@ -178,6 +183,7 @@ public class EmailServiceImpl implements EmailService {
     }
     
     @Override
+    @Async("emailTaskExecutor")
     public void sendOTPNotification(String email, String otp, String roleDisplayName, int expiryMinutes) {
         // Check if email is provided
         if (email == null || email.trim().isEmpty()) {
@@ -195,7 +201,7 @@ public class EmailServiceImpl implements EmailService {
             
             sendEmail(
                 email,
-                "🔐 Login OTP - " + roleDisplayName,
+                "Login OTP - " + roleDisplayName,
                 htmlContent
             );
             
