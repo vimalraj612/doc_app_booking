@@ -83,14 +83,28 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   const [appointeeAgeError, setAppointeeAgeError] = useState('');
   const [appointeePhoneError, setAppointeePhoneError] = useState('');
   const [appointeeGenderError, setAppointeeGenderError] = useState('');
+  const [selectedRelationError, setSelectedRelationError] = useState('');
 
   // Fetch relations when component opens
   useEffect(() => {
     if (open && profile && profile.id) {
       setLoadingRelations(true);
       getPatientRelations(String(profile.id))
-        .then((data: PatientRelation[]) => setRelations(data))
-        .catch(() => setRelations([]))
+        .then((response: any) => {
+          // Handle different possible response structures
+          let relationsData = response;
+          if (response && response.data) {
+            relationsData = response.data;
+          }
+          if (response && response.relations) {
+            relationsData = response.relations;
+          }
+          setRelations(Array.isArray(relationsData) ? relationsData : []);
+        })
+        .catch((error) => {
+          console.error('Error loading relations:', error);
+          setRelations([]);
+        })
         .finally(() => setLoadingRelations(false));
     }
   }, [open, profile]);
@@ -110,14 +124,21 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
       setAppointeePhone(phoneWithoutPrefix);
       setAppointeeGender(profile.gender?.toUpperCase() || '');
     } else if (selectedRelation && selectedRelation !== 'self') {
-      const relation = relations.find(r => r.id === selectedRelation);
+      const relation = relations.find(r => String(r.id) === String(selectedRelation));
       if (relation) {
+        // Use the actual properties from PatientRelation interface
+        const fullName = relation.fullName || '';
+        const age = relation.age || '';
+        const phoneNumber = relation.phoneNumber || '';
+        const gender = relation.gender || '';
+        
         // Remove +91 prefix from phone number
-        const phoneWithoutPrefix = relation.phoneNumber?.replace(/^\+91/, '') || '';
-        setAppointeeName(relation.fullName || '');
-        setAppointeeAge(String(relation.age || ''));
+        const phoneWithoutPrefix = phoneNumber.replace(/^\+91/, '') || phoneNumber;
+        
+        setAppointeeName(fullName);
+        setAppointeeAge(String(age));
         setAppointeePhone(phoneWithoutPrefix);
-        setAppointeeGender(relation.gender?.toUpperCase() || '');
+        setAppointeeGender(gender ? String(gender).toUpperCase() : '');
       }
     } else if (!selectedRelation) {
       // Clear form when no relation selected
@@ -131,6 +152,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
     setAppointeeAgeError('');
     setAppointeePhoneError('');
     setAppointeeGenderError('');
+    setSelectedRelationError('');
   }, [selectedRelation, profile, relations]);
 
   // Helper function to calculate age from date of birth
@@ -166,6 +188,17 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
     }
     // eslint-disable-next-line
   }, [open]);
+
+  // Clear validation errors when booking dialog opens
+  useEffect(() => {
+    if (confirmOpen) {
+      setSelectedRelationError('');
+      setAppointeeNameError('');
+      setAppointeeAgeError('');
+      setAppointeePhoneError('');
+      setAppointeeGenderError('');
+    }
+  }, [confirmOpen]);
 
   // Fetch slots when date changes
   useEffect(() => {
@@ -405,6 +438,15 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
               onSubmit={e => {
                 e.preventDefault();
                 let valid = true;
+                
+                // Validate relation selection
+                if (!selectedRelation) {
+                  setSelectedRelationError(ValidationMessages.RELATION_REQUIRED);
+                  valid = false;
+                } else {
+                  setSelectedRelationError('');
+                }
+                
                 if (!appointeeName.trim()) {
                   setAppointeeNameError(ValidationMessages.NAME_REQUIRED);
                   valid = false;
@@ -468,8 +510,12 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                   <select
                     id="relationSelection"
                     value={selectedRelation}
-                    onChange={(e) => setSelectedRelation(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 appearance-none"
+                    onChange={(e) => {
+                      setSelectedRelation(e.target.value);
+                      if (selectedRelationError) setSelectedRelationError('');
+                    }}
+                    disabled={loadingRelations}
+                    className={`flex h-10 w-full rounded-md border ${selectedRelationError ? 'border-red-500' : 'border-gray-300'} bg-white px-3 py-2 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: 'right 8px center',
@@ -479,14 +525,23 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       MozAppearance: 'none'
                     }}
                   >
-                    <option value="">Select who this appointment is for</option>
+                    <option value="">
+                      {loadingRelations ? 'Loading relationships...' : 'Select who this appointment is for'}
+                    </option>
                     <option value="self">Self</option>
-                    {relations.map(relation => (
-                      <option key={relation.id} value={relation.id}>
-                        {relation.fullName} ({relation.relationship})
-                      </option>
-                    ))}
+                    {relations.map(relation => {
+                      const name = relation.fullName || 'Unknown';
+                      const relationshipType = relation.relationship || '';
+                      return (
+                        <option key={relation.id} value={relation.id}>
+                          {name} {relationshipType ? `(${relationshipType})` : ''}
+                        </option>
+                      );
+                    })}
                   </select>
+                  {selectedRelationError && (
+                    <p className="text-red-600 text-sm mt-1">{selectedRelationError}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -546,6 +601,9 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       placeholder={t.ui.phonePlaceholder}
                       required
                     />
+                    {appointeePhoneError && (
+                      <p className="text-xs text-red-500">{appointeePhoneError}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">

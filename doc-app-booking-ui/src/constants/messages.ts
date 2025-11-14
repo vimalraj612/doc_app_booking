@@ -113,6 +113,9 @@ export const MESSAGES = {
     GENDER_REQUIRED: 'Gender is required.',
     GENDER_INVALID: 'Please select a valid gender.',
 
+    // Relation validation
+    RELATION_REQUIRED: 'Please select a relation.',
+
     // Specialization validation
     SPECIALIZATION_REQUIRED: 'Specialization is required',
     SPECIALIZATION_MAX: 'Specialization must not exceed 200 characters',
@@ -381,6 +384,9 @@ export const MESSAGES_TA = {
     // Gender validation
     GENDER_REQUIRED: 'பாலினம் தேவை.',
     GENDER_INVALID: 'சரியான பாலினத்தை தேர்ந்தெடுக்கவும்.',
+
+    // Relation validation
+    RELATION_REQUIRED: 'உறவை தேர்ந்தெடுக்கவும்.',
 
     // Specialization validation
     SPECIALIZATION_REQUIRED: 'சிறப்பு தேவை',

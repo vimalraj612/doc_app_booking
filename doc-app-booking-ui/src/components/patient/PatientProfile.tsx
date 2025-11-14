@@ -4,6 +4,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { PhoneInput } from '../ui/phone-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Skeleton } from '../ui/skeleton';
 import { InlineMessage } from '../ui/inline-message';
 import { PatientProfile as PatientProfileType } from '../../api/user';
 import {
@@ -15,6 +16,7 @@ import {
 } from '../../api';
 import { useLocale } from '../../contexts/LocaleContext';
 import { getGenderOptions, getRelationshipOptions } from '../../constants/dropdownOptions';
+import { ValidationMessages } from '../../constants/messages';
 
 interface PatientProfileProps {
   profile: PatientProfileType | null;
@@ -24,6 +26,7 @@ interface PatientProfileProps {
   onSave: () => void;
   onClose: () => void;
   msg: string | null;
+  onInitialLoadComplete?: () => void;
 }
 
 const PatientProfile: React.FC<PatientProfileProps> = ({
@@ -34,6 +37,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   onSave,
   onClose,
   msg,
+  onInitialLoadComplete,
 }) => {
   const { t } = useLocale();
   const genderOptions = getGenderOptions(t);
@@ -54,6 +58,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   });
   const [relationFormLoading, setRelationFormLoading] = useState(false);
   const [relationFormMsg, setRelationFormMsg] = useState('');
+  const [relationFormErrors, setRelationFormErrors] = useState({
+    fullName: '',
+    dateOfBirth: '',
+    phoneNumber: '',
+    gender: '',
+    relationship: '',
+  });
 
   // Fetch relations on mount
   useEffect(() => {
@@ -62,9 +73,16 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
       getPatientRelations(String(profile.id))
         .then((data: PatientRelation[]) => setRelations(data))
         .catch(() => setRelationError(t.patientRelations.fetchError))
-        .finally(() => setRelationsLoading(false));
+        .finally(() => {
+          setRelationsLoading(false);
+          // Notify parent that initial loading is complete
+          if (onInitialLoadComplete) {
+            // Add a small delay to prevent abrupt transition
+            setTimeout(() => onInitialLoadComplete(), 150);
+          }
+        });
     }
-  }, [profile, t.patientRelations.fetchError]);
+  }, [profile, t.patientRelations.fetchError, onInitialLoadComplete]);
 
   // Handlers
   const handleAddRelation = () => {
@@ -73,20 +91,28 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     setShowRelationDialog(true);
     setRelationFormMsg('');
     setRelationError('');
+    setRelationFormErrors({ fullName: '', dateOfBirth: '', phoneNumber: '', gender: '', relationship: '' });
   };
 
   const handleEditRelation = (relation: PatientRelation) => {
     setEditingRelation(relation);
+    
+    // Extract last 10 digits from phone number for editing
+    const phoneForEdit = relation.phoneNumber 
+      ? relation.phoneNumber.replace(/^\+?91?/, '').slice(-10)
+      : '';
+    
     setRelationForm({
       fullName: relation.fullName,
       dateOfBirth: relation.dateOfBirth || '',
-      phoneNumber: relation.phoneNumber,
+      phoneNumber: phoneForEdit,
       gender: relation.gender,
       relationship: relation.relationship,
     });
     setShowRelationDialog(true);
     setRelationFormMsg('');
     setRelationError('');
+    setRelationFormErrors({ fullName: '', dateOfBirth: '', phoneNumber: '', gender: '', relationship: '' });
   };
 
   const handleDeleteRelation = (relationId: string) => {
@@ -103,34 +129,59 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   const handleRelationFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setRelationForm(prev => ({ ...prev, [name]: value }));
+    // Clear error for this field when user starts typing
+    if (relationFormErrors[name as keyof typeof relationFormErrors]) {
+      setRelationFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleRelationPhoneChange = (value: string) => {
     setRelationForm(prev => ({ ...prev, phoneNumber: value }));
+    // Clear phone error when user starts typing
+    if (relationFormErrors.phoneNumber) {
+      setRelationFormErrors(prev => ({ ...prev, phoneNumber: '' }));
+    }
   };
 
   const handleRelationFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    // Reset all errors
+    const errors = {
+      fullName: '',
+      dateOfBirth: '',
+      phoneNumber: '',
+      gender: '',
+      relationship: '',
+    };
+    
+    let isValid = true;
+    
     // Client-side validation for all required fields
     if (!relationForm.fullName.trim()) {
-      setRelationError('Full name is required');
-      return;
+      errors.fullName = ValidationMessages.NAME_REQUIRED;
+      isValid = false;
     }
     if (!relationForm.dateOfBirth) {
-      setRelationError('Date of birth is required');
-      return;
+      errors.dateOfBirth = ValidationMessages.DATE_REQUIRED;
+      isValid = false;
     }
     if (!relationForm.phoneNumber.trim()) {
-      setRelationError('Phone number is required');
-      return;
+      errors.phoneNumber = ValidationMessages.PHONE_REQUIRED;
+      isValid = false;
     }
     if (!relationForm.gender.trim()) {
-      setRelationError('Gender is required');
-      return;
+      errors.gender = ValidationMessages.GENDER_REQUIRED;
+      isValid = false;
     }
     if (!relationForm.relationship.trim()) {
-      setRelationError('Relationship is required');
+      errors.relationship = ValidationMessages.RELATION_REQUIRED;
+      isValid = false;
+    }
+    
+    setRelationFormErrors(errors);
+    
+    if (!isValid) {
       return;
     }
     
@@ -201,7 +252,6 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {loading && <InlineMessage type="info" message={t.profileFields.loadingProfile} />}
           {error && <InlineMessage type="error" message={error} />}
           {msg && !error && <InlineMessage type="success" message={msg} />}
 
@@ -303,7 +353,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     disabled
                     readOnly
                   />
-                  <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-500">{t.profileFields.phoneCannotChange}</p>
+                  <p className="text-[8px] sm:text-[9px] md:text-[10px] text-gray-500">{t.profileFields.phoneCannotChange}</p>
                 </div>
               </div>
 
@@ -400,7 +450,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                           </Button>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="grid grid-cols-1 gap-2 text-xs">
                         <div>
                           <span className="text-gray-500">{t.patientRelations.age}:</span>
                           <span className="ml-1 text-gray-900">{rel.age}</span>
@@ -409,7 +459,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                           <span className="text-gray-500">{t.patientRelations.gender}:</span>
                           <span className="ml-1 text-gray-900">{rel.gender || 'N/A'}</span>
                         </div>
-                        <div className="col-span-2">
+                        <div>
                           <span className="text-gray-500">{t.patientRelations.phoneNumber}:</span>
                           <span className="ml-1 text-gray-900 break-all">{rel.phoneNumber || 'N/A'}</span>
                         </div>
@@ -426,8 +476,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                         <tr>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">{t.patientRelations.fullName}</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">{t.patientRelations.age}</th>
-                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">{t.patientRelations.phoneNumber}</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">{t.patientRelations.gender}</th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">{t.patientRelations.phoneNumber}</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">{t.patientRelations.relationship}</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">{t.common.actions ?? 'Actions'}</th>
                         </tr>
@@ -437,8 +487,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                           <tr key={rel.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-3 py-3 text-sm font-medium text-gray-900 max-w-[120px] truncate" title={rel.fullName}>{rel.fullName}</td>
                             <td className="px-3 py-3 text-sm text-gray-500">{rel.age}</td>
-                            <td className="px-3 py-3 text-sm text-gray-500 max-w-[120px] truncate" title={rel.phoneNumber || 'N/A'}>{rel.phoneNumber || 'N/A'}</td>
                             <td className="px-3 py-3 text-sm text-gray-500">{rel.gender || 'N/A'}</td>
+                            <td className="px-3 py-3 text-sm text-gray-500 max-w-[120px] truncate" title={rel.phoneNumber || 'N/A'}>{rel.phoneNumber || 'N/A'}</td>
                             <td className="px-3 py-3 text-sm text-gray-500 max-w-[100px] truncate" title={rel.relationship}>{rel.relationship}</td>
                             <td className="px-3 py-3 text-sm text-gray-500">
                               <div className="flex items-center space-x-1">
@@ -521,11 +571,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       name="fullName" 
                       value={relationForm.fullName} 
                       onChange={handleRelationFormChange} 
-                      required 
                       disabled={relationFormLoading}
                       placeholder="Enter full name"
-                      className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                      className={`h-8 sm:h-9 md:h-10 text-xs sm:text-sm ${relationFormErrors.fullName ? 'border-red-500' : ''}`}
                     />
+                    {relationFormErrors.fullName && (
+                      <p className="text-red-600 text-sm">{relationFormErrors.fullName}</p>
+                    )}
                   </div>
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth} *</Label>
@@ -535,10 +587,12 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       type="date" 
                       value={relationForm.dateOfBirth} 
                       onChange={handleRelationFormChange} 
-                      required 
                       disabled={relationFormLoading}
-                      className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                      className={`h-8 sm:h-9 md:h-10 text-xs sm:text-sm ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
                     />
+                    {relationFormErrors.dateOfBirth && (
+                      <p className="text-red-600 text-sm">{relationFormErrors.dateOfBirth}</p>
+                    )}
                   </div>
                 </div>
                 
@@ -550,8 +604,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     onChange={handleRelationPhoneChange}
                     disabled={relationFormLoading}
                     placeholder="Enter 10 digit mobile number"
-                    required
-                    className="w-full text-xs sm:text-sm"
+                    className={`w-full text-xs sm:text-sm ${relationFormErrors.phoneNumber ? 'border-red-500' : ''}`}
+                    error={relationFormErrors.phoneNumber}
                   />
                 </div>
                 
@@ -563,7 +617,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       value={relationForm.gender || ''}
                       onChange={handleRelationFormChange}
                       disabled={relationFormLoading}
-                      className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
+                      className={`h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border ${relationFormErrors.gender ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white`}
                       style={{
                         backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                         backgroundPosition: 'right 8px center',
@@ -578,6 +632,9 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                         <option key={opt.key} value={opt.key}>{opt.label}</option>
                       ))}
                     </select>
+                    {relationFormErrors.gender && (
+                      <p className="text-red-600 text-sm">{relationFormErrors.gender}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-1 sm:space-y-2">
@@ -587,7 +644,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       value={relationForm.relationship || ''}
                       onChange={handleRelationFormChange}
                       disabled={relationFormLoading}
-                      className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
+                      className={`h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border ${relationFormErrors.relationship ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white`}
                       style={{
                         backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                         backgroundPosition: 'right 8px center',
@@ -602,6 +659,9 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                         <option key={opt.key} value={opt.key}>{opt.label}</option>
                       ))}
                     </select>
+                    {relationFormErrors.relationship && (
+                      <p className="text-red-600 text-sm">{relationFormErrors.relationship}</p>
+                    )}
                   </div>
                 </div>
                 

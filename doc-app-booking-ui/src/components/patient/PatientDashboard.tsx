@@ -52,10 +52,21 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     }
   };
 
-  const handleProfileOpen = () => {
+  const handleProfileOpen = async () => {
     setProfileMsg(null);
     setProfileOpen(true);
-    fetchProfile();
+    
+    // Start loading profile immediately
+    setProfileLoading(true);
+    
+    try {
+      // Fetch profile first
+      await fetchProfile();
+    } catch (error) {
+      // Error handling is already done in fetchProfile
+    }
+    // Keep loading state true - it will be set to false after profile renders
+    // This prevents the blink between profile load and relations load
   };
 
   const handleProfileClose = () => {
@@ -84,6 +95,13 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     }
   };
 
+  const handleInitialLoadComplete = () => {
+    // Set loading to false with a smooth transition
+    setTimeout(() => {
+      setProfileLoading(false);
+    }, 100);
+  };
+
   // Get user name
   const getUserName = () => {
     const patientName = window.localStorage.getItem('name');
@@ -96,6 +114,14 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
 
   useEffect(() => {
     setUser({ name: getUserName() });
+  }, []);
+
+  // Fetch profile on mount for booking functionality
+  useEffect(() => {
+    const userId = window.localStorage.getItem('userId');
+    if (userId) {
+      fetchProfile();
+    }
   }, []);
 
   // Doctor state (for booking tab)
@@ -247,6 +273,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
             onSave={handleProfileSave}
             onClose={handleProfileClose}
             msg={profileMsg}
+            onInitialLoadComplete={handleInitialLoadComplete}
           />
         )}
 
