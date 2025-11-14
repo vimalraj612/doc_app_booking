@@ -353,7 +353,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     disabled
                     readOnly
                   />
-                  <p className="text-[8px] sm:text-[9px] md:text-[10px] text-gray-500">{t.profileFields.phoneCannotChange}</p>
+                  <p className="text-[3px] sm:text-[8px] md:text-[3px] text-gray-500">{t.profileFields.phoneCannotChange}</p>
                 </div>
               </div>
 
