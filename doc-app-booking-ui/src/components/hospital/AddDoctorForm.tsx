@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { InlineMessage } from '../ui/inline-message';
 import { User, Doctor, Hospital } from '../../App';
 import { Input } from '../ui/input';
 import { PhoneInput } from '../ui/phone-input';
@@ -16,6 +17,7 @@ interface AddDoctorFormProps {
   initialDoctor?: Partial<DoctorDTO> | Partial<Doctor> | null;
   hospital?: Hospital;
   user: User;
+  onSubmitError?: (message: string) => void;
 }
 
 export function AddDoctorForm({ 
@@ -24,8 +26,20 @@ export function AddDoctorForm({
   onUpdateDoctor, 
   initialDoctor = null, 
   hospital, 
-  user 
+  user,
+  onSubmitError,
 }: AddDoctorFormProps) {
+  const [formError, setFormError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  useEffect(() => {
+    // Only show/dismiss error banner for backend (submit) errors
+    if (!errors.submit && !formError) return;
+    if (errors.submit) setFormError(errors.submit);
+    if (formError && errors.submit) {
+      const timeout = setTimeout(() => setFormError(null), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [errors.submit, formError]);
   const { t } = useLocale();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -38,7 +52,7 @@ export function AddDoctorForm({
   const [profileBase64, setProfileBase64] = useState<string | null>(null);
   const [imageContentType, setImageContentType] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  // ...existing code...
 
   const namePattern = /^[a-zA-Z\s\-.']+$/;
   const departmentPattern = /^$|^[a-zA-Z\s\-.'&]+$/;
@@ -127,6 +141,7 @@ export function AddDoctorForm({
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
+      // Do NOT show top-level error banner for input validation errors
       return;
     }
     setErrors({});
@@ -136,6 +151,24 @@ export function AddDoctorForm({
       const phoneValidation = validateAndFormatPhone(phoneNumber);
       if (!phoneValidation.isValid) {
         throw new Error(phoneValidation.error || 'Invalid phone number');
+      }
+
+      // Get hospital ID from the user prop (already passed from parent)
+      if (!user || !user.id) {
+        const message = 'No user found. Please log in again.';
+        setErrors({ submit: message });
+        onSubmitError?.(message);
+        setSubmitting(false);
+        return;
+      }
+
+      const hospitalId = Number(user.id);
+      if (isNaN(hospitalId) || hospitalId <= 0) {
+        const message = `Invalid hospital ID format: "${user.id}". Expected a numeric ID.`;
+        setErrors({ submit: message });
+        onSubmitError?.(message);
+        setSubmitting(false);
+        return;
       }
 
       const doctorData: Partial<DoctorDTO> = {
@@ -149,21 +182,51 @@ export function AddDoctorForm({
         qualifications: qualifications || undefined,
         profileImage: profileBase64 || undefined,
         imageContentType: imageContentType || undefined,
-        hospitalId: Number(hospital?.id),
+        hospitalId: hospitalId,
       };
 
+      console.log('User from props:', user);
+      console.log('Hospital ID (string):', user.id);
+      console.log('Hospital ID (number):', hospitalId);
+      console.log('Doctor data before submit:', doctorData);
+
+      let response: any = undefined;
       if (initialDoctor && 'id' in initialDoctor && initialDoctor.id) {
         if (onUpdateDoctor) {
-          await onUpdateDoctor(String(initialDoctor.id), doctorData);
+          response = await onUpdateDoctor(String(initialDoctor.id), doctorData);
         }
       } else {
-        await onAddDoctor(doctorData);
+        response = await onAddDoctor(doctorData);
+      }
+
+      // Type guard: check if response is object and has success property
+      if (response && typeof response === 'object' && 'success' in response && response.success === false) {
+        let message = 'Failed to save doctor';
+        if (typeof response.message === 'string') {
+          message = response.message;
+        } else if (response.message && typeof response.message === 'object') {
+          if (typeof response.message.message === 'string') {
+            message = response.message.message;
+          } else {
+            message = 'Failed to save doctor';
+          }
+        }
+        // Final fallback: if message is still not a string, use generic error
+        if (typeof message !== 'string') message = 'Failed to save doctor';
+        setErrors({ submit: message });
+        setFormError(message);
+        onSubmitError?.(message);
+        setSubmitting(false);
+        return;
       }
 
       onSuccess();
     } catch (err: any) {
       console.error('Error submitting doctor:', err);
-      setErrors({ submit: err.message || 'Failed to save doctor' });
+      const message = err.message || 'Failed to save doctor';
+      setErrors({ submit: message });
+      setFormError(message);
+      onSubmitError?.(message);
     } finally {
       setSubmitting(false);
     }
@@ -235,6 +298,10 @@ export function AddDoctorForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Only show error banner for backend (submit) errors */}
+      {formError && errors.submit && (
+        <InlineMessage type="error" message={formError} />
+      )}
       {/* Personal Information Section */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PERSONAL_INFO}</h3>
@@ -378,12 +445,6 @@ export function AddDoctorForm({
           )}
         </div>
       </div>
-
-      {errors.submit && (
-        <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg">
-          {errors.submit}
-        </div>
-      )}
 
       <div className="flex flex-col gap-3 pt-6 mt-6 border-t">
         <Button 

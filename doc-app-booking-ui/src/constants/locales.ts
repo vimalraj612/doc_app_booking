@@ -122,6 +122,7 @@ export interface Translations {
 
   // Doctor
   doctor: {
+    prefix: string;
     doctor: string;
     doctorName: string;
     doctorDetails: string;
@@ -478,6 +479,7 @@ export const translations: Record<Locale, Translations> = {
     },
 
     doctor: {
+      prefix: 'Dr.',
       doctor: 'Doctor',
       doctorName: 'Doctor Name',
       doctorDetails: 'Doctor Details',
@@ -819,6 +821,7 @@ export const translations: Record<Locale, Translations> = {
     },
 
     doctor: {
+      prefix: 'டாக்.',
       doctor: 'மருத்துவர்',
       doctorName: 'மருத்துவர் பெயர்',
       doctorDetails: 'மருத்துவர் விவரங்கள்',

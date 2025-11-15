@@ -35,7 +35,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                 </AvatarFallback>
               </Avatar>
               <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mt-1">
-                {selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}
+                {t.doctor.prefix} {selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}
               </h2>
             </div>
           </div>

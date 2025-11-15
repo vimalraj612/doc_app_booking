@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, CalendarCheck, Edit, Trash2, LayoutTemplate, CalendarDays, Calendar } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
@@ -8,6 +8,7 @@ import { TabsContent } from '../ui/tabs';
 import { AddDoctorForm } from './AddDoctorForm';
 import { DoctorDTO } from '../../api/doctor';
 import { useLocale } from '../../contexts/LocaleContext';
+import { InlineMessage } from '../ui/inline-message';
 
 interface DoctorsTabProps {
   doctors: Array<{
@@ -37,6 +38,9 @@ interface DoctorsTabProps {
   onViewAppointments: (doctorName: string) => void;
   onDeleteClick: (doctorId: string) => void;
   setLastClickedDoctor: (doctorId: string) => void;
+  deleteError?: string | null;
+  clearDeleteError?: () => void;
+  onDoctorError?: (message: string) => void;
 }
 
 export default function DoctorsTab({
@@ -55,11 +59,38 @@ export default function DoctorsTab({
   onViewAppointments,
   onDeleteClick,
   setLastClickedDoctor,
+  deleteError,
+  clearDeleteError,
+  onDoctorError,
 }: DoctorsTabProps) {
+  const [transientError, setTransientError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!deleteError) return;
+    setTransientError(deleteError);
+
+    const timeout = setTimeout(() => {
+      setTransientError(null);
+      clearDeleteError?.();
+    }, 5000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [deleteError, clearDeleteError]);
   const { t } = useLocale();
   return (
     <TabsContent value="doctors" className="space-y-3 mt-4">
-      <Dialog open={isAddDoctorOpen} onOpenChange={setIsAddDoctorOpen}>
+            <Dialog 
+        open={isAddDoctorOpen} 
+        onOpenChange={(open) => {
+          setIsAddDoctorOpen(open);
+          if (!open) {
+            setEditingDoctor(null);
+            clearDeleteError?.(); // Clear delete error when dialog closes
+          }
+        }}
+      >
         <DialogTrigger asChild>
           <button className="mb-4 w-full sm:w-auto bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
             <Plus className="w-5 h-5 bg-transparent" />
@@ -79,10 +110,17 @@ export default function DoctorsTab({
               initialDoctor={editingDoctor}
               hospital={hospital}
               user={user}
+              onSubmitError={onDoctorError}
             />
           </div>
         </DialogContent>
       </Dialog>
+
+      {transientError && (
+        <div className="mb-4">
+          <InlineMessage type="error" message={transientError} />
+        </div>
+      )}
       {doctors.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
@@ -100,7 +138,7 @@ export default function DoctorsTab({
                     <AvatarFallback>{doctor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base md:truncate">{doctor.name}</h3>
+                    <h3 className="font-semibold text-base md:truncate">{t.messages.LABELS.DOCTOR_PREFIX} {doctor.name}</h3>
                     <div className="flex flex-col gap-1 mt-1 text-sm">
                       <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.SPECIALIZATION}:</span> {doctor.specialization}</span>
                       {doctor.qualifications && (

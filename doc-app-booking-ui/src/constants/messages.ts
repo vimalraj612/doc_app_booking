@@ -63,6 +63,7 @@ export const MESSAGES = {
 
   // Doctor Messages
   DOCTOR: {
+    PREFIX: 'Dr.',
     ADDED_SUCCESS: 'Doctor added successfully',
     ADD_FAILED: 'Failed to add doctor',
     UPDATED_SUCCESS: 'Doctor updated successfully',
@@ -335,6 +336,7 @@ export const MESSAGES_TA = {
 
   // Doctor Messages
   DOCTOR: {
+    PREFIX: 'டாக்.',
     ADDED_SUCCESS: 'மருத்துவர் வெற்றிகரமாக சேர்க்கப்பட்டார்',
     ADD_FAILED: 'மருத்துவரைச் சேர்ப்பதில் தோல்வி',
     UPDATED_SUCCESS: 'மருத்துவர் வெற்றிகரமாக புதுப்பிக்கப்பட்டார்',

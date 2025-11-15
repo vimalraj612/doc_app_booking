@@ -5,6 +5,7 @@ import { LogOut, Stethoscope, CalendarCheck, Building2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import ConfirmDialog from '../ui/ConfirmDialog';
+import { InlineMessage } from '../ui/inline-message';
 
 import { fetchDoctorsByHospitalId, addDoctor, updateDoctor, SlotTemplateDTO, DoctorDTO } from '../../api/doctor';
 import { fetchHospitalAppointmentsByDateRange, fetchHospitalTodaysAppointmentCount } from '../../api/appointments';
@@ -84,6 +85,7 @@ export function HospitalDashboard({
   // Doctor delete confirmation
   const [doctorConfirmOpen, setDoctorConfirmOpen] = useState(false);
   const [doctorToDelete, setDoctorToDelete] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   
   // Doctor slots & leaves modal state
   const [doctorSlotsOpen, setDoctorSlotsOpen] = useState(false);
@@ -270,6 +272,14 @@ export function HospitalDashboard({
             onAddDoctor={handleAddDoctor}
             onUpdateDoctor={handleUpdateDoctor}
             onSlotTemplatesClick={handleSlotTemplateClick}
+            deleteError={deleteError}
+            clearDeleteError={() => setDeleteError(null)}
+            onDoctorError={(message) => {
+              // Only set delete errors, not add doctor errors
+              if (typeof message === 'string' && message.toLowerCase().includes('delete')) {
+                setDeleteError(message);
+              }
+            }}
             onSlotsClick={(doctorId) => {
               setSlotsDoctorId(doctorId);
               setDoctorSlotsOpen(true);
@@ -351,10 +361,14 @@ export function HospitalDashboard({
         onConfirm={async () => {
           if (doctorToDelete) {
             try {
+              setDeleteError(null); // Clear previous errors
               await onDeleteDoctor(doctorToDelete);
               await fetchDoctors();
-            } catch (e) {
+            } catch (e: any) {
               console.error('Failed to delete doctor', e);
+              // Extract only the message from the backend response
+              const errorMessage = extractErrorMessage(e);
+              setDeleteError(errorMessage);
             }
           }
           setDoctorConfirmOpen(false);
@@ -363,6 +377,7 @@ export function HospitalDashboard({
         onCancel={() => { 
           setDoctorConfirmOpen(false); 
           setDoctorToDelete(null); 
+          setDeleteError(null); // Clear error when canceling
         }}
       />
     </div>

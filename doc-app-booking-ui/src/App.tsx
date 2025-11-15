@@ -213,14 +213,15 @@ function App() {
     try {
       // Attempt backend delete if API available
       await apiDeleteDoctor(doctorId);
-    } catch (e) {
-      // If backend delete fails, log and continue to update local state
-      console.error('Backend delete failed, falling back to local state update', e);
+      // Remove from local state only if backend delete succeeds
+      setDoctors(prev => prev.filter(d => d.id !== doctorId));
+      setTimeSlots(prev => prev.filter(s => s.doctorId !== doctorId));
+      setAppointments(prev => prev.filter(a => a.doctorId !== doctorId));
+    } catch (e: any) {
+      console.error('Failed to delete doctor', e);
+      // Re-throw the error so it can be handled by the calling component
+      throw e;
     }
-    // Remove from local state
-    setDoctors(prev => prev.filter(d => d.id !== doctorId));
-    setTimeSlots(prev => prev.filter(s => s.doctorId !== doctorId));
-    setAppointments(prev => prev.filter(a => a.doctorId !== doctorId));
   };
 
   const handleDeleteHospital = (hospitalId: string) => {
