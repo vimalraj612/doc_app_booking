@@ -160,6 +160,21 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 <ChevronLeft className="w-4 h-4 bg-transparent" />
               </Button>
 
+              {/* Today Button for quick access */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2"
+                onClick={() => {
+                  const today = new Date().toISOString().slice(0, 10);
+                  setDateRange({ start: today, end: today });
+                  fetchAppointments({ start: today, end: today });
+                }}
+                title={t.dateTime.today}
+              >
+                {t.dateTime.today}
+              </Button>
+
               <Input
                 type="date"
                 className="flex-1"

@@ -66,6 +66,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     relationship: '',
   });
 
+  // Auto-dismiss relation success message
+  useEffect(() => {
+    if (relationFormMsg) {
+      const timer = setTimeout(() => setRelationFormMsg(''), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [relationFormMsg]);
+
   // Fetch relations on mount
   useEffect(() => {
     if (profile && profile.id) {
@@ -119,8 +127,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     setRelationFormLoading(true);
     deletePatientRelation(relationId)
       .then(() => {
-        setRelations(relations.filter((r: PatientRelation) => r.id !== relationId));
+        // Reload relations after delete
+        if (profile && profile.id) {
+          getPatientRelations(String(profile.id))
+            .then((data: PatientRelation[]) => setRelations(data))
+            .catch(() => setRelationError(t.patientRelations.fetchError));
+        }
         setRelationFormMsg(t.patientRelations.deleteSuccess);
+        setRelationError('');
       })
       .catch(() => setRelationError(t.patientRelations.deleteError))
       .finally(() => setRelationFormLoading(false));
@@ -353,7 +367,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     disabled
                     readOnly
                   />
-                  <p className="text-[3px] sm:text-[8px] md:text-[3px] text-gray-500">{t.profileFields.phoneCannotChange}</p>
+                  <p className="text-[6px] sm:text-[8px] md:text-[6px] text-gray-500" style={{ fontSize: '50%' }}>{t.profileFields.phoneCannotChange}</p>
                 </div>
               </div>
 
@@ -418,11 +432,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-lg overflow-hidden">
                 {/* Mobile Card View */}
                 <div className="block md:hidden space-y-3">
                   {relations.map((rel: PatientRelation) => (
-                    <div key={rel.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div key={rel.id} className="bg-white rounded-lg p-4 shadow-sm">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h4 className="font-medium text-gray-900 text-sm">{rel.fullName}</h4>

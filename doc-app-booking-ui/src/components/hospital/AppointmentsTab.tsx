@@ -1,3 +1,4 @@
+import React from 'react';
 import { TabsContent } from '../ui/tabs';
 import { Button } from '../ui/button';
 import AppointmentsList from '../common/AppointmentsList';
@@ -41,6 +42,13 @@ export function AppointmentsTab({
   setSelectedDoctorFilter,
 }: AppointmentsTabProps) {
   const { t } = useLocale();
+
+  // Reload appointments whenever the tab is activated
+  // This assumes parent controls tab value and remounts, but for safety, useEffect on mount
+  React.useEffect(() => {
+    fetchAppointments({ start: dateRange.start, end: dateRange.end });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <TabsContent value="appointments" className="space-y-3 mt-4">

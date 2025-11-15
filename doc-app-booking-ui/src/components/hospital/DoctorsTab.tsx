@@ -97,7 +97,7 @@ export default function DoctorsTab({
             {t.messages.LABELS.ADD_NEW_DOCTOR}
           </button>
         </DialogTrigger>
-        <DialogContent className="max-w-3xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
+  <DialogContent className="max-w-3xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto scrollbar-hide">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">{editingDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">{editingDoctor ? t.messages.LABELS.UPDATE_DOCTOR_INFO : t.messages.LABELS.FILL_DOCTOR_DETAILS}</DialogDescription>
@@ -138,7 +138,7 @@ export default function DoctorsTab({
                     <AvatarFallback>{doctor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base md:truncate">{t.messages.LABELS.DOCTOR_PREFIX} {doctor.name}</h3>
+                    <h3 className="font-semibold text-base md:truncate">{t.messages.DOCTOR.PREFIX} {doctor.name}</h3>
                     <div className="flex flex-col gap-1 mt-1 text-sm">
                       <span className="text-gray-600"><span className="font-medium">{t.messages.LABELS.SPECIALIZATION}:</span> {doctor.specialization}</span>
                       {doctor.qualifications && (
