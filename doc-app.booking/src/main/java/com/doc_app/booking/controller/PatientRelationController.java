@@ -1,5 +1,6 @@
 package com.doc_app.booking.controller;
 
+import com.doc_app.booking.dto.ApiResponse;
 import com.doc_app.booking.dto.PatientRelationDTO;
 import com.doc_app.booking.dto.request.CreatePatientRelationRequest;
 import com.doc_app.booking.dto.request.UpdatePatientRelationRequest;
@@ -45,8 +46,8 @@ public class PatientRelationController {
     }
 
     @DeleteMapping("/patient-relations/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Object>> delete(@PathVariable Long id) {
         relationService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Patient relation deleted successfully", null));
     }
 }
