@@ -8,9 +8,12 @@ import com.doc_app.booking.dto.request.UpdateDoctorRequest;
 import com.doc_app.booking.dto.mapper.EntityMapper;
 import com.doc_app.booking.model.Doctor;
 import com.doc_app.booking.model.Hospital;
+import com.doc_app.booking.repository.AppointmentRepository;
 import com.doc_app.booking.repository.DoctorRepository;
 import com.doc_app.booking.repository.HospitalRepository;
+import com.doc_app.booking.repository.SlotRepository;
 import com.doc_app.booking.service.DoctorService;
+import com.doc_app.booking.exception.BusinessException;
 import com.doc_app.booking.util.LocaleManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -31,14 +35,25 @@ public class DoctorServiceImpl implements DoctorService {
 
         private final DoctorRepository doctorRepository;
         private final HospitalRepository hospitalRepository;
+        private final AppointmentRepository appointmentRepository;
+        private final SlotRepository slotRepository;
         private final EntityMapper mapper;
         private final LocaleManager localeManager;
 
         @Override
         public DoctorDTO createDoctor(CreateDoctorRequest request) {
+                // Check for email conflicts
                 if (doctorRepository.existsByEmail(request.getEmail())) {
-                        throw new IllegalArgumentException(
-                                        localeManager.getMessage(MessageKeys.DOCTOR_ALREADY_EXISTS_EMAIL, request.getEmail()));
+                        throw new BusinessException(
+                                        "Doctor with email '" + request.getEmail() + "' already exists. Please use a different email address.",
+                                        HttpStatus.BAD_REQUEST.value());
+                }
+
+                // Check for phone number conflicts
+                if (doctorRepository.existsByContact(request.getPhoneNumber())) {
+                        throw new BusinessException(
+                                        "Doctor with phone number '" + request.getPhoneNumber() + "' already exists. Please use a different phone number.",
+                                        HttpStatus.BAD_REQUEST.value());
                 }
 
                 Hospital hospital = hospitalRepository.findById(request.getHospitalId())
@@ -57,6 +72,24 @@ public class DoctorServiceImpl implements DoctorService {
                 Doctor doctor = doctorRepository.findById(id)
                                 .orElseThrow(() -> new EntityNotFoundException(
                                                 localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_ID, id)));
+
+                // Check for email conflicts (only if email is being updated and different from current)
+                if (request.getEmail() != null && !request.getEmail().equals(doctor.getEmail())) {
+                        if (doctorRepository.existsByEmail(request.getEmail())) {
+                                throw new BusinessException(
+                                                "Doctor with email '" + request.getEmail() + "' already exists. Please use a different email address.",
+                                                HttpStatus.BAD_REQUEST.value());
+                        }
+                }
+
+                // Check for phone number conflicts (only if phone is being updated and different from current)
+                if (request.getPhoneNumber() != null && !request.getPhoneNumber().equals(doctor.getContact())) {
+                        if (doctorRepository.existsByContact(request.getPhoneNumber())) {
+                                throw new BusinessException(
+                                                "Doctor with phone number '" + request.getPhoneNumber() + "' already exists. Please use a different phone number.",
+                                                HttpStatus.BAD_REQUEST.value());
+                        }
+                }
 
                 if (request.getHospitalId() != null && !request.getHospitalId().equals(doctor.getHospital().getId())) {
                         Hospital newHospital = hospitalRepository.findById(request.getHospitalId())
@@ -151,6 +184,25 @@ public class DoctorServiceImpl implements DoctorService {
                 Doctor doctor = doctorRepository.findById(id)
                                 .orElseThrow(() -> new EntityNotFoundException(
                                                 localeManager.getMessage(MessageKeys.DOCTOR_NOT_FOUND_ID, id)));
+                
+                // Check if doctor has any appointments
+                long appointmentCount = appointmentRepository.findByDoctorId(id).size();
+                if (appointmentCount > 0) {
+                        throw new BusinessException(
+                                "Cannot delete doctor. The doctor has " + appointmentCount + 
+                                " existing appointments that must be cancelled or reassigned first.",
+                                HttpStatus.BAD_REQUEST.value());
+                }
+                
+                // Check if doctor has any slots
+                long slotCount = slotRepository.findByDoctorId(id).size();
+                if (slotCount > 0) {
+                        throw new BusinessException(
+                                "Cannot delete doctor. The doctor has " + slotCount + 
+                                " existing time slots that must be removed first.",
+                                HttpStatus.BAD_REQUEST.value());
+                }
+                
                 doctorRepository.delete(doctor);
         }
 

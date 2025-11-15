@@ -39,6 +39,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        ApiResponse<Object> body = new ApiResponse<>(false, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
     @ExceptionHandler(SlotAlreadyBookedException.class)
     public ResponseEntity<ApiResponse<Object>> handleSlotAlreadyBooked(SlotAlreadyBookedException ex) {
         ApiResponse<Object> body = new ApiResponse<>(false, ex.getMessage(), null);
@@ -63,12 +69,38 @@ public class GlobalExceptionHandler {
         
         // Check for common constraint violations and provide user-friendly messages
         if (ex.getMessage() != null) {
-            if (ex.getMessage().contains("foreign key constraint") && ex.getMessage().contains("doctor")) {
-                message = "Invalid doctor ID. The specified doctor does not exist.";
-            } else if (ex.getMessage().contains("foreign key constraint") && ex.getMessage().contains("patient")) {
-                message = "Invalid patient ID. The specified patient does not exist.";
-            } else if (ex.getMessage().contains("foreign key constraint") && ex.getMessage().contains("hospital")) {
-                message = "Invalid hospital ID. The specified hospital does not exist.";
+            if (ex.getMessage().contains("foreign key constraint")) {
+                if (ex.getMessage().contains("doctor")) {
+                    // Check if this is a deletion scenario vs invalid reference
+                    if (ex.getMessage().toLowerCase().contains("delete") || 
+                        ex.getMessage().toLowerCase().contains("cannot delete") ||
+                        ex.getCause() != null && ex.getCause().getMessage() != null && 
+                        ex.getCause().getMessage().toLowerCase().contains("delete")) {
+                        message = "Cannot delete doctor. The doctor has existing appointments, slots, or other related records that must be removed first.";
+                    } else {
+                        message = "Invalid doctor ID. The specified doctor does not exist.";
+                    }
+                } else if (ex.getMessage().contains("patient")) {
+                    if (ex.getMessage().toLowerCase().contains("delete") || 
+                        ex.getMessage().toLowerCase().contains("cannot delete") ||
+                        ex.getCause() != null && ex.getCause().getMessage() != null && 
+                        ex.getCause().getMessage().toLowerCase().contains("delete")) {
+                        message = "Cannot delete patient. The patient has existing appointments or other related records that must be removed first.";
+                    } else {
+                        message = "Invalid patient ID. The specified patient does not exist.";
+                    }
+                } else if (ex.getMessage().contains("hospital")) {
+                    if (ex.getMessage().toLowerCase().contains("delete") || 
+                        ex.getMessage().toLowerCase().contains("cannot delete") ||
+                        ex.getCause() != null && ex.getCause().getMessage() != null && 
+                        ex.getCause().getMessage().toLowerCase().contains("delete")) {
+                        message = "Cannot delete hospital. The hospital has existing doctors, appointments, or other related records that must be removed first.";
+                    } else {
+                        message = "Invalid hospital ID. The specified hospital does not exist.";
+                    }
+                } else {
+                    message = "Cannot perform operation due to foreign key constraint violation. Related records exist that prevent this operation.";
+                }
             } else if (ex.getMessage().contains("unique constraint") || ex.getMessage().contains("duplicate key")) {
                 message = "Duplicate entry. This record already exists.";
             } else {
