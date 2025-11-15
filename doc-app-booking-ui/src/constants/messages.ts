@@ -106,7 +106,7 @@ export const MESSAGES = {
     // Phone validation
     PHONE_REQUIRED: 'Phone is required.',
     PHONE_NUMBER_REQUIRED: 'Phone number is required',
-    PHONE_MAX: 'Phone number must not exceed 20 characters',
+    PROFILE_IMAGE: 'Profile Image',
     PHONE_INVALID: 'Phone must start with + and be a valid number (at least 7 digits).',
     PHONE_NUMBER_INVALID: 'Please provide a valid phone number',
 
@@ -167,22 +167,26 @@ export const MESSAGES = {
     DEPARTMENT: 'Department',
     EXPERIENCE_YEARS: 'Experience (years)',
     QUALIFICATIONS: 'Qualifications',
-    PROFILE_IMAGE: 'Profile Image',
+    AVAILABLE: 'Available',
+    SCHEDULED: 'Scheduled',
+    RESERVED: 'Reserved',
+    COMPLETED: 'Completed',
+    CANCELLED: 'Cancelled',
     DATE: 'Date',
     REASON: 'Reason',
     DAY_OF_WEEK: 'Day of Week',
     START_TIME: 'Start Time',
     END_TIME: 'End Time',
     DURATION_MINUTES: 'Duration (minutes)',
-    
+    PROFILE_IMAGE: 'Profile Image',
     // Status and info labels
     ACTIVE_TEMPLATE: 'Active template',
     PROFILE_IMAGE_UPLOADED: 'Profile image uploaded',
-    
+
     // Table headers
     ACTIONS: 'Actions',
     DURATION: 'Duration',
-    
+
     // Titles
     SLOT_TEMPLATES: 'Slot Templates',
     DOCTOR_LEAVES: 'Doctor Leaves',
@@ -192,7 +196,11 @@ export const MESSAGES = {
     SLOTS: 'Slots',
     LEAVES: 'Leaves',
     APPOINTMENTS: 'Appointments',
-    
+
+    // Button labels
+    RESET: 'Reset',
+    SCHEDULED_LEAVES: 'Scheduled Leaves',
+
     // Messages/descriptions
     NO_SLOT_TEMPLATES: 'No slot templates yet',
     NO_LEAVES_SCHEDULED: 'No leaves scheduled',
@@ -201,7 +209,7 @@ export const MESSAGES = {
     DOCTOR_ON_LEAVE: 'Doctor is on leave this day — booking disabled.',
     MANAGE_SLOT_TEMPLATES: 'Manage recurring slot templates for the selected doctor.',
     CREATE_RECURRING_TEMPLATE: 'Create a recurring availability template to let patients book predictable slots.',
-    
+
     // Placeholders
     PLACEHOLDER_EMAIL: 'doctor@example.com',
     PLACEHOLDER_SELECT_DATE: 'Select date',
@@ -214,17 +222,17 @@ export const MESSAGES = {
     PLACEHOLDER_REASON: 'e.g. Medical appointment, Personal',
     PLACEHOLDER_DURATION: 'e.g. 15, 30, 60',
     PLACEHOLDER_SELECT_SPECIALIZATION: 'Select specialization',
-    
+
     // Section headers
     SECTION_PERSONAL_INFO: 'Personal Information',
     SECTION_CONTACT_INFO: 'Contact Information',
     SECTION_PROFESSIONAL_INFO: 'Professional Information',
     SECTION_ADDITIONAL_INFO: 'Additional Information',
-    
+
     // File upload
     CHOOSE_FILE: 'Choose file',
     PREVIEW_DESCRIPTION: 'Preview shows how it will appear',
-    
+
     // Days of the week
     DAY_MONDAY: 'Monday',
     DAY_TUESDAY: 'Tuesday',
@@ -233,15 +241,15 @@ export const MESSAGES = {
     DAY_FRIDAY: 'Friday',
     DAY_SATURDAY: 'Saturday',
     DAY_SUNDAY: 'Sunday',
-    
+
     // Time-related labels
     TIME_LABEL: 'Time',
     MINUTES_SHORT: 'min',
-    
+
     // Common labels
     DAY_LABEL: 'Day',
     DISMISS: 'Dismiss',
-    
+
     // Buttons/actions
     ADD_NEW_DOCTOR: 'Add New Doctor',
     EDIT_DOCTOR: 'Edit Doctor',
@@ -255,22 +263,22 @@ export const MESSAGES = {
     SAVE: 'Save',
     CANCEL: 'Cancel',
     SUBMIT: 'Submit',
-    
+
     // Dialog descriptions
     UPDATE_DOCTOR_INFO: 'Update doctor information below',
     FILL_DOCTOR_DETAILS: 'Fill in the details to add a new doctor to your hospital',
     NO_DOCTORS_YET: 'No doctors added yet',
-    
+
     // Required field indicator
     REQUIRED: '*',
-    
+
     // Slot status labels
     STATUS_AVAILABLE: 'Available',
     STATUS_SCHEDULED: 'Scheduled',
     STATUS_RESERVED: 'Reserved',
     STATUS_COMPLETED: 'Completed',
     STATUS_CANCELLED: 'Cancelled',
-    
+
     // Time-based labels
     TODAYS_SLOTS: "Today's Slots",
     NO_SLOTS_TODAY: 'No slots for today',
@@ -379,7 +387,7 @@ export const MESSAGES_TA = {
     // Phone validation
     PHONE_REQUIRED: 'தொலைபேசி தேவை.',
     PHONE_NUMBER_REQUIRED: 'தொலைபேசி எண் தேவை',
-    PHONE_MAX: 'தொலைபேசி எண் 20 எழுத்துக்களுக்கு மேல் இருக்கக்கூடாது',
+    PROFILE_IMAGE: 'சுயவிவர படம்',
     PHONE_INVALID: 'தொலைபேசி + உடன் தொடங்க வேண்டும் மற்றும் சரியான எண்ணாக இருக்க வேண்டும் (குறைந்தது 7 இலக்கங்கள்).',
     PHONE_NUMBER_INVALID: 'சரியான தொலைபேசி எண்ணை வழங்கவும்',
 
@@ -440,22 +448,26 @@ export const MESSAGES_TA = {
     DEPARTMENT: 'துறை',
     EXPERIENCE_YEARS: 'அனுபவம் (ஆண்டுகள்)',
     QUALIFICATIONS: 'தகுதிகள்',
-    PROFILE_IMAGE: 'சுயவிவர படம்',
+    AVAILABLE: 'கிடைக்கும்',
+    SCHEDULED: 'திட்டமிடப்பட்டது',
+    RESERVED: 'முன்பதிவு',
+    COMPLETED: 'நிறைவு',
+    CANCELLED: 'ரத்து',
     DATE: 'தேதி',
     REASON: 'காரணம்',
     DAY_OF_WEEK: 'வாரத்தின் நாள்',
     START_TIME: 'தொடக்க நேரம்',
     END_TIME: 'முடிவு நேரம்',
     DURATION_MINUTES: 'கால அளவு (நிமிடங்கள்)',
-    
+    PROFILE_IMAGE: 'சுயவிவர படம்',
     // Status and info labels
     ACTIVE_TEMPLATE: 'செயலில் உள்ள டெம்ப்ளேட்',
     PROFILE_IMAGE_UPLOADED: 'சுயவிவர படம் பதிவேற்றப்பட்டது',
-    
+
     // Table headers
     ACTIONS: 'செயல்கள்',
     DURATION: 'கால அளவு',
-    
+
     // Titles
     SLOT_TEMPLATES: 'இட டெம்ப்ளேட்கள்',
     DOCTOR_LEAVES: 'மருத்துவர் விடுப்புகள்',
@@ -465,7 +477,11 @@ export const MESSAGES_TA = {
     SLOTS: 'இடங்கள்',
     LEAVES: 'விடுப்புகள்',
     APPOINTMENTS: 'சந்திப்புகள்',
-    
+
+    // Button labels
+    RESET: 'ரீசெட்',
+    SCHEDULED_LEAVES: 'திட்டமிடப்பட்ட விடுப்புகள்',
+
     // Messages/descriptions
     NO_SLOT_TEMPLATES: 'இட டெம்ப்ளேட்கள் இல்லை',
     NO_LEAVES_SCHEDULED: 'விடுப்புகள் திட்டமிடப்படவில்லை',
@@ -474,7 +490,7 @@ export const MESSAGES_TA = {
     DOCTOR_ON_LEAVE: 'மருத்துவர் இந்த நாளில் விடுப்பில் உள்ளார் — பதிவு முடக்கப்பட்டுள்ளது.',
     MANAGE_SLOT_TEMPLATES: 'தேர்ந்தெடுக்கப்பட்ட மருத்துவருக்கான மீண்டும் மீண்டும் இட டெம்ப்ளேட்களை நிர்வகிக்கவும்.',
     CREATE_RECURRING_TEMPLATE: 'நோயாளிகள் எதிர்பார்க்கக்கூடிய இடங்களை பதிவு செய்ய மீண்டும் மீண்டும் கிடைக்கும் டெம்ப்ளேட்டை உருவாக்கவும்.',
-    
+
     // Placeholders
     PLACEHOLDER_EMAIL: 'doctor@example.com',
     PLACEHOLDER_SELECT_DATE: 'தேதியை தேர்ந்தெடு',
@@ -487,17 +503,17 @@ export const MESSAGES_TA = {
     PLACEHOLDER_REASON: 'எ.கா. மருத்துவ சந்திப்பு, தனிப்பட்ட',
     PLACEHOLDER_DURATION: 'எ.கா. 15, 30, 60',
     PLACEHOLDER_SELECT_SPECIALIZATION: 'சிறப்பை தேர்ந்தெடு',
-    
+
     // Section headers
     SECTION_PERSONAL_INFO: 'தனிப்பட்ட தகவல்',
     SECTION_CONTACT_INFO: 'தொடர்பு தகவல்',
     SECTION_PROFESSIONAL_INFO: 'தொழில்முறை தகவல்',
     SECTION_ADDITIONAL_INFO: 'கூடுதல் தகவல்',
-    
+
     // File upload
     CHOOSE_FILE: 'கோப்பை தேர்வு செய்',
     PREVIEW_DESCRIPTION: 'முன்னோட்டம் எப்படி தோன்றும் என்பதைக் காட்டுகிறது',
-    
+
     // Days of the week
     DAY_MONDAY: 'திங்கள்',
     DAY_TUESDAY: 'செவ்வாய்',
@@ -506,15 +522,15 @@ export const MESSAGES_TA = {
     DAY_FRIDAY: 'வெள்ளி',
     DAY_SATURDAY: 'சனி',
     DAY_SUNDAY: 'ஞாயிறு',
-    
+
     // Time-related labels
     TIME_LABEL: 'நேரம்',
     MINUTES_SHORT: 'நிமி',
-    
+
     // Common labels
     DAY_LABEL: 'நாள்',
     DISMISS: 'நிராகரி',
-    
+
     // Buttons/actions
     ADD_NEW_DOCTOR: 'புதிய மருத்துவரைச் சேர்',
     EDIT_DOCTOR: 'மருத்துவரைத் திருத்து',
@@ -528,22 +544,22 @@ export const MESSAGES_TA = {
     SAVE: 'சேமி',
     CANCEL: 'ரத்து',
     SUBMIT: 'சமர்ப்பி',
-    
+
     // Dialog descriptions
     UPDATE_DOCTOR_INFO: 'கீழே மருத்துவர் தகவலை புதுப்பிக்கவும்',
     FILL_DOCTOR_DETAILS: 'உங்கள் மருத்துவமனையில் புதிய மருத்துவரைச் சேர்க்க விவரங்களை நிரப்பவும்',
     NO_DOCTORS_YET: 'இன்னும் மருத்துவர்கள் சேர்க்கப்படவில்லை',
-    
+
     // Required field indicator
     REQUIRED: '*',
-    
+
     // Slot status labels
     STATUS_AVAILABLE: 'கிடைக்கிறது',
     STATUS_SCHEDULED: 'திட்டமிடப்பட்டது',
     STATUS_RESERVED: 'ஒதுக்கப்பட்டது',
     STATUS_COMPLETED: 'நிறைவு',
     STATUS_CANCELLED: 'ரத்து',
-    
+
     // Time-based labels
     TODAYS_SLOTS: "இன்றைய இடங்கள்",
     NO_SLOTS_TODAY: 'இன்று இடங்கள் இல்லை',

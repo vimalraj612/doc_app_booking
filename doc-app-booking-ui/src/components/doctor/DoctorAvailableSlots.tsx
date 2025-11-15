@@ -200,7 +200,7 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
         )}
       </div>
     </div>
-	);
+  );
 };
 
 export default DoctorAvailableSlot;

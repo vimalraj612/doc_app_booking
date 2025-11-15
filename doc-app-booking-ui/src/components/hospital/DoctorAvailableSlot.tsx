@@ -195,11 +195,11 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                                 if (isReserved) status = 'RESERVED';
 
                                 const statusMap: any = {
-                                    AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
-                                    SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
-                                    RESERVED: { color: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Reserved' },
-                                    COMPLETED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Completed' },
-                                    CANCELLED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Cancelled' },
+                                    AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: t.messages.LABELS.STATUS_AVAILABLE || 'Available' },
+                                    SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: t.messages.LABELS.STATUS_SCHEDULED || 'Scheduled' },
+                                    RESERVED: { color: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: t.messages.LABELS.STATUS_RESERVED || 'Reserved' },
+                                    COMPLETED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: t.messages.LABELS.STATUS_COMPLETED || 'Completed' },
+                                    CANCELLED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: t.messages.LABELS.STATUS_CANCELLED || 'Cancelled' },
                                 };
                                 const statusInfo = statusMap[status] || statusMap['SCHEDULED'];
 
@@ -223,7 +223,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                                     >
                                         <span className="font-semibold text-[5.5px] leading-tight" style={{ color: hex.text }}>{formatTime(slot.start)}</span>
                                         <span className="text-[4px] leading-tight" style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
-                                        <span className="mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors" style={{ color: hex.text }}>{statusInfo.label}</span>
+                                        <span className="mt-[0.5px] text-[3px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors" style={{ color: hex.text }}>{statusInfo.label}</span>
                                     </button>
                                 );
                             })}

@@ -199,20 +199,34 @@ export function AddDoctorForm({
         response = await onAddDoctor(doctorData);
       }
 
-      // Type guard: check if response is object and has success property
+      // Always extract only the error message string from backend response
       if (response && typeof response === 'object' && 'success' in response && response.success === false) {
         let message = 'Failed to save doctor';
+        // Try to extract message string from various possible payload shapes
         if (typeof response.message === 'string') {
           message = response.message;
         } else if (response.message && typeof response.message === 'object') {
+          // If message is an object, look for a 'message' property
           if (typeof response.message.message === 'string') {
             message = response.message.message;
           } else {
+            // If message is not a string, fallback to generic
             message = 'Failed to save doctor';
           }
+        } else if (typeof response === 'string') {
+          // If response itself is a string, use it
+          message = response;
         }
-        // Final fallback: if message is still not a string, use generic error
+        // Remove any JSON or object formatting if present
         if (typeof message !== 'string') message = 'Failed to save doctor';
+        // Defensive: strip out any curly braces or JSON formatting
+        message = String(message);
+        if (message.startsWith('{') && message.includes('message')) {
+          try {
+            const parsed = JSON.parse(message);
+            if (parsed && typeof parsed.message === 'string') message = parsed.message;
+          } catch {}
+        }
         setErrors({ submit: message });
         setFormError(message);
         onSubmitError?.(message);
@@ -453,14 +467,14 @@ export function AddDoctorForm({
           onClick={onSuccess}
           className="w-full"
         >
-          Cancel
+          {t.messages.LABELS.CANCEL}
         </Button>
         <Button 
           type="submit" 
           disabled={submitting} 
           className="w-full bg-purple-500 hover:bg-purple-600 text-white"
         >
-          {submitting ? 'Saving...' : (initialDoctor ? 'Update Doctor' : 'Add Doctor')}
+          {submitting ? t.messages.LABELS.SAVE : (initialDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR)}
         </Button>
       </div>
     </form>

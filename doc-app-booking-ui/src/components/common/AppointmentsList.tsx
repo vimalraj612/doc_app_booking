@@ -9,6 +9,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { InlineMessage } from '../ui/inline-message';
 import { useLocale } from '../../contexts/LocaleContext';
 
+// Helper to safely map gender string to localized value
+function getLocalizedGender(gender: string, t: any): string {
+  const key = gender.trim().toLowerCase();
+  if (key === 'male') return t.gender.male;
+  if (key === 'female') return t.gender.female;
+  if (key === 'other') return t.gender.other;
+  return gender;
+}
+
 interface Appointment {
   id: string | number;
   doctorName: string;
@@ -59,13 +68,13 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   isDoctor,
 }) => {
   const { t } = useLocale();
-  
+
   const [completeDialog, setCompleteDialog] = useState<{ open: boolean; appt?: Appointment }>({ open: false });
   const [completeNotes, setCompleteNotes] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   const [completeMsg, setCompleteMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [completing, setCompleting] = useState(false);
-  
+
   // Additional filters
   const [doctorNameFilter, setDoctorNameFilter] = useState('');
   const [patientNameFilter, setPatientNameFilter] = useState('');
@@ -83,8 +92,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     setCompleting(true);
     try {
       await updateAppointmentStatusApi(
-        completeDialog.appt.id, 
-        'COMPLETED', 
+        completeDialog.appt.id,
+        'COMPLETED',
         completeNotes,
         followUpDate ? `${followUpDate}T00:00:00` : undefined
       );
@@ -118,13 +127,13 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   // Apply additional filters
   const applyAdditionalFilters = (appointments: Appointment[]) => {
     return appointments.filter((appt) => {
-      const matchesDoctorName = !doctorNameFilter || 
+      const matchesDoctorName = !doctorNameFilter ||
         appt.doctorName?.toLowerCase().includes(doctorNameFilter.toLowerCase());
-      const matchesPatientName = !patientNameFilter || 
+      const matchesPatientName = !patientNameFilter ||
         appt.appointeeName?.toLowerCase().includes(patientNameFilter.toLowerCase());
-      const matchesPatientPhone = !patientPhoneFilter || 
+      const matchesPatientPhone = !patientPhoneFilter ||
         appt.appointeePhone?.includes(patientPhoneFilter);
-      
+
       return matchesDoctorName && matchesPatientName && matchesPatientPhone;
     });
   };
@@ -135,16 +144,16 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
     <div className="space-y-8">
       {/* Messages */}
       {(cancelMsg || completeMsg) && (
-        <InlineMessage 
-          type={(cancelMsg?.type === 'success' || completeMsg?.type === 'success') ? 'success' : 'error'} 
-          message={cancelMsg?.text || completeMsg?.text || ''} 
+        <InlineMessage
+          type={(cancelMsg?.type === 'success' || completeMsg?.type === 'success') ? 'success' : 'error'}
+          message={cancelMsg?.text || completeMsg?.text || ''}
         />
       )}
 
       {/* Filters Section */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.filters.filterAppointments}</h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Date Range */}
           <div className="space-y-2">
@@ -235,7 +244,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => { 
+                onClick={() => {
                   setStatusFilter('ALL');
                   setDoctorNameFilter('');
                   setPatientNameFilter('');
@@ -243,8 +252,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   const today = new Date();
                   const start = today.toISOString().slice(0, 10);
                   const end = new Date(today.setDate(today.getDate() + 2)).toISOString().slice(0, 10);
-                  setDateRange({ start, end }); 
-                  fetchAppointments({ start, end }); 
+                  setDateRange({ start, end });
+                  fetchAppointments({ start, end });
                 }}
                 title={t.filters.clear}
                 className="flex items-center gap-1"
@@ -426,7 +435,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
                         {appt.appointeeGender && (
                           <div className="text-xs">
-                            <span className="font-medium">{t.profileFields.gender}:</span> {appt.appointeeGender}
+                            <span className="font-medium">{t.profileFields.gender}:</span> {getLocalizedGender(appt.appointeeGender, t)}
                           </div>
                         )}
 

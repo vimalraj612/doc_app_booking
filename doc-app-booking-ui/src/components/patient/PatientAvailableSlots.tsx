@@ -68,12 +68,12 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   const [slotsError, setSlotsError] = useState('');
   const [leaveDates, setLeaveDates] = useState<Set<string>>(new Set());
   const [leaveLoading, setLeaveLoading] = useState(true);
-  
+
   // Relations and selection state
   const [relations, setRelations] = useState<PatientRelation[]>([]);
   const [loadingRelations, setLoadingRelations] = useState(false);
   const [selectedRelation, setSelectedRelation] = useState('');
-  
+
   // Appointee fields
   const [appointeeName, setAppointeeName] = useState('');
   const [appointeeAge, setAppointeeAge] = useState('');
@@ -118,7 +118,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
       const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
       // Calculate age from dateOfBirth
       const age = profile.dateOfBirth ? calculateAge(profile.dateOfBirth) : '';
-      
+
       setAppointeeName(fullName);
       setAppointeeAge(String(age));
       setAppointeePhone(phoneWithoutPrefix);
@@ -131,10 +131,10 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
         const age = relation.age || '';
         const phoneNumber = relation.phoneNumber || '';
         const gender = relation.gender || '';
-        
+
         // Remove +91 prefix from phone number
         const phoneWithoutPrefix = phoneNumber.replace(/^\+91/, '') || phoneNumber;
-        
+
         setAppointeeName(fullName);
         setAppointeeAge(String(age));
         setAppointeePhone(phoneWithoutPrefix);
@@ -161,11 +161,11 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
+
     return age;
   };
 
@@ -325,7 +325,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                                     <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">{t.ui.doctorOnLeave}</div>
                                   </div>
                                 ) : (
-                                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
+                                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[1px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
                                     {slotsByDate[selectedDate]
                                       .slice()
                                       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
@@ -370,11 +370,11 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                                         if (isReserved) status = 'RESERVED';
 
                                         const statusMap: any = {
-                                          AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: 'Available' },
-                                          SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'Scheduled' },
-                                          RESERVED: { color: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: 'Reserved' },
-                                          COMPLETED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Completed' },
-                                          CANCELLED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: 'Cancelled' },
+                                          AVAILABLE: { color: 'bg-green-50 border-green-200', text: 'text-green-700', label: t.messages.LABELS.STATUS_AVAILABLE || 'Available' },
+                                          SCHEDULED: { color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: t.messages.LABELS.STATUS_SCHEDULED || 'Scheduled' },
+                                          RESERVED: { color: 'bg-orange-50 border-orange-200', text: 'text-orange-700', label: t.messages.LABELS.STATUS_RESERVED || 'Reserved' },
+                                          COMPLETED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: t.messages.LABELS.STATUS_COMPLETED || 'Completed' },
+                                          CANCELLED: { color: 'bg-gray-50 border-gray-200', text: 'text-gray-700', label: t.messages.LABELS.STATUS_CANCELLED || 'Cancelled' },
                                         };
                                         const statusInfo = statusMap[status] || statusMap['SCHEDULED'];
                                         const isClickable = status === 'AVAILABLE' && !booking && !leaveLoading && !leaveDates.has(selectedDate);
@@ -398,7 +398,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                                           >
                                             <span className={`font-semibold text-[5.5px] leading-tight`} style={{ color: hex.text }}>{formatTime(slot.start)}</span>
                                             <span className={`text-[4px] leading-tight`} style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
-                                            <span className={`mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors`} style={{ color: hex.text }}>{statusInfo.label}</span>
+                                            <span className={`mt-[0.5px] text-[2.5px] font-medium rounded-full px-[0.5px] py-[0.5px] transition-colors max-w-[22px] overflow-hidden text-ellipsis whitespace-nowrap`} style={{ color: hex.text }}>{statusInfo.label}</span>
                                           </button>
                                         );
                                       })}
@@ -438,7 +438,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
               onSubmit={e => {
                 e.preventDefault();
                 let valid = true;
-                
+
                 // Validate relation selection
                 if (!selectedRelation) {
                   setSelectedRelationError(ValidationMessages.RELATION_REQUIRED);
@@ -446,7 +446,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                 } else {
                   setSelectedRelationError('');
                 }
-                
+
                 if (!appointeeName.trim()) {
                   setAppointeeNameError(ValidationMessages.NAME_REQUIRED);
                   valid = false;
@@ -501,7 +501,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
               {/* Appointee Information Section */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.appointeeInformation}</h3>
-                
+
                 {/* Relation Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="relationSelection" className="text-sm font-medium text-gray-700">
@@ -515,7 +515,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       if (selectedRelationError) setSelectedRelationError('');
                     }}
                     disabled={loadingRelations}
-                    className={`flex h-10 w-full rounded-md border ${selectedRelationError ? 'border-red-500' : 'border-gray-300'} bg-white px-3 py-2 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`flex h-10 w-full rounded-md border ${selectedRelationError ? 'border-red-500 text-red-500' : 'border-gray-300'} bg-white px-3 py-2 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: 'right 8px center',
@@ -540,7 +540,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                     })}
                   </select>
                   {selectedRelationError && (
-                    <p className="text-red-600 text-sm mt-1">{selectedRelationError}</p>
+                    <p className="text-red-500 text-sm mt-1 font-semibold">{selectedRelationError}</p>
                   )}
                 </div>
 
@@ -653,13 +653,13 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                   }}
                   className="w-full h-11 text-base"
                 >
-                  Cancel
+                  {t.messages.LABELS.CANCEL}
                 </Button>
                 <Button
                   type="submit"
                   className="w-full bg-blue-500 hover:bg-blue-600"
                 >
-                  Book Appointment
+                  {t.ui.bookAppointment}
                 </Button>
               </div>
             </form>

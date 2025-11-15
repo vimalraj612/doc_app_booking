@@ -136,7 +136,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                   disabled={submitting}
                   className="w-full"
                 >
-                  Reset
+                  {'Reset'}
                 </Button>
                 <Button 
                   type="submit" 
@@ -146,10 +146,10 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                   {submitting ? (
                     <>
                       <span className="animate-spin mr-2">⏳</span>
-                      Creating...
+                      {'Creating...'}
                     </>
                   ) : (
-                    'Create Leave'
+                    t.messages.LABELS.ADD_NEW_LEAVE || 'Create Leave'
                   )}
                 </Button>
               </div>

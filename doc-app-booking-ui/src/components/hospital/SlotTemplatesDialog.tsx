@@ -350,13 +350,15 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                       onClick={() => resetTemplateForm()}
                       className="w-full"
                     >
-                      Reset
+                      {'Reset'}
                     </Button>
                     <Button 
                       type="submit"
                       className="w-full bg-purple-500 hover:bg-purple-600"
                     >
-                      {templateForm.id ? 'Update Template' : 'Create Template'}
+                      {templateForm.id 
+                        ? t.messages.LABELS.EDIT_TEMPLATE
+                        : t.messages.LABELS.ADD_NEW_TEMPLATE}
                     </Button>
                   </div>
                 </form>
