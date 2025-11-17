@@ -369,7 +369,7 @@ export function AddDoctorForm({
               onChange={(value) => setPhoneNumber(value)} 
               placeholder={t.messages.LABELS.PLACEHOLDER_PHONE}
               error={errors.phoneNumber}
-              className="h-10 text-sm"
+              className=""
               required
             />
           </div>
@@ -379,7 +379,7 @@ export function AddDoctorForm({
       {/* Professional Information Section */}
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PROFESSIONAL_INFO}</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="specialization" className="text-sm font-medium">{t.messages.LABELS.SPECIALIZATION} {t.messages.LABELS.REQUIRED}</Label>
             <select 
@@ -414,7 +414,7 @@ export function AddDoctorForm({
             />
             {errors.department && <div className="text-red-500 text-xs mt-1">{errors.department}</div>}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
             <Label htmlFor="experienceYears" className="text-sm font-medium">{t.messages.LABELS.EXPERIENCE_YEARS}</Label>
             <Input 
               id="experienceYears" 

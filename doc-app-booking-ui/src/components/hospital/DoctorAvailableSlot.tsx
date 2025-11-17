@@ -332,12 +332,12 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                     )}
 
                     <div className="flex gap-2 items-center justify-center mb-3">
-                        <input
+                        <Input
                             id="slot-date-picker"
                             type="date"
                             value={date}
                             onChange={e => setDate(e.target.value)}
-                            className="border rounded px-2 py-1 text-xs w-32 sm:w-40 md:w-48 lg:w-56"
+                            className="h-10 text-sm w-48"
                             min={new Date().toISOString().slice(0, 10)}
                         />
                     </div>

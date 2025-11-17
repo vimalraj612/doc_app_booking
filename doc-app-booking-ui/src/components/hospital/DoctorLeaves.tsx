@@ -112,6 +112,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                     onChange={e => setDate(e.target.value)}
                     placeholder={t.messages.LABELS.PLACEHOLDER_SELECT_DATE}
                     disabled={submitting}
+                    className="h-10 text-sm"
                   />
                 </div>
                 <div className="space-y-2">
