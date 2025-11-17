@@ -310,7 +310,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     value={mappedProfile.dateOfBirth || ''} 
                     onChange={onChange}
                     disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full min-w-0 max-w-[110px]"
                   />
                 </div>
                 <div className="space-y-1 sm:space-y-2">

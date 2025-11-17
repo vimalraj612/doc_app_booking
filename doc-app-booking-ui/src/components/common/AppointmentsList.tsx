@@ -154,11 +154,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.filters.filterAppointments}</h3>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 w-full min-w-0 rounded-lg bg-gray-50 p-2 border border-gray-200">
           {/* Date Range */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">{t.filters.dateRange}</Label>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full min-w-0">
               <Button
                 variant="outline"
                 size="sm"
@@ -186,7 +186,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
               <Input
                 type="date"
-                className="flex-1"
+                className="flex-1 min-w-0 max-w-[110px]"
                 value={dateRange.start}
                 max={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
@@ -196,7 +196,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
               <Input
                 type="date"
-                className="flex-1"
+                className="flex-1 min-w-0 max-w-[110px]"
                 value={dateRange.end}
                 min={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}

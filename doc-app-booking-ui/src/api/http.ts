@@ -1,7 +1,7 @@
 // src/api/http.ts
 // Centralized HTTP client using fetch. You can swap to axios if preferred.
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.easyslotapp.com';
 
 export async function apiFetch<T>(
   url: string,
