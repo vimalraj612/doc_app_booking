@@ -261,9 +261,9 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   return (
     <>
       <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="space-y-3">
-            <DialogTitle className="text-2xl font-bold text-gray-900">{t.ui.availableSlots}</DialogTitle>
+            <DialogTitle className="text-lg sm:text-2xl font-bold text-gray-900">{t.ui.availableSlots}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">
               {t.ui.selectDateToView}
             </DialogDescription>

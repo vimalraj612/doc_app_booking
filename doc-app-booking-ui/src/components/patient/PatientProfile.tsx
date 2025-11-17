@@ -269,13 +269,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
           {error && <InlineMessage type="error" message={error} />}
           {msg && !error && <InlineMessage type="success" message={msg} />}
 
-          <form onSubmit={e => { e.preventDefault(); onSave(); }} className="space-y-3 sm:space-y-4 md:space-y-6 mt-1 sm:mt-2 md:mt-4">
+          <form onSubmit={e => { e.preventDefault(); onSave(); }} className="space-y-6">
             {/* Personal Information Section */}
-            <div className="space-y-2 sm:space-y-3 md:space-y-4">
-              <h3 className="text-xs sm:text-sm md:text-base font-semibold text-gray-700 border-b pb-1 sm:pb-2">{t.forms.personalInfo}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium">{t.profileFields.firstName} *</Label>
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.forms.personalInfo}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-medium">{t.profileFields.firstName} *</Label>
                   <Input 
                     id="firstName"
                     name="firstName" 
@@ -283,11 +283,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     onChange={onChange} 
                     placeholder={t.profileFields.enterFirstName}
                     disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                    className="h-10 text-sm"
                   />
                 </div>
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="lastName" className="text-xs sm:text-sm font-medium">{t.profileFields.lastName} *</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm font-medium">{t.profileFields.lastName} *</Label>
                   <Input 
                     id="lastName"
                     name="lastName" 
@@ -295,14 +295,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     onChange={onChange} 
                     placeholder={t.profileFields.enterLastName}
                     disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                    className="h-10 text-sm"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth}</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth" className="text-sm font-medium">{t.profileFields.dateOfBirth}</Label>
                   <Input 
                     id="dateOfBirth"
                     name="dateOfBirth" 
@@ -310,17 +310,17 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     value={mappedProfile.dateOfBirth || ''} 
                     onChange={onChange}
                     disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full min-w-0 max-w-[110px]"
+                    className="h-10 text-sm w-full"
                   />
                 </div>
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="gender" className="text-xs sm:text-sm font-medium">{t.profileFields.gender}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="gender" className="text-sm font-medium">{t.profileFields.gender}</Label>
                   <select
                     name="gender"
                     value={mappedProfile.gender || ''}
                     onChange={onChange}
                     disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
+                    className="h-10 text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: 'right 8px center',
@@ -340,11 +340,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             </div>
 
             {/* Contact Information Section */}
-            <div className="space-y-2 sm:space-y-3 md:space-y-4">
-              <h3 className="text-xs sm:text-sm md:text-base font-semibold text-gray-700 border-b pb-1 sm:pb-2">{t.forms.contactInfo}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="email" className="text-xs sm:text-sm font-medium">{t.profileFields.email} *</Label>
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.forms.contactInfo}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">{t.profileFields.email} *</Label>
                   <Input 
                     id="email"
                     name="email"
@@ -353,26 +353,26 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     onChange={onChange} 
                     placeholder={t.profileFields.enterEmail}
                     disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                    className="h-10 text-sm"
                   />
                 </div>
-                <div className="space-y-1 sm:space-y-2">
-                  <Label htmlFor="phoneNumber" className="text-xs sm:text-sm font-medium">{t.profileFields.phoneNumber}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber" className="text-sm font-medium">{t.profileFields.phoneNumber}</Label>
                   <Input 
                     id="phoneNumber"
                     name="phoneNumber" 
                     value={mappedProfile.phoneNumber || ''} 
                     placeholder="+919876543210"
-                    className="bg-gray-50 cursor-not-allowed h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                    className="bg-gray-50 cursor-not-allowed h-10 text-sm"
                     disabled
                     readOnly
                   />
-                  <p className="text-[6px] sm:text-[8px] md:text-[6px] text-gray-500" style={{ fontSize: '50%' }}>{t.profileFields.phoneCannotChange}</p>
+                  <p className="text-xs text-gray-500">{t.profileFields.phoneCannotChange}</p>
                 </div>
               </div>
 
-              <div className="space-y-1 sm:space-y-2">
-                <Label htmlFor="address" className="text-xs sm:text-sm font-medium">{t.profileFields.address}</Label>
+              <div className="space-y-2">
+                <Label htmlFor="address" className="text-sm font-medium">{t.profileFields.address}</Label>
                 <Input 
                   id="address"
                   name="address" 
@@ -380,17 +380,17 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   onChange={onChange} 
                   placeholder={t.profileFields.enterAddress}
                   disabled={loading}
-                  className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                  className="h-10 text-sm"
                 />
               </div>
             </div>
 
             {/* Save Profile Button */}
-            <div className="flex flex-col gap-2 sm:gap-3 items-stretch pt-2 sm:pt-4 md:pt-6 border-t mt-2">
+            <div className="flex flex-col gap-4 items-stretch pt-6 border-t mt-6">
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-xs sm:text-sm md:text-base py-2 sm:py-3"
+                className="w-full h-10 text-sm font-medium bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -405,18 +405,18 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
           </form>
 
           {/* Patient Relations Section - Outside of form */}
-          <div className="space-y-2 sm:space-y-3 md:space-y-4 pt-2 sm:pt-4 md:pt-6 border-t mt-1 sm:mt-2">
+          <div className="space-y-4 pt-6 border-t mt-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">{t.patientRelations.title}</h3>
+              <h3 className="text-sm font-semibold text-gray-800">{t.patientRelations.title}</h3>
             </div>
             
             {relationFormMsg && <InlineMessage type="success" message={relationFormMsg} />}
             
             {relationsLoading ? (
-              <div className="flex items-center justify-center py-4 sm:py-6 md:py-8">
+              <div className="flex items-center justify-center py-6">
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-blue-500"></div>
-                  <span className="text-xs sm:text-sm text-gray-500">{t.patientRelations.loading}</span>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <span className="text-sm text-gray-500">{t.patientRelations.loading}</span>
                 </div>
               </div>
             ) : relationError ? (

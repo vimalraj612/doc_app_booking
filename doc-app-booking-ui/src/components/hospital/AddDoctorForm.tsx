@@ -326,9 +326,10 @@ export function AddDoctorForm({
               id="firstName" 
               value={firstName} 
               onChange={e => setFirstName(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_FIRST_NAME} 
+              placeholder={t.messages.LABELS.PLACEHOLDER_FIRST_NAME}
+              className="h-10 text-sm"
             />
-            {errors.firstName && <div className="text-red-500 text-xs">{errors.firstName}</div>}
+            {errors.firstName && <div className="text-red-500 text-xs mt-1">{errors.firstName}</div>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="lastName" className="text-sm font-medium">{t.messages.LABELS.LAST_NAME} {t.messages.LABELS.REQUIRED}</Label>
@@ -336,7 +337,8 @@ export function AddDoctorForm({
               id="lastName" 
               value={lastName} 
               onChange={e => setLastName(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_LAST_NAME} 
+              placeholder={t.messages.LABELS.PLACEHOLDER_LAST_NAME}
+              className="h-10 text-sm"
             />
             {errors.lastName && <div className="text-red-500 text-xs">{errors.lastName}</div>}
           </div>
@@ -354,19 +356,23 @@ export function AddDoctorForm({
               type="email" 
               value={email} 
               onChange={e => setEmail(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_EMAIL} 
+              placeholder={t.messages.LABELS.PLACEHOLDER_EMAIL}
+              className="h-10 text-sm"
             />
-            {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
+            {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
           </div>
-          <PhoneInput 
-            id="phone" 
-            label={t.messages.LABELS.PHONE_NUMBER}
-            value={phoneNumber} 
-            onChange={(value) => setPhoneNumber(value)} 
-            placeholder={t.messages.LABELS.PLACEHOLDER_PHONE}
-            error={errors.phoneNumber}
-            required
-          />
+          <div className="space-y-2">
+            <PhoneInput 
+              id="phone" 
+              label={`${t.messages.LABELS.PHONE_NUMBER} ${t.messages.LABELS.REQUIRED}`}
+              value={phoneNumber} 
+              onChange={(value) => setPhoneNumber(value)} 
+              placeholder={t.messages.LABELS.PLACEHOLDER_PHONE}
+              error={errors.phoneNumber}
+              className="h-10 text-sm"
+              required
+            />
+          </div>
         </div>
       </div>
 
@@ -395,7 +401,7 @@ export function AddDoctorForm({
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-            {errors.specialization && <div className="text-red-500 text-xs">{errors.specialization}</div>}
+            {errors.specialization && <div className="text-red-500 text-xs mt-1">{errors.specialization}</div>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="department" className="text-sm font-medium">{t.messages.LABELS.DEPARTMENT}</Label>
@@ -403,9 +409,10 @@ export function AddDoctorForm({
               id="department" 
               value={department} 
               onChange={e => setDepartment(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_DEPARTMENT} 
+              placeholder={t.messages.LABELS.PLACEHOLDER_DEPARTMENT}
+              className="h-10 text-sm"
             />
-            {errors.department && <div className="text-red-500 text-xs">{errors.department}</div>}
+            {errors.department && <div className="text-red-500 text-xs mt-1">{errors.department}</div>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="experienceYears" className="text-sm font-medium">{t.messages.LABELS.EXPERIENCE_YEARS}</Label>
@@ -414,9 +421,10 @@ export function AddDoctorForm({
               type="number" 
               value={experienceYears} 
               onChange={e => setExperienceYears(e.target.value === '' ? '' : Number(e.target.value))} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_EXPERIENCE} 
+              placeholder={t.messages.LABELS.PLACEHOLDER_EXPERIENCE}
+              className="h-10 text-sm"
             />
-            {errors.experienceYears && <div className="text-red-500 text-xs">{errors.experienceYears}</div>}
+            {errors.experienceYears && <div className="text-red-500 text-xs mt-1">{errors.experienceYears}</div>}
           </div>
         </div>
       </div>
@@ -428,12 +436,12 @@ export function AddDoctorForm({
           <Label htmlFor="qualifications" className="text-sm font-medium">{t.messages.LABELS.QUALIFICATIONS}</Label>
           <textarea 
             id="qualifications"
-            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
             value={qualifications}
             onChange={e => setQualifications(e.target.value)}
             placeholder={t.messages.LABELS.PLACEHOLDER_QUALIFICATIONS}
           />
-          {errors.qualifications && <div className="text-red-500 text-xs">{errors.qualifications}</div>}
+          {errors.qualifications && <div className="text-red-500 text-xs mt-1">{errors.qualifications}</div>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="profileImage" className="text-sm font-medium">{t.messages.LABELS.PROFILE_IMAGE}</Label>
@@ -441,9 +449,10 @@ export function AddDoctorForm({
             id="profileImage" 
             type="file" 
             accept="image/*"
-            onChange={e => handleImage(e.target.files?.[0])} 
+            onChange={e => handleImage(e.target.files?.[0])}
+            className="h-10 text-sm"
           />
-          {errors.profileBase64 && <div className="text-red-500 text-xs">{errors.profileBase64}</div>}
+          {errors.profileBase64 && <div className="text-red-500 text-xs mt-1">{errors.profileBase64}</div>}
           {profileBase64 && (
             <div className="mt-3 flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
               <img 
@@ -460,19 +469,19 @@ export function AddDoctorForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 pt-6 mt-6 border-t">
+      <div className="flex flex-col gap-4 pt-6 mt-6 border-t">
         <Button 
           type="button" 
           variant="outline" 
           onClick={onSuccess}
-          className="w-full"
+          className="w-full h-10 text-sm font-medium"
         >
           {t.messages.LABELS.CANCEL}
         </Button>
         <Button 
           type="submit" 
           disabled={submitting} 
-          className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+          className="w-full h-10 text-sm font-medium bg-purple-500 hover:bg-purple-600 text-white disabled:opacity-50"
         >
           {submitting ? t.messages.LABELS.SAVE : (initialDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR)}
         </Button>

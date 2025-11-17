@@ -210,46 +210,56 @@ export function HospitalDashboard({
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b sticky top-0 bg-white z-10">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-purple-500 bg-transparent" />
-            <h1 className="text-lg sm:text-xl">{t.portals.hospitalPortal}</h1>
+        <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <span title={t.portals.hospitalPortal}>
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 bg-transparent shrink-0" />
+            </span>
+            <h1 className="text-base sm:text-lg lg:text-xl font-semibold truncate">{t.portals.hospitalPortal}</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="hidden sm:flex items-center gap-2">
               <Avatar className="w-8 h-8">
                 <AvatarImage src={hospital?.photo} alt={hospital?.name} />
                 <AvatarFallback>{(hospital?.name || 'Hospital').split(' ').map(n => n[0]).join('')}</AvatarFallback>
               </Avatar>
-              <span className="text-sm">{user.name}</span>
+              <span className="text-sm truncate max-w-[100px] lg:max-w-none">{user.name}</span>
             </div>
-            <Avatar className="sm:hidden w-8 h-8">
+            <Avatar className="sm:hidden w-8 h-8 shrink-0">
               <AvatarImage src={hospital?.photo} alt={hospital?.name} />
               <AvatarFallback>{(hospital?.name || 'H').split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <LanguageSwitcher />
-            <button onClick={onLogout} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <LogOut className="w-5 h-5 text-gray-600 bg-transparent" />
+            <button 
+              onClick={onLogout} 
+              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 bg-transparent" />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <Card>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <Stethoscope className="w-8 h-8 text-green-500 mb-2 bg-transparent" />
-              <p className="text-2xl">{doctors.length}</p>
-              <p className="text-xs text-gray-500">{t.doctor.doctors}</p>
+            <CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center">
+              <span title={t.doctor.doctors}>
+                <Stethoscope className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 mb-1 sm:mb-2 bg-transparent" />
+              </span>
+              <p className="text-lg sm:text-2xl font-semibold">{doctors.length}</p>
+              <p className="text-xs text-gray-500 text-center">{t.doctor.doctors}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex flex-col items-center justify-center">
-              <CalendarCheck className="w-8 h-8 text-purple-500 mb-2 bg-transparent" />
-              <p className="text-2xl">{hospitalTodayLoading ? '...' : (hospitalTodayCount !== null ? hospitalTodayCount : appointments.length)}</p>
-              <p className="text-xs text-gray-500">{t.appointments.appointments}</p>
+            <CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center">
+              <span title={t.appointments.appointments}>
+                <CalendarCheck className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500 mb-1 sm:mb-2 bg-transparent" />
+              </span>
+              <p className="text-lg sm:text-2xl font-semibold">{hospitalTodayLoading ? '...' : (hospitalTodayCount !== null ? hospitalTodayCount : appointments.length)}</p>
+              <p className="text-xs text-gray-500 text-center">{t.appointments.appointments}</p>
             </CardContent>
           </Card>
         </div>
