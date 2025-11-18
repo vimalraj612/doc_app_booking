@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
+import { DatePicker } from '../ui/date-picker';
 import { Calendar, ChevronLeft, ChevronRight, Search, X, User, Clock, Phone, FileText, Filter } from 'lucide-react';
 import { updateAppointmentStatusApi } from '../../api/appointments';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { InlineMessage } from '../ui/inline-message';
 import { useLocale } from '../../contexts/LocaleContext';
+import { useApiState } from '../../utils/api-handler';
+import { useNotification } from '../../contexts/NotificationContext';
 
 // Helper to safely map gender string to localized value
 function getLocalizedGender(gender: string, t: any): string {
@@ -68,6 +71,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   isDoctor,
 }) => {
   const { t } = useLocale();
+  const notification = useNotification();
+  const { handleApiOperation } = useApiState();
 
   const [completeDialog, setCompleteDialog] = useState<{ open: boolean; appt?: Appointment }>({ open: false });
   const [completeNotes, setCompleteNotes] = useState('');
@@ -90,23 +95,28 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   const confirmComplete = async () => {
     if (!completeDialog.appt) return;
     setCompleting(true);
-    try {
-      await updateAppointmentStatusApi(
-        completeDialog.appt.id,
+    
+    const result = await handleApiOperation(
+      () => updateAppointmentStatusApi(
+        completeDialog.appt!.id,
         'COMPLETED',
         completeNotes,
         followUpDate ? `${followUpDate}T00:00:00` : undefined
-      );
-      setCompleteMsg({ type: 'success', text: 'Appointment marked as completed.' });
-      setCompleteDialog({ open: false });
-      fetchAppointments(dateRange);
-    } catch (e: any) {
-      setCompleteMsg({ type: 'error', text: e?.message || 'Failed to complete appointment.' });
-      setCompleteDialog({ open: false });
-    } finally {
-      setCompleting(false);
-      setTimeout(() => setCompleteMsg(null), 2500);
-    }
+      ),
+      {
+        successMessage: t.appointments.completedSuccessfully,
+        errorMessage: t.appointments.failedToComplete,
+        onSuccess: () => {
+          setCompleteDialog({ open: false });
+          fetchAppointments(dateRange);
+        },
+        onError: () => {
+          setCompleteDialog({ open: false });
+        }
+      }
+    );
+    
+    setCompleting(false);
   };
 
   const shiftRange = (days: number) => {
@@ -187,9 +197,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 {t.dateTime.today}
               </Button>
 
-              <Input
-                type="date"
-                className="min-w-[120px] h-10 text-sm"
+              <DatePicker
+                className="min-w-[100px] sm:min-w-[120px] max-w-[150px]"
                 value={dateRange.start}
                 max={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
@@ -197,9 +206,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
               <span className="text-gray-500 text-sm shrink-0">{t.filters.to}</span>
 
-              <Input
-                type="date"
-                className="min-w-[120px] h-10 text-sm"
+              <DatePicker
+                className="min-w-[100px] sm:min-w-[120px] max-w-[150px]"
                 value={dateRange.end}
                 min={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
@@ -596,13 +604,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 <Label htmlFor="followUpDate" className="text-sm font-medium">
                   {t.appointments.followUpDate} <span className="text-gray-400 font-normal">({t.forms.optional})</span>
                 </Label>
-                <Input
+                <DatePicker
                   id="followUpDate"
-                  type="date"
                   value={followUpDate}
                   onChange={e => setFollowUpDate(e.target.value)}
                   disabled={completing}
-                  className="h-10 text-sm"
                   min={new Date().toISOString().split('T')[0]}
                 />
                 <p className="text-sm text-gray-500">{t.appointments.scheduleFollowUp}</p>

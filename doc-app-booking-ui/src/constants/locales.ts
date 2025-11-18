@@ -183,6 +183,8 @@ export interface Translations {
     scheduleFollowUp: string;
     provideDetails: string;
     diagnosisPlaceholder: string;
+    completedSuccessfully: string;
+    failedToComplete: string;
     cancelConfirmMessage: string;
     yesCancel: string;
     noKeepIt: string;
@@ -538,6 +540,8 @@ export const translations: Record<Locale, Translations> = {
       scheduleFollowUp: 'Schedule a follow-up appointment if needed',
       provideDetails: 'Provide details about the completed appointment',
       diagnosisPlaceholder: 'Add diagnosis, treatment details, or any other relevant notes...',
+      completedSuccessfully: 'Appointment marked as completed successfully',
+      failedToComplete: 'Failed to complete appointment',
       cancelConfirmMessage: 'Are you sure you want to cancel your appointment with',
       yesCancel: 'Yes, Cancel',
       noKeepIt: 'No, Keep It',
@@ -880,6 +884,8 @@ export const translations: Record<Locale, Translations> = {
       scheduleFollowUp: 'தேவைப்பட்டால் பின்தொடர் சந்திப்பு திட்டமிடுங்கள்',
       provideDetails: 'முடிந்த சந்திப்பு பற்றிய விவரங்களை வழங்கவும்',
       diagnosisPlaceholder: 'நோய் கண்டறிதல், சிகிச்சை விவரங்கள் அல்லது வேறு தொடர்புடைய குறிப்புகளை சேர்க்கவும்...',
+      completedSuccessfully: 'சந்திப்பு வெற்றிகரமாக முடிந்ததாக குறிக்கப்பட்டது',
+      failedToComplete: 'சந்திப்பை முடிக்க முடியவில்லை',
       cancelConfirmMessage: 'உங்கள் சந்திப்பை ரத்து செய்ய விரும்புகிறீர்களா',
       yesCancel: 'ஆம், ரத்து செய்',
       noKeepIt: 'இல்லை, வைத்திரு',

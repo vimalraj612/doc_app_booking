@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
+import { DatePicker } from '../ui/date-picker';
 import { PhoneInput } from '../ui/phone-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Skeleton } from '../ui/skeleton';
@@ -303,14 +304,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth" className="text-sm font-medium">{t.profileFields.dateOfBirth}</Label>
-                  <Input 
+                  <DatePicker 
                     id="dateOfBirth"
                     name="dateOfBirth" 
-                    type="date"
                     value={mappedProfile.dateOfBirth || ''} 
                     onChange={onChange}
                     disabled={loading}
-                    className="h-10 text-sm w-full"
+                    className="w-full"
                   />
                 </div>
                 <div className="space-y-2">
@@ -595,14 +595,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   </div>
                   <div className="space-y-1 sm:space-y-2">
                     <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth} *</Label>
-                    <Input 
+                    <DatePicker 
                       id="dateOfBirth" 
                       name="dateOfBirth" 
-                      type="date" 
                       value={relationForm.dateOfBirth} 
                       onChange={handleRelationFormChange} 
                       disabled={relationFormLoading}
-                      className={`h-10 text-sm ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
+                      className={relationFormErrors.dateOfBirth ? 'border-red-500' : ''}
                     />
                     {relationFormErrors.dateOfBirth && (
                       <p className="text-red-600 text-sm">{relationFormErrors.dateOfBirth}</p>

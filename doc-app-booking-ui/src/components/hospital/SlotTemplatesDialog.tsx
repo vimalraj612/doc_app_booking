@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
+import { TimePicker } from '../ui/time-picker';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -310,9 +311,8 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="startTime" className="text-sm font-medium">{t.messages.LABELS.START_TIME} {t.messages.LABELS.REQUIRED}</Label>
-                      <Input 
+                      <TimePicker 
                         id="startTime"
-                        type="time" 
                         value={templateForm.startTime} 
                         onChange={e => setTemplateForm(f => ({ ...f, startTime: e.target.value }))}
                       />
@@ -321,9 +321,8 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                     
                     <div className="space-y-2">
                       <Label htmlFor="endTime" className="text-sm font-medium">{t.messages.LABELS.END_TIME} {t.messages.LABELS.REQUIRED}</Label>
-                      <Input 
+                      <TimePicker 
                         id="endTime"
-                        type="time" 
                         value={templateForm.endTime} 
                         onChange={e => setTemplateForm(f => ({ ...f, endTime: e.target.value }))}
                       />

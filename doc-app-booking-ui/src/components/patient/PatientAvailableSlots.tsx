@@ -8,6 +8,7 @@ import { PatientProfile } from '../../api/user';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
+import { DatePicker } from '../ui/date-picker';
 import { PhoneInput } from '../ui/phone-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { InlineMessage } from '../ui/inline-message';
@@ -286,13 +287,12 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.selectDate}</h3>
                   <div className="flex justify-center">
-                    <Input
+                    <DatePicker
                       id="slot-date-picker"
-                      type="date"
                       value={selectedDate}
                       onChange={e => setSelectedDate(e.target.value)}
                       min={new Date().toISOString().slice(0, 10)}
-                      className="h-10 text-sm max-w-xs"
+                      className="w-full max-w-[250px] sm:max-w-xs"
                     />
                   </div>
                 </div>

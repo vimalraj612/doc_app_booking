@@ -31,6 +31,44 @@ input, button, select, textarea {
   touch-action: manipulation;
 }
 
+/* Mobile date/time picker overflow fix */
+@media (max-width: 640px) {
+  /* Constrain native date/time picker controls on mobile */
+  input[type="date"], 
+  input[type="time"], 
+  input[type="datetime-local"] {
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Prevent webkit date picker from expanding */
+  input[type="date"]::-webkit-datetime-edit,
+  input[type="time"]::-webkit-datetime-edit,
+  input[type="datetime-local"]::-webkit-datetime-edit {
+    max-width: calc(100% - 30px) !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  /* Constrain the picker indicator button */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    width: 20px !important;
+    max-width: 20px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Additional mobile constraints */
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+}
+
 :root {
   --font-size: 16px;
   --background: #ffffff;
