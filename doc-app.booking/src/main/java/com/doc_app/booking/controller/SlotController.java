@@ -97,9 +97,9 @@ public class SlotController {
     }
 
     @PostMapping("/doctor/{doctorId}/slots/generate")
-    public ResponseEntity<List<SlotDTO>> generateSlots(@PathVariable Long doctorId,
+    public ResponseEntity<ApiResponse<List<SlotDTO>>> generateSlots(@PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         var slots = slotService.generateSlotsForDoctor(doctorId, date);
-        return ResponseEntity.ok(slots);
+        return ResponseEntity.ok(ApiResponse.success("Slots generated successfully", slots));
     }
 }

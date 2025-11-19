@@ -36,7 +36,7 @@ public class WhatsAppBookingController {
 
     @Operation(summary = "Handle ALL WhatsApp messages - Unified Webhook")
     @PostMapping("/webhook")
-    public ResponseEntity<String> handleWebhook(@RequestBody String payload) {
+    public ResponseEntity<com.doc_app.booking.dto.ApiResponse<String>> handleWebhook(@RequestBody String payload) {
         try {
             log.info("Received WhatsApp webhook: {}", payload);
 
@@ -48,11 +48,11 @@ public class WhatsAppBookingController {
             // Single unified routing logic
             handleUnifiedWhatsAppFlow(patientPhone, messageText, receivingNumber);
 
-            return ResponseEntity.ok("OK");
+            return ResponseEntity.ok(com.doc_app.booking.dto.ApiResponse.success("OK"));
 
         } catch (Exception e) {
             log.error("Error processing WhatsApp webhook", e);
-            return ResponseEntity.internalServerError().body("Error");
+            return ResponseEntity.internalServerError().body(com.doc_app.booking.dto.ApiResponse.error("Error"));
         }
     }
 

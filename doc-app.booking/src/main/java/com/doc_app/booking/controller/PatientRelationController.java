@@ -23,10 +23,10 @@ public class PatientRelationController {
     }
 
     @PostMapping("/patients/{patientId}/relations")
-    public ResponseEntity<PatientRelationDTO> create(@PathVariable Long patientId,
+    public ResponseEntity<ApiResponse<PatientRelationDTO>> create(@PathVariable Long patientId,
                                                      @Valid @RequestBody CreatePatientRelationRequest request) {
         PatientRelationDTO dto = relationService.create(patientId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Patient relation created successfully", dto));
     }
 
     @GetMapping("/patients/{patientId}/relations")
@@ -40,9 +40,10 @@ public class PatientRelationController {
     }
 
     @PutMapping("/patient-relations/{id}")
-    public ResponseEntity<PatientRelationDTO> update(@PathVariable Long id,
+    public ResponseEntity<ApiResponse<PatientRelationDTO>> update(@PathVariable Long id,
                                                       @Valid @RequestBody UpdatePatientRelationRequest request) {
-        return ResponseEntity.ok(relationService.update(id, request));
+        PatientRelationDTO updated = relationService.update(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Patient relation updated successfully", updated));
     }
 
     @DeleteMapping("/patient-relations/{id}")

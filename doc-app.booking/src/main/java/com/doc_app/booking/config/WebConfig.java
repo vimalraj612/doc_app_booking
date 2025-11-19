@@ -21,7 +21,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-            .allowedOriginPatterns("http://localhost:5173", "https://laurine-oared-gideon.ngrok-free.dev")
+            .allowedOriginPatterns(
+                "http://localhost:5173",
+                "https://easyslotapp.com"
+            )
             .allowedMethods("GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT")
             .allowedHeaders("*")
             .allowCredentials(true);
