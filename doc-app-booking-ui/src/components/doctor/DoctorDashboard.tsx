@@ -85,15 +85,13 @@ export function DoctorDashboard({
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b sticky top-0 bg-white z-10">
-        <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <span title={t.portals.doctorPortal}>
-              <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 shrink-0" />
-            </span>
-            <h1 className="text-base sm:text-lg lg:text-xl font-semibold truncate">{t.portals.doctorPortal}</h1>
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Stethoscope className="w-6 h-6 text-green-500" />
+            <h1 className="text-lg sm:text-xl">{t.portals.doctorPortal}</h1>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span className="text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{user.name}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm">{user.name}</span>
             <LanguageSwitcher />
             <button
               onClick={() => {
@@ -101,34 +99,29 @@ export function DoctorDashboard({
                 onLogout();
                 window.location.href = '/login/doctor';
               }}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="Logout"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              <LogOut className="w-5 h-5 text-gray-600" />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="container mx-auto px-4 py-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 w-full max-w-sm sm:max-w-lg mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4 mb-6 w-full max-w-lg mx-auto">
           <Card>
-            <CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center">
-              <span title={t.dateTime.today}>
-                <CalendarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 mb-1 sm:mb-2" />
-              </span>
-              <p className="text-lg sm:text-2xl font-semibold">{loadingStats ? '...' : statsError ? '--' : todayCount}</p>
-              <p className="text-xs text-gray-500 text-center">{t.dateTime.today}</p>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <CalendarIcon className="w-8 h-8 text-blue-500 mb-2" />
+              <p className="text-2xl">{loadingStats ? '...' : statsError ? '--' : todayCount}</p>
+              <p className="text-xs text-gray-500">{t.dateTime.today}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center">
-              <span title={t.doctor.freeSlots}>
-                <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-green-500 mb-1 sm:mb-2" />
-              </span>
-              <p className="text-lg sm:text-2xl font-semibold">{loadingStats ? '...' : statsError ? '--' : freeSlotsCount}</p>
-              <p className="text-xs text-gray-500 text-center">{t.doctor.freeSlots}</p>
+            <CardContent className="p-4 flex flex-col items-center justify-center">
+              <Clock className="w-8 h-8 text-green-500 mb-2" />
+              <p className="text-2xl">{loadingStats ? '...' : statsError ? '--' : freeSlotsCount}</p>
+              <p className="text-xs text-gray-500">{t.doctor.freeSlots}</p>
             </CardContent>
           </Card>
         </div>

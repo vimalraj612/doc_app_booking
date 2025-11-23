@@ -7,9 +7,6 @@ import { HospitalDashboard } from './components/hospital/HospitalDashboard';
 import { deleteDoctor as apiDeleteDoctor } from './api/doctor';
 import { HospitalLoginPage } from './components/hospital/HospitalLoginPage';
 import { LocaleProvider } from './contexts/LocaleContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { ToastContainer } from './components/ui/toast';
-import { ValidationDemo } from './components/common/ValidationDemo';
 
 export type UserRole = 'patient' | 'doctor' | 'hospital' | 'superadmin' | null;
 
@@ -369,79 +366,43 @@ function App() {
   if (!currentUser) {
     // Simple routing for /login/doctor, /doctor/dashboard, /doctor, /login/hospital
     const path = window.location.pathname;
-    if (path === '/validation-demo') {
-      return (
-        <LocaleProvider>
-          <NotificationProvider>
-            <div className="min-h-screen bg-gray-50 py-8">
-              <ValidationDemo />
-            </div>
-            <ToastContainer />
-          </NotificationProvider>
-        </LocaleProvider>
-      );
-    }
     if (path === '/login/doctor' || path === '/doctor/dashboard' || path === '/doctor') {
-      return (
-        <LocaleProvider>
-          <NotificationProvider>
-            <DoctorLoginPage />
-            <ToastContainer />
-          </NotificationProvider>
-        </LocaleProvider>
-      );
+      return <LocaleProvider><DoctorLoginPage /></LocaleProvider>;
     }
     if (path === '/login/hospital' || path === '/hospital/dashboard' || path === '/hospital') {
-      return (
-        <LocaleProvider>
-          <NotificationProvider>
-            <HospitalLoginPage />
-            <ToastContainer />
-          </NotificationProvider>
-        </LocaleProvider>
-      );
+      return <LocaleProvider><HospitalLoginPage /></LocaleProvider>;
     }
-    return (
-      <LocaleProvider>
-        <NotificationProvider>
-          <LoginPage onLogin={handleLogin} />
-          <ToastContainer />
-        </NotificationProvider>
-      </LocaleProvider>
-    );
+    return <LocaleProvider><LoginPage onLogin={handleLogin} /></LocaleProvider>;
   }
 
   return (
     <LocaleProvider>
-      <NotificationProvider>
-        <div className="min-h-screen bg-gray-50">
-          {currentUser.role === 'patient' && (
-            <PatientDashboard onLogout={handleLogout} />
-          )}
-          {currentUser.role === 'doctor' && (
-            <DoctorDashboard
-              user={currentUser}
-              doctor={doctors.find(d => d.id === currentUser.id) || doctors[0]}
-              appointments={appointments.filter(a => a.doctorId === currentUser.id)}
-              timeSlots={timeSlots.filter(s => s.doctorId === currentUser.id)}
-              onLogout={handleLogout}
-              onAddSlot={handleAddSlot}
-              onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
-              onAddPrescription={handleAddPrescription}
-            />
-          )}
-          {currentUser.role === 'hospital' && (
-            <HospitalDashboard
-              user={currentUser}
-              appointments={appointments.filter(a => a.hospitalId === currentUser.id)}
-              hospitals={hospitals}
-              onLogout={handleLogout}
-              onDeleteDoctor={handleDeleteDoctor}
-            />
-          )}
-        </div>
-        <ToastContainer />
-      </NotificationProvider>
+    <div className="min-h-screen bg-gray-50">
+      {currentUser.role === 'patient' && (
+        <PatientDashboard onLogout={handleLogout} />
+      )}
+      {currentUser.role === 'doctor' && (
+        <DoctorDashboard
+          user={currentUser}
+          doctor={doctors.find(d => d.id === currentUser.id) || doctors[0]}
+          appointments={appointments.filter(a => a.doctorId === currentUser.id)}
+          timeSlots={timeSlots.filter(s => s.doctorId === currentUser.id)}
+          onLogout={handleLogout}
+          onAddSlot={handleAddSlot}
+          onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
+          onAddPrescription={handleAddPrescription}
+        />
+      )}
+      {currentUser.role === 'hospital' && (
+        <HospitalDashboard
+          user={currentUser}
+          appointments={appointments.filter(a => a.hospitalId === currentUser.id)}
+          hospitals={hospitals}
+          onLogout={handleLogout}
+          onDeleteDoctor={handleDeleteDoctor}
+        />
+      )}
+    </div>
     </LocaleProvider>
   );
 }

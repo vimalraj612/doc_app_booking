@@ -8,7 +8,6 @@ import { PatientProfile } from '../../api/user';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { DatePicker } from '../ui/date-picker';
 import { PhoneInput } from '../ui/phone-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { InlineMessage } from '../ui/inline-message';
@@ -262,9 +261,9 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
   return (
     <>
       <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="space-y-3">
-            <DialogTitle className="text-lg sm:text-2xl font-bold text-gray-900">{t.ui.availableSlots}</DialogTitle>
+        <DialogContent className="modal slot_booking">
+          <DialogHeader className="heading_wrap">
+            <DialogTitle className="heading">{t.ui.availableSlots}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">
               {t.ui.selectDateToView}
             </DialogDescription>
@@ -284,17 +283,18 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
             {!loadingSlots && !slotsError && (
               <div className="space-y-4">
                 {/* Date Picker Section */}
-                <div className="space-y-4">
+                <div className="date_picker">
                   <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.selectDate}</h3>
-                  <div className="flex justify-center">
-                    <DatePicker
+                  <div className='custom-datepicker-wrapper'>
+                    <Input
                       id="slot-date-picker"
+                      type="date"
                       value={selectedDate}
                       onChange={e => setSelectedDate(e.target.value)}
                       min={new Date().toISOString().slice(0, 10)}
-                      className="w-full max-w-[250px] sm:max-w-xs"
+                      className="h-10 max-w-xs"
                     />
-                  </div>
+                    </div>
                 </div>
 
                 {successMsg && (
@@ -302,7 +302,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                 )}
 
                 {/* Slots Grid Section */}
-                <div className="space-y-4">
+                <div className="available_slots">
                   <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.availableTimeSlots}</h3>
                   <div className="flex justify-center">
                     <div className="w-full">
@@ -325,7 +325,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                                     <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">{t.ui.doctorOnLeave}</div>
                                   </div>
                                 ) : (
-                                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[1px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
+                                  <div className="slots_wrap grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[1px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}>
                                     {slotsByDate[selectedDate]
                                       .slice()
                                       .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
@@ -393,12 +393,12 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                                             key={String(slot.slotId)}
                                             disabled={!isClickable}
                                             onClick={() => isClickable && handleBookSlot(slot)}
-                                            className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
+                                            className={`slots relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
                                             style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
                                           >
                                             <span className={`font-semibold text-[5.5px] leading-tight`} style={{ color: hex.text }}>{formatTime(slot.start)}</span>
-                                            <span className={`text-[4px] leading-tight`} style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
-                                            <span className={`mt-[0.5px] text-[2.5px] font-medium rounded-full px-[0.5px] py-[0.5px] transition-colors max-w-[22px] overflow-hidden text-ellipsis whitespace-nowrap`} style={{ color: hex.text }}>{statusInfo.label}</span>
+                                            {/* <span className={`text-[4px] leading-tight`} style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span> */}
+                                            {/* <span className={`mt-[0.5px] text-[2.5px] font-medium rounded-full px-[0.5px] py-[0.5px] transition-colors max-w-[22px] overflow-hidden text-ellipsis whitespace-nowrap`} style={{ color: hex.text }}>{statusInfo.label}</span> */}
                                           </button>
                                         );
                                       })}
@@ -421,9 +421,9 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
       {/* Book Appointment Dialog */}
       {confirmOpen && (
         <Dialog open={confirmOpen} onOpenChange={(open) => !open && handleCancelBook()}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="space-y-3">
-              <DialogTitle className="text-2xl font-bold text-gray-900">{t.ui.bookAppointment}</DialogTitle>
+          <DialogContent className="modal book_appointment">
+            <DialogHeader className="heading_wrap">
+              <DialogTitle className="heading">{t.ui.bookAppointment}</DialogTitle>
               <DialogDescription className="text-sm text-gray-600">
                 {pendingSlot && (
                   <>
@@ -500,10 +500,10 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
             >
               {/* Appointee Information Section */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.appointeeInformation}</h3>
+                {/* <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.appointeeInformation}</h3> */}
 
                 {/* Relation Selection */}
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="relationSelection" className="text-sm font-medium text-gray-700">
                     {t.patientRelations.selectRelationship} <span className="text-red-500">*</span>
                   </Label>
@@ -544,8 +544,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="field">
                     <Label htmlFor="appointeeName" className="text-sm font-medium text-gray-700">
                       {t.ui.fullName} <span className="text-red-500">*</span>
                     </Label>
@@ -565,7 +564,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                     )}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="field">
                     <Label htmlFor="appointeeAge" className="text-sm font-medium text-gray-700">
                       {t.ui.age} <span className="text-red-500">*</span>
                     </Label>
@@ -585,10 +584,8 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       <p className="text-xs text-red-500">{appointeeAgeError}</p>
                     )}
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="field">
                     <PhoneInput
                       id="appointeePhone"
                       label={t.ui.phoneNumber}
@@ -606,7 +603,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                     )}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="field">
                     <Label htmlFor="appointeeGender" className="text-sm font-medium text-gray-700">
                       {t.ui.gender} <span className="text-red-500">*</span>
                     </Label>
@@ -636,7 +633,6 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       <p className="text-xs text-red-500">{appointeeGenderError}</p>
                     )}
                   </div>
-                </div>
               </div>
 
               {/* Action Buttons */}
@@ -651,13 +647,13 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                     setAppointeeGenderError('');
                     handleCancelBook();
                   }}
-                  className="w-full h-11 text-base"
+                  className="btn_theme_secondary"
                 >
                   {t.messages.LABELS.CANCEL}
                 </Button>
                 <Button
                   type="submit"
-                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  className="btn_theme"
                 >
                   {t.ui.bookAppointment}
                 </Button>

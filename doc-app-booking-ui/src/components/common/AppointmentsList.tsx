@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { DatePicker } from '../ui/date-picker';
 import { Calendar, ChevronLeft, ChevronRight, Search, X, User, Clock, Phone, FileText, Filter } from 'lucide-react';
 import { updateAppointmentStatusApi } from '../../api/appointments';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { InlineMessage } from '../ui/inline-message';
 import { useLocale } from '../../contexts/LocaleContext';
-import { useApiState } from '../../utils/api-handler';
-import { useNotification } from '../../contexts/NotificationContext';
 
 // Helper to safely map gender string to localized value
 function getLocalizedGender(gender: string, t: any): string {
@@ -71,8 +68,6 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   isDoctor,
 }) => {
   const { t } = useLocale();
-  const notification = useNotification();
-  const { handleApiOperation } = useApiState();
 
   const [completeDialog, setCompleteDialog] = useState<{ open: boolean; appt?: Appointment }>({ open: false });
   const [completeNotes, setCompleteNotes] = useState('');
@@ -95,28 +90,23 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   const confirmComplete = async () => {
     if (!completeDialog.appt) return;
     setCompleting(true);
-    
-    const result = await handleApiOperation(
-      () => updateAppointmentStatusApi(
-        completeDialog.appt!.id,
+    try {
+      await updateAppointmentStatusApi(
+        completeDialog.appt.id,
         'COMPLETED',
         completeNotes,
         followUpDate ? `${followUpDate}T00:00:00` : undefined
-      ),
-      {
-        successMessage: t.appointments.completedSuccessfully,
-        errorMessage: t.appointments.failedToComplete,
-        onSuccess: () => {
-          setCompleteDialog({ open: false });
-          fetchAppointments(dateRange);
-        },
-        onError: () => {
-          setCompleteDialog({ open: false });
-        }
-      }
-    );
-    
-    setCompleting(false);
+      );
+      setCompleteMsg({ type: 'success', text: 'Appointment marked as completed.' });
+      setCompleteDialog({ open: false });
+      fetchAppointments(dateRange);
+    } catch (e: any) {
+      setCompleteMsg({ type: 'error', text: e?.message || 'Failed to complete appointment.' });
+      setCompleteDialog({ open: false });
+    } finally {
+      setCompleting(false);
+      setTimeout(() => setCompleteMsg(null), 2500);
+    }
   };
 
   const shiftRange = (days: number) => {
@@ -151,7 +141,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
   const displayedAppointments = applyAdditionalFilters(filteredAppointments);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Messages */}
       {(cancelMsg || completeMsg) && (
         <InlineMessage
@@ -161,10 +151,12 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       )}
 
       {/* Filters Section */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.filters.filterAppointments}</h3>
+      <div className="appointment_wrap">
+        <div className='heading_wrap'>
+          <h3 className="heading">{t.filters.filterAppointments}</h3>
+        </div>
 
-        <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+  <div className="grid appointment_filters grid-cols-1 lg:grid-cols-2 gap-2 w-full min-w-0 rounded-lg bg-gray-50 p-2 border border-gray-200">
           {/* Date Range */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">{t.filters.dateRange}</Label>
@@ -172,21 +164,18 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="px-2 h-10 shrink-0"
+                className="px-2"
                 onClick={() => shiftRange(-1)}
                 title={t.filters.previousDay}
               >
-                <span>
-                  <ChevronLeft className="w-4 h-4" />
-                  <span className="sr-only">{t.filters.previousDay}</span>
-                </span>
+                <ChevronLeft className="w-4 h-4 bg-transparent" />
               </Button>
 
               {/* Today Button for quick access */}
               <Button
                 variant="outline"
                 size="sm"
-                className="px-2 h-10 text-sm shrink-0"
+                className="px-2 today"
                 onClick={() => {
                   const today = new Date().toISOString().slice(0, 10);
                   setDateRange({ start: today, end: today });
@@ -197,17 +186,19 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 {t.dateTime.today}
               </Button>
 
-              <DatePicker
-                className="min-w-[100px] sm:min-w-[120px] max-w-[150px]"
+              <Input
+                type="date"
+                className="flex-1 min-w-0 max-w-[110px]"
                 value={dateRange.start}
                 max={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
               />
 
-              <span className="text-gray-500 text-sm shrink-0">{t.filters.to}</span>
+              <span className="text-gray-500 text-sm">{t.filters.to}</span>
 
-              <DatePicker
-                className="min-w-[100px] sm:min-w-[120px] max-w-[150px]"
+              <Input
+                type="date"
+                className="flex-1 min-w-0 max-w-[110px]"
                 value={dateRange.end}
                 min={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
@@ -216,14 +207,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="px-2 h-10 shrink-0"
+                className="px-2"
                 onClick={() => shiftRange(1)}
                 title={t.filters.nextDay}
               >
-                <span>
-                  <ChevronRight className="w-4 h-4" />
-                  <span className="sr-only">{t.filters.nextDay}</span>
-                </span>
+                <ChevronRight className="w-4 h-4 bg-transparent" />
               </Button>
             </div>
           </div>
@@ -231,10 +219,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           {/* Status Filter & Actions */}
           <div className="space-y-2">
             <Label htmlFor="statusFilter" className="text-sm font-medium">{t.filters.status}</Label>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 select">
               <select
                 id="statusFilter"
-                className="flex h-10 min-w-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className=""
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -249,13 +237,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 onClick={() => fetchAppointments(dateRange)}
                 disabled={appointmentsLoading}
                 title={t.filters.search}
-                className="flex items-center gap-2 h-10 shrink-0"
+                className="flex items-center gap-2"
               >
-                <span>
-                  <Search className="w-4 h-4" />
-                  <span className="sr-only">{t.filters.search}</span>
-                </span>
-                <span className="hidden sm:inline text-sm">{t.filters.search}</span>
+                <Search className="w-4 h-4 bg-transparent" />
+                <span className="hidden sm:inline">{t.filters.search}</span>
               </Button>
 
               <Button
@@ -273,27 +258,21 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   fetchAppointments({ start, end });
                 }}
                 title={t.filters.clear}
-                className="flex items-center gap-1 h-10 shrink-0"
+                className="flex items-center gap-1"
               >
-                <span>
-                  <X className="w-4 h-4" />
-                  <span className="sr-only">{t.filters.clear}</span>
-                </span>
-                <span className="hidden sm:inline text-sm">{t.filters.clear}</span>
+                <X className="w-4 h-4 bg-transparent" />
+                <span className="hidden sm:inline">{t.filters.clear}</span>
               </Button>
 
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowMoreFilters(!showMoreFilters)}
-                className="text-sm h-10 shrink-0"
+                className="text-xs"
                 title={showMoreFilters ? t.filters.hideMoreFilters : t.filters.showMoreFilters}
               >
-                <span>
-                  <Filter className="w-4 h-4 sm:mr-1" />
-                  <span className="sr-only">{showMoreFilters ? t.filters.hideMoreFilters : t.filters.showMoreFilters}</span>
-                </span>
-                <span className="hidden sm:inline text-sm">{showMoreFilters ? t.filters.hideMoreFilters : t.filters.showMoreFilters}</span>
+                <Filter className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">{showMoreFilters ? t.filters.hideMoreFilters : t.filters.showMoreFilters}</span>
               </Button>
             </div>
           </div>
@@ -301,7 +280,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
         {/* Additional Filters */}
         {showMoreFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 mt-4">
             <div className="space-y-2">
               <Label htmlFor="doctorNameFilter" className="text-sm font-medium">{t.filters.doctorName}</Label>
               <Input
@@ -310,7 +289,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 placeholder={t.filters.searchByDoctorName}
                 value={doctorNameFilter}
                 onChange={(e) => setDoctorNameFilter(e.target.value)}
-                className="h-10 text-sm"
+                className="h-10"
               />
             </div>
 
@@ -322,7 +301,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 placeholder={t.filters.searchByPatientName}
                 value={patientNameFilter}
                 onChange={(e) => setPatientNameFilter(e.target.value)}
-                className="h-10 text-sm"
+                className="h-10"
               />
             </div>
 
@@ -334,7 +313,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 placeholder={t.filters.searchByPhoneNumber}
                 value={patientPhoneFilter}
                 onChange={(e) => setPatientPhoneFilter(e.target.value)}
-                className="h-10 text-sm"
+                className="h-10"
               />
             </div>
           </div>
@@ -342,10 +321,12 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       </div>
 
       {/* Appointments List Section */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
+      <div className="appointment_list">
+        <div className="heading_wrap">
+        <h3 className="heading">
           {t.appointments.appointments} {!appointmentsLoading && displayedAppointments.length > 0 && `(${displayedAppointments.length})`}
         </h3>
+        </div>
 
         {/* Loading / Error / Empty */}
         {appointmentsLoading && (
@@ -366,11 +347,8 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           displayedAppointments.length === 0 && (
             <div className="p-6 text-center text-gray-600">
               <div className="flex flex-col items-center gap-3">
-                <span>
-                  <Calendar className="w-12 h-12 text-gray-400" />
-                  <span className="sr-only">{t.appointments.noAppointments}</span>
-                </span>
-                <p className="font-medium text-sm">{t.appointments.noAppointments}</p>
+                <Calendar className="w-12 h-12 text-gray-400 bg-transparent" />
+                <p className="font-medium">{t.appointments.noAppointments}</p>
                 <p className="text-sm">
                   {filteredAppointments.length === 0 ? (
                     <>
@@ -421,20 +399,17 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                 return (
                   <div
                     key={appt.id}
-                    className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow"
+                    className="appointments"
                   >
-                    <div className="space-y-3">
+                    <div className="card">
                       {/* Header with Status */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           {/* Patient Name - Highlighted at top */}
                           {appt.appointeeName && (
                             <div className="flex items-center gap-2 mb-2">
-                              <span>
-                                <User className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                                <span className="sr-only">{t.patient.appointeeName}</span>
-                              </span>
-                              <span className="font-semibold text-gray-900 truncate text-sm">
+                              <User className="w-4 h-4 text-blue-500 bg-transparent flex-shrink-0" />
+                              <span className="font-semibold text-gray-900 truncate">
                                 {appt.appointeeName}
                                 {appt.appointeeAge && <span className="ml-2 text-gray-600 font-normal">({appt.appointeeAge} {t.appointments.yrs})</span>}
                               </span>
@@ -443,43 +418,34 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                           {/* Patient Phone - Highlighted */}
                           {appt.appointeePhone && (
                             <div className="flex items-center gap-2">
-                              <span>
-                                <Phone className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                                <span className="sr-only">{t.filters.patientPhone}</span>
-                              </span>
-                              <span className="font-semibold text-gray-900 break-all text-sm">{appt.appointeePhone}</span>
+                              <Phone className="w-4 h-4 text-blue-500 bg-transparent flex-shrink-0" />
+                              <span className="font-semibold text-gray-900 break-all">{appt.appointeePhone}</span>
                             </div>
                           )}
                         </div>
-                        <span className={`text-sm font-semibold ${text} break-words`}>
+                        <span className={`status text-sm font-semibold ${text} whitespace-nowrap`}>
                           {getStatusLabel(appt.status)}
                         </span>
                       </div>
 
                       {/* Details */}
-                      <div className="space-y-2 text-sm text-gray-600">
+                      <div className="space-y-2 text-sm text-gray-600" style={{marginTop:"10px"}}>
                         <div className="flex items-start gap-2">
-                          <span>
-                            <Clock className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                            <span className="sr-only">{t.dateTime.time}</span>
-                          </span>
-                          <span className="break-words text-sm">
+                          <Clock className="w-4 h-4 text-gray-400 bg-transparent flex-shrink-0 mt-0.5" />
+                          <span className="break-words">
                             {new Date(appt.appointmentDateTime).toLocaleString()}
                           </span>
                         </div>
 
                         {appt.appointeeGender && (
-                          <div className="text-sm">
+                          <div className="gender">
                             <span className="font-medium">{t.profileFields.gender}:</span> {getLocalizedGender(appt.appointeeGender, t)}
                           </div>
                         )}
 
                         {appt.followUpDate && (
                           <div className="flex items-start gap-2">
-                            <span>
-                              <Calendar className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
-                              <span className="sr-only">{t.appointments.followUpDate}</span>
-                            </span>
+                            <Calendar className="w-4 h-4 text-purple-500 bg-transparent flex-shrink-0 mt-0.5" />
                             <div>
                               <span className="font-medium text-purple-700 text-sm">{t.appointments.followUpDate}:</span>
                               <span className="ml-2 text-sm">{new Date(appt.followUpDate).toLocaleDateString()}</span>
@@ -489,20 +455,14 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
                         {appt.notes !== undefined && appt.notes !== null && appt.notes && (
                           <div className="flex items-start gap-2">
-                            <span>
-                              <FileText className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                              <span className="sr-only">{t.appointments.notes || 'Notes'}</span>
-                            </span>
-                            <span className="break-words text-sm italic">{appt.notes}</span>
+                            <FileText className="w-4 h-4 text-gray-400 bg-transparent flex-shrink-0 mt-0.5" />
+                            <span className="break-words text-xs italic">{appt.notes}</span>
                           </div>
                         )}
 
                         <div className="flex items-start gap-2">
-                          <span>
-                            <User className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                            <span className="sr-only">{t.doctor.doctor}</span>
-                          </span>
-                          <div className="flex-1 min-w-0 text-sm">
+                          <User className="w-4 h-4 text-gray-400 bg-transparent flex-shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
                             <span className="font-medium">{t.doctor.doctor}:</span> {appt.doctorName}
                           </div>
                         </div>
@@ -510,11 +470,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
                       {/* Action buttons */}
                       {appt.status === 'SCHEDULED' && (
-                        <div className="pt-4 mt-4 border-t border-gray-200">
+                        <div className="pt-3 mt-3 border-t border-gray-300">
                           {isDoctor ? (
                             <Button
                               size="sm"
-                              className="w-full h-10 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white"
+                              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                               onClick={() => handleComplete(appt)}
                             >
                               {t.appointments.markAsComplete}
@@ -523,7 +483,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                             <Button
                               variant="destructive"
                               size="sm"
-                              className="w-full h-10 text-sm font-medium"
+                              className="w-full font-medium btn_theme_cancel"
                               onClick={() => setCancelDialog({ open: true, appt })}
                             >
                               {t.appointments.cancelAppointment}
@@ -540,6 +500,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
       </div>
 
       {/* Cancel Confirm Dialog */}
+      <div style={{ width: '80%', maxWidth: '90%' }}>
       <ConfirmDialog
         open={cancelDialog.open}
         title={t.appointments.cancelAppointment}
@@ -555,10 +516,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
         onConfirm={() => cancelDialog.appt && onCancel(cancelDialog.appt)}
         onCancel={() => setCancelDialog({ open: false })}
       />
-
+</div>
       {/* Complete Dialog for Doctor */}
       <Dialog open={completeDialog.open} onOpenChange={(open) => !open && setCompleteDialog({ open: false })}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="modal max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="space-y-3">
             <DialogTitle className="text-2xl font-bold text-gray-900">{t.appointments.completeAppointment}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">
@@ -570,27 +531,27 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           <div className="space-y-6 py-4">
             {/* Appointment Details Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.appointments.appointmentDetails}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.appointmentDetails}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-500">{t.appointments.patientName}</p>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-gray-500 uppercase">{t.appointments.patientName}</p>
                   <p className="text-sm font-semibold text-gray-900">{completeDialog.appt?.appointeeName || t.appointments.notAvailable}</p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-500">{t.appointments.appointmentTime}</p>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-gray-500 uppercase">{t.appointments.appointmentTime}</p>
                   <p className="text-sm font-semibold text-gray-900">
                     {completeDialog.appt && new Date(completeDialog.appt.appointmentDateTime).toLocaleString()}
                   </p>
                 </div>
                 {completeDialog.appt?.appointeeAge && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-500">{t.profileFields.age}</p>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-gray-500 uppercase">{t.profileFields.age}</p>
                     <p className="text-sm font-semibold text-gray-900">{completeDialog.appt.appointeeAge}</p>
                   </div>
                 )}
                 {completeDialog.appt?.appointeeGender && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-500">{t.profileFields.gender}</p>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-gray-500 uppercase">{t.profileFields.gender}</p>
                     <p className="text-sm font-semibold text-gray-900">{completeDialog.appt.appointeeGender}</p>
                   </div>
                 )}
@@ -599,27 +560,29 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
             {/* Follow-up Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.appointments.followUpInformation}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.followUpInformation}</h3>
               <div className="space-y-2">
-                <Label htmlFor="followUpDate" className="text-sm font-medium">
+                <Label htmlFor="followUpDate" className="text-sm font-medium text-gray-700">
                   {t.appointments.followUpDate} <span className="text-gray-400 font-normal">({t.forms.optional})</span>
                 </Label>
-                <DatePicker
+                <Input
                   id="followUpDate"
+                  type="date"
                   value={followUpDate}
                   onChange={e => setFollowUpDate(e.target.value)}
                   disabled={completing}
+                  className="w-full h-10"
                   min={new Date().toISOString().split('T')[0]}
                 />
-                <p className="text-sm text-gray-500">{t.appointments.scheduleFollowUp}</p>
+                <p className="text-xs text-gray-500">{t.appointments.scheduleFollowUp}</p>
               </div>
             </div>
 
             {/* Notes Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.appointments.completionNotes}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.completionNotes}</h3>
               <div className="space-y-2">
-                <Label htmlFor="completeNotes" className="text-sm font-medium">
+                <Label htmlFor="completeNotes" className="text-sm font-medium text-gray-700">
                   {t.appointments.notes} <span className="text-gray-400 font-normal">({t.forms.optional})</span>
                 </Label>
                 <textarea
@@ -632,26 +595,26 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   maxLength={500}
                 />
                 <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-500">{t.appointments.provideDetails}</p>
-                  <p className="text-sm text-gray-400">{completeNotes.length}/500</p>
+                  <p className="text-xs text-gray-500">{t.appointments.provideDetails}</p>
+                  <p className="text-xs text-gray-400">{completeNotes.length}/500</p>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-3 pt-6 mt-6 border-t">
+            <div className="flex flex-col gap-3 pt-6 mt-2 border-t">
               <Button
                 variant="outline"
                 onClick={() => setCompleteDialog({ open: false })}
                 disabled={completing}
-                className="w-full h-10 text-sm"
+                className="w-full h-11 text-base"
               >
                 {t.common.cancel}
               </Button>
               <Button
                 onClick={confirmComplete}
                 disabled={completing}
-                className="w-full h-10 text-sm bg-blue-500 hover:bg-blue-600 text-white font-medium"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
               >
                 {completing ? (
                   <>

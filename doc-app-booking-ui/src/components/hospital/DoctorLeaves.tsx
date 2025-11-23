@@ -3,14 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { DatePicker } from '../ui/date-picker';
 import { Calendar, Trash2 } from 'lucide-react';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { createDoctorLeave, fetchDoctorLeavesForDoctor, deleteDoctorLeave, DoctorLeaveResponse } from '../../api/doctorLeaves';
 import { InlineMessage } from '../ui/inline-message';
 import { useLocale } from '../../contexts/LocaleContext';
-import { useApiState } from '../../utils/api-handler';
-import { useNotification } from '../../contexts/NotificationContext';
 
 interface DoctorLeavesProps {
   doctorId: string | number | null;
@@ -21,13 +18,13 @@ interface DoctorLeavesProps {
 
 const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open, onOpenChange }) => {
   const { t } = useLocale();
-  const notification = useNotification();
-  const { loading, error, success, handleApiOperation } = useApiState();
-  
   const [leaves, setLeaves] = useState<DoctorLeaveResponse[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [date, setDate] = useState('');
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ open: boolean; id?: number }>({ open: false });
 
   useEffect(() => {
@@ -38,54 +35,52 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
   const loadLeaves = async () => {
     if (!doctorId) return;
-    
-    await handleApiOperation(
-      () => fetchDoctorLeavesForDoctor(doctorId),
-      {
-        onSuccess: (data) => setLeaves(data || []),
-        errorMessage: t.messages.LEAVE.LOADING_FAILED
-      }
-    );
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchDoctorLeavesForDoctor(doctorId);
+      setLeaves(data || []);
+    } catch (e: any) {
+      setError(e?.message || t.messages.LEAVE.LOADING_FAILED);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreate = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!doctorId || !date) {
-      notification.error(t.messages.VALIDATION.DATE_REQUIRED);
+      setError(t.messages.VALIDATION.DATE_REQUIRED);
       return;
     }
-
     setSubmitting(true);
-    
-    const result = await handleApiOperation(
-      () => createDoctorLeave({ doctorId, date, reason }),
-      {
-        successMessage: t.messages.LEAVE.CREATED_SUCCESS,
-        errorMessage: t.messages.LEAVE.CREATE_FAILED,
-        onSuccess: () => {
-          setDate('');
-          setReason('');
-          loadLeaves();
-        }
-      }
-    );
-    
-    setSubmitting(false);
+    setError(null);
+    try {
+      await createDoctorLeave({ doctorId, date, reason });
+      setSuccessMsg(t.messages.LEAVE.CREATED_SUCCESS);
+      setDate('');
+      setReason('');
+      await loadLeaves();
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (e: any) {
+      setError(e?.message || t.messages.LEAVE.CREATE_FAILED);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDelete = async (id?: number) => {
     if (!id) return setConfirm({ open: false });
-    
-    await handleApiOperation(
-      () => deleteDoctorLeave(id),
-      {
-        successMessage: t.messages.LEAVE.DELETED_SUCCESS,
-        errorMessage: t.messages.LEAVE.DELETE_FAILED,
-        onSuccess: () => loadLeaves()
-      }
-    );
-    
-    setConfirm({ open: false });
+    try {
+      await deleteDoctorLeave(id);
+      setSuccessMsg(t.messages.LEAVE.DELETED_SUCCESS);
+      await loadLeaves();
+      setTimeout(() => setSuccessMsg(null), 2500);
+    } catch (e: any) {
+      setError(e?.message || t.messages.LEAVE.DELETE_FAILED);
+    } finally {
+      setConfirm({ open: false });
+    }
   };
 
   return (
@@ -99,8 +94,9 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
         </DialogHeader>
 
         <div className="mt-4 space-y-6">
-          {/* Show inline error if needed for form validation */}
+          {/* Messages */}
           {error && <InlineMessage type="error" message={error} />}
+          {successMsg && <InlineMessage type="success" message={successMsg} />}
 
           {/* Add New Leave Section */}
           <div className="space-y-4">
@@ -109,8 +105,9 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="leaveDate" className="text-sm font-medium">{t.messages.LABELS.DATE} {t.messages.LABELS.REQUIRED}</Label>
-                  <DatePicker 
+                  <Input 
                     id="leaveDate"
+                    type="date" 
                     value={date} 
                     onChange={e => setDate(e.target.value)}
                     placeholder={t.messages.LABELS.PLACEHOLDER_SELECT_DATE}

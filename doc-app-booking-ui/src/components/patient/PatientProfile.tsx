@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { DatePicker } from '../ui/date-picker';
 import { PhoneInput } from '../ui/phone-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Skeleton } from '../ui/skeleton';
@@ -18,7 +17,7 @@ import {
 import { useLocale } from '../../contexts/LocaleContext';
 import { getGenderOptions, getRelationshipOptions } from '../../constants/dropdownOptions';
 import { ValidationMessages } from '../../constants/messages';
-
+import {SquarePen, Trash   } from 'lucide-react';
 interface PatientProfileProps {
   profile: PatientProfileType | null;
   loading: boolean;
@@ -258,25 +257,25 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto modal edit_profile">
         <DialogHeader className="flex-shrink-0 pb-2 sm:pb-3 md:pb-4 border-b">
-          <DialogTitle className="text-base sm:text-lg md:text-xl font-semibold">{t.patient.editProfile}</DialogTitle>
-          <DialogDescription className="text-xs sm:text-sm text-gray-600">
+          <DialogTitle className="heading">{t.patient.editProfile}</DialogTitle>
+          {/* <DialogDescription className="text-xs sm:text-sm text-gray-600">
             {t.profileFields.updatePersonalInfo}
-          </DialogDescription>
+          </DialogDescription> */}
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {error && <InlineMessage type="error" message={error} />}
           {msg && !error && <InlineMessage type="success" message={msg} />}
 
-          <form onSubmit={e => { e.preventDefault(); onSave(); }} className="space-y-6">
+          <form onSubmit={e => { e.preventDefault(); onSave(); }} className="space-y-3 sm:space-y-4 md:space-y-6 mt-1 sm:mt-2 md:mt-4">
             {/* Personal Information Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.forms.personalInfo}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-sm font-medium">{t.profileFields.firstName} *</Label>
+            <div className="personal_info">
+              <h3 className="heading">{t.forms.personalInfo}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                <div className="field">
+                  <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium">{t.profileFields.firstName} *</Label>
                   <Input 
                     id="firstName"
                     name="firstName" 
@@ -284,11 +283,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     onChange={onChange} 
                     placeholder={t.profileFields.enterFirstName}
                     disabled={loading}
-                    className="h-10 text-sm"
+                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-sm font-medium">{t.profileFields.lastName} *</Label>
+                <div className="field">
+                  <Label htmlFor="lastName" className="text-xs sm:text-sm font-medium">{t.profileFields.lastName} *</Label>
                   <Input 
                     id="lastName"
                     name="lastName" 
@@ -296,31 +295,30 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     onChange={onChange} 
                     placeholder={t.profileFields.enterLastName}
                     disabled={loading}
-                    className="h-10 text-sm"
+                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth" className="text-sm font-medium">{t.profileFields.dateOfBirth}</Label>
-                  <DatePicker 
+        
+                <div className="field">
+                  <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth}</Label>
+                  <Input 
                     id="dateOfBirth"
                     name="dateOfBirth" 
+                    type="date"
                     value={mappedProfile.dateOfBirth || ''} 
                     onChange={onChange}
                     disabled={loading}
-                    className="w-full"
+                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full min-w-0 max-w-[110px]"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="gender" className="text-sm font-medium">{t.profileFields.gender}</Label>
+                <div className="field">
+                  <Label htmlFor="gender" className="text-xs sm:text-sm font-medium">{t.profileFields.gender}</Label>
                   <select
                     name="gender"
                     value={mappedProfile.gender || ''}
                     onChange={onChange}
                     disabled={loading}
-                    className="h-10 text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
+                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full px-3 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 appearance-none bg-white"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: 'right 8px center',
@@ -340,11 +338,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             </div>
 
             {/* Contact Information Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.forms.contactInfo}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">{t.profileFields.email} *</Label>
+            <div className="contact_info">
+              <h3 className="heading">{t.forms.contactInfo}</h3>
+                <div className="field">
+                  <Label htmlFor="email" className="text-xs sm:text-sm font-medium">{t.profileFields.email} *</Label>
                   <Input 
                     id="email"
                     name="email"
@@ -353,26 +350,25 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     onChange={onChange} 
                     placeholder={t.profileFields.enterEmail}
                     disabled={loading}
-                    className="h-10 text-sm"
+                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber" className="text-sm font-medium">{t.profileFields.phoneNumber}</Label>
+                <div className="field">
+                  <Label htmlFor="phoneNumber" className="text-xs sm:text-sm font-medium">{t.profileFields.phoneNumber}</Label>
                   <Input 
                     id="phoneNumber"
                     name="phoneNumber" 
                     value={mappedProfile.phoneNumber || ''} 
                     placeholder="+919876543210"
-                    className="bg-gray-50 cursor-not-allowed h-10 text-sm"
+                    className="bg-gray-50 cursor-not-allowed h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                     disabled
                     readOnly
                   />
-                  <p className="text-xs text-gray-500">{t.profileFields.phoneCannotChange}</p>
+                  <p className="text-[6px] sm:text-[8px] md:text-[6px] text-gray-500" style={{ fontSize: '50%' }}>{t.profileFields.phoneCannotChange}</p>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-sm font-medium">{t.profileFields.address}</Label>
+              <div className="field">
+                <Label htmlFor="address" className="text-xs sm:text-sm font-medium">{t.profileFields.address}</Label>
                 <Input 
                   id="address"
                   name="address" 
@@ -380,17 +376,17 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   onChange={onChange} 
                   placeholder={t.profileFields.enterAddress}
                   disabled={loading}
-                  className="h-10 text-sm"
+                  className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                 />
               </div>
             </div>
 
             {/* Save Profile Button */}
-            <div className="flex flex-col gap-4 items-stretch pt-6 border-t mt-6">
+            <div className="flex flex-col gap-2 sm:gap-3 items-stretch pt-2 sm:pt-4 md:pt-6 border-t mt-2">
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full h-10 text-sm font-medium bg-blue-500 hover:bg-blue-600 disabled:opacity-50"
+                className="btn_theme"
               >
                 {loading ? (
                   <>
@@ -405,18 +401,18 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
           </form>
 
           {/* Patient Relations Section - Outside of form */}
-          <div className="space-y-4 pt-6 border-t mt-6">
+          <div className="patient_profiles">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-              <h3 className="text-sm font-semibold text-gray-800">{t.patientRelations.title}</h3>
+              <h3 className="heading">{t.patientRelations.title}</h3>
             </div>
             
             {relationFormMsg && <InlineMessage type="success" message={relationFormMsg} />}
             
             {relationsLoading ? (
-              <div className="flex items-center justify-center py-6">
+              <div className="flex items-center justify-center py-4 sm:py-6 md:py-8">
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                  <span className="text-sm text-gray-500">{t.patientRelations.loading}</span>
+                  <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-blue-500"></div>
+                  <span className="text-xs sm:text-sm text-gray-500">{t.patientRelations.loading}</span>
                 </div>
               </div>
             ) : relationError ? (
@@ -432,25 +428,26 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-lg overflow-hidden">
+              <div className="bg-white rounded-lg overflow-hidden" style={{padding:'4px'}}>
                 {/* Mobile Card View */}
-                <div className="block md:hidden space-y-3">
+                <div className="profiles">
                   {relations.map((rel: PatientRelation) => (
-                    <div key={rel.id} className="bg-white rounded-lg p-4 shadow-sm">
+                    <div key={rel.id} className="card">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h4 className="font-medium text-gray-900 text-sm">{rel.fullName}</h4>
                           <p className="text-xs text-gray-500">{rel.relationship}</p>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="actions_wrap">
                           <Button 
                             type="button" 
                             size="sm" 
                             variant="outline" 
                             onClick={() => handleEditRelation(rel)}
-                            className="text-blue-600 border-blue-200 hover:bg-blue-50 text-xs px-2 py-1"
+                            className="action edit"
                           >
-                            {t.common.edit}
+                            {/* {t.common.edit} */}
+                            <SquarePen />
                           </Button>
                           <Button 
                             type="button" 
@@ -458,9 +455,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                             variant="destructive" 
                             onClick={() => handleDeleteRelation(rel.id)} 
                             disabled={relationFormLoading}
-                            className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2 py-1"
+                            className="action delete"
                           >
-                            {t.common.delete}
+                            {/* {t.common.delete} */}
+                            <Trash />
                           </Button>
                         </div>
                       </div>
@@ -542,7 +540,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             <Button 
               type="button" 
               onClick={handleAddRelation}
-              className="w-full bg-gray-900 hover:bg-black text-white font-medium text-xs sm:text-sm md:text-base py-2 sm:py-3 shadow-lg border-2 border-gray-800"
+              className="btn_theme"
               style={{ backgroundColor: '#1f2937', color: 'white' }}
             >
               <span className="mr-2 text-sm sm:text-base md:text-lg font-bold">+</span>
@@ -553,7 +551,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
               variant="outline" 
               onClick={onClose} 
               disabled={loading}
-              className="w-full text-xs sm:text-sm md:text-base py-2 sm:py-3"
+              className="btn_theme_secondary"
             >
               {t.common.cancel}
             </Button>
@@ -562,9 +560,9 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
         {/* Relation Add/Edit Dialog */}
         <Dialog open={showRelationDialog} onOpenChange={setShowRelationDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="pb-1 sm:pb-2 md:pb-3">
-              <DialogTitle className="text-sm sm:text-base md:text-lg font-semibold">
+          <DialogContent className="modal add_relation max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="heading_wrap">
+              <DialogTitle className="heading">
                 {editingRelation ? t.patientRelations.editRelation : t.patientRelations.addRelation}
               </DialogTitle>
               <DialogDescription className="text-[10px] sm:text-xs md:text-sm text-gray-600">
@@ -578,7 +576,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             <div className="space-y-6 py-4">
               <form onSubmit={handleRelationFormSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                  <div className="space-y-1 sm:space-y-2">
+                  <div className="field">
                     <Label htmlFor="fullName" className="text-xs sm:text-sm font-medium">{t.patientRelations.fullName} *</Label>
                     <Input 
                       id="fullName" 
@@ -593,15 +591,16 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       <p className="text-red-600 text-sm">{relationFormErrors.fullName}</p>
                     )}
                   </div>
-                  <div className="space-y-1 sm:space-y-2">
+                  <div className="field">
                     <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth} *</Label>
-                    <DatePicker 
+                    <Input 
                       id="dateOfBirth" 
                       name="dateOfBirth" 
+                      type="date" 
                       value={relationForm.dateOfBirth} 
                       onChange={handleRelationFormChange} 
                       disabled={relationFormLoading}
-                      className={relationFormErrors.dateOfBirth ? 'border-red-500' : ''}
+                      className={`h-8 sm:h-9 md:h-10 text-xs sm:text-sm ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
                     />
                     {relationFormErrors.dateOfBirth && (
                       <p className="text-red-600 text-sm">{relationFormErrors.dateOfBirth}</p>
@@ -609,7 +608,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                   </div>
                 </div>
                 
-                <div>
+                <div className='field'>
                   <PhoneInput
                     id="phoneNumber"
                     label={`${t.patientRelations.phoneNumber} *`}
@@ -623,7 +622,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                  <div className="space-y-1 sm:space-y-2">
+                  <div className="field">
                     <Label htmlFor="gender" className="text-xs sm:text-sm font-medium">{t.patientRelations.gender} *</Label>
                     <select
                       name="gender"
@@ -650,7 +649,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     )}
                   </div>
                   
-                  <div className="space-y-1 sm:space-y-2">
+                  <div className="field">
                     <Label htmlFor="relationship" className="text-xs sm:text-sm font-medium">{t.patientRelations.relationship} *</Label>
                     <select
                       name="relationship"
@@ -684,14 +683,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     variant="outline" 
                     onClick={() => setShowRelationDialog(false)} 
                     disabled={relationFormLoading}
-                    className="w-full text-xs sm:text-sm md:text-base py-2 sm:py-3"
+                    className="btn_theme_secondary"
                   >
                     {t.common.cancel}
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={relationFormLoading} 
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs sm:text-sm md:text-base py-2 sm:py-3"
+                    className="btn_theme"
                   >
                     {relationFormLoading && <span className="animate-spin mr-2">⏳</span>}
                     {editingRelation ? t.common.update : t.common.save}

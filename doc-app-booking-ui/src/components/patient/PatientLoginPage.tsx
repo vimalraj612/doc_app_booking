@@ -20,6 +20,7 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
+import { BiCheckCircle } from "react-icons/bi";
 
 interface PatientLoginPage {
   onLogin: (
@@ -194,7 +195,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo & Title */}
-          <div>
+          <div className="">
             <div className="flex items-center gap-3 mb-3">
               <div
                 className={`p-3 bg-gradient-to-br ${activeConfig.gradient} rounded-xl shadow-lg`}
@@ -259,23 +260,23 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
 
       {/* Right Side - Login Form */}
       <div className="flex-1 flex items-stretch p-6 bg-white">
-        <div className="w-full max-w-md mx-auto flex flex-col">
+        <div className="login_wrap">
           {/* Top Section - Title, Description */}
-          <div className="flex-1 flex flex-col justify-start pt-8">
+          <div className="logo_wrap flex-1 flex flex-col justify-start pt-8">
             {/* Mobile Logo */}
-            <div className="lg:hidden flex items-center gap-3 mb-8">
+            <div className="logo lg:hidden flex items-center gap-3 mb-8">
               <div
                 className={`p-3 bg-gradient-to-br ${activeConfig.gradient} rounded-xl shadow-lg`}
               >
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl text-gray-900">
+              <h1 className="">
                 {t.auth.healthCare}
               </h1>
             </div>
 
             <div className="mb-8">
-              <h2 className="text-3xl mb-2 text-gray-900">
+              <h2 className="heading">
                 {t.portals.patientSignIn}
               </h2>
               <p className="text-gray-600">
@@ -340,7 +341,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                 </button>
                 <button
                   type="button"
-                  className="w-full mt-2 text-blue-600 hover:underline text-sm"
+                  className="link"
                   onClick={() => { setStep('mobile'); setOtp(''); setError(null); setInfo(null); setOtpError(null); }}
                   disabled={loading}
                 >
@@ -350,7 +351,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                   <InlineMessage type="error" message={error} className="mt-4" />
                 )}
                 {info && (
-                  <InlineMessage type="success" message={info} className="mt-4" />
+                  <InlineMessage type="success" message={info} className="mt-4 opt_success_message"/>
                 )}
               </form>
             )}

@@ -1,6 +1,6 @@
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
-import { User as UserIcon, MapPin, Stethoscope } from 'lucide-react';
+import { User as UserIcon, MapPin, Stethoscope, Mail, Phone  } from 'lucide-react';
 import React from 'react';
 import { Button } from '../ui/button';
 import { InlineMessage } from '../ui/inline-message';
@@ -25,37 +25,40 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
       <InlineMessage type="error" message={error} />
     ) : selectedDoctor ? (
       <Card>
-        <CardContent className="p-6 relative flex flex-col">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex flex-col items-start gap-2 w-full">
-              <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
+        <CardContent className="doctor_details">
+          <div className="">
+            <div className="profile_avtar">
+              <Avatar className="avtar">
                 <AvatarImage src={selectedDoctor.profileImage ? `data:${selectedDoctor.imageContentType};base64,${selectedDoctor.profileImage}` : undefined} alt={selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`} />
                 <AvatarFallback className="text-base sm:text-xl">
                   {(selectedDoctor.firstName?.[0] || '') + (selectedDoctor.lastName?.[0] || '')}
                 </AvatarFallback>
               </Avatar>
-              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mt-1">
-                {t.doctor.prefix} {selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}
-              </h2>
+              <p className='status'>Available</p>
+            
             </div>
           </div>
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row gap-6">
-              <div className="flex-1 space-y-4">
+         <span>
+           <div className="doctor_details_info">
               <div className="flex flex-col gap-2 text-sm text-gray-600">
-                {selectedDoctor.specialization && (
-                  <span className="flex items-center gap-2">
-                    <Stethoscope className="w-4 h-4 text-blue-600 bg-transparent" />
+                  <h2 className="name">
+                {t.doctor.prefix} {selectedDoctor.name || `${selectedDoctor.firstName} ${selectedDoctor.lastName}`}
+              </h2>
+               <div className='spec_location'>
+                 {selectedDoctor.specialization && (
+                  <span className="specialization">
+                    <Stethoscope/>
                     <span>{selectedDoctor.specialization}</span>
                   </span>
                 )}
 
                 {selectedDoctor.hospitalName && (
-                  <span className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-blue-600 bg-transparent" />
+                  <span className="location">
+                    <MapPin />
                     <span>{selectedDoctor.hospitalName}</span>
                   </span>
                 )}
+               </div>
 
                 {selectedDoctor.experienceYears != null && selectedDoctor.experienceYears !== '' && (
                   <span className="flex items-center gap-2">
@@ -73,16 +76,16 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
               </div>
               {(selectedDoctor.email || selectedDoctor.phoneNumber) && (
                 <div className="flex items-start gap-2">
-                  <UserIcon className="w-4 h-4 text-gray-500 bg-transparent mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm mb-1">{t.doctor.contact}</p>
-                    {selectedDoctor.email && <p className="text-sm text-gray-600">{t.profileFields.email}: {selectedDoctor.email}</p>}
-                    {selectedDoctor.phoneNumber && <p className="text-sm text-gray-600">{t.profileFields.phone}: {selectedDoctor.phoneNumber}</p>}
+                  {/* <UserIcon className="w-4 h-4 text-gray-500 bg-transparent mt-0.5" /> */}
+                  <div className="contact">
+                    {/* <p className="text-sm mb-1">{t.doctor.contact}</p> */}
+                    {selectedDoctor.email && <p className=""><span><Mail /> {selectedDoctor.email}</span></p>}
+                    {selectedDoctor.phoneNumber && <p className=""><span><Phone /> {selectedDoctor.phoneNumber}</span></p>}
                   </div>
                 </div>
               )}
-              </div>
-            </div>
+            
+            
           </div>
 
           {/* Footer with Book Now button full width */}
@@ -93,12 +96,13 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = ({ selectedDoctor, loading, 
                 size="sm"
                 onClick={onShowSlots}
                 title={t.doctor.bookNow}
-                className="w-full !bg-blue-600 hover:!bg-blue-700 !text-white !border-blue-600 hover:!border-blue-700"
+                className="btn_theme to-blue-600"
               >
                 {t.doctor.bookNow}
               </Button>
             </div>
           </div>
+         </span>
         </CardContent>
       </Card>
     ) : (

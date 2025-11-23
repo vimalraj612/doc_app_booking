@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
-import { DatePicker } from '../ui/date-picker';
 import { Button } from '../ui/button';
 import ConfirmDialog from '../ui/ConfirmDialog';
 import { fetchSlotsByDoctorIdAndDate, reserveAppointment } from '../../api/appointments';
@@ -333,11 +332,12 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                     )}
 
                     <div className="flex gap-2 items-center justify-center mb-3">
-                        <DatePicker
+                        <input
                             id="slot-date-picker"
+                            type="date"
                             value={date}
                             onChange={e => setDate(e.target.value)}
-                            className="w-full max-w-[200px] sm:w-48"
+                            className="border rounded px-2 py-1 text-xs w-32 sm:w-40 md:w-48 lg:w-56"
                             min={new Date().toISOString().slice(0, 10)}
                         />
                     </div>

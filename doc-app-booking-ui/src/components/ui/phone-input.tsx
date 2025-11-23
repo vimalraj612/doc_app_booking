@@ -41,9 +41,9 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   };
 
   return (
-    <div className={className || "space-y-2"}>
+    <div className={`space-y-2 ${className}`}>
       {label && (
-        <Label htmlFor={id} className="text-sm font-medium">
+        <Label htmlFor={id}>
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>

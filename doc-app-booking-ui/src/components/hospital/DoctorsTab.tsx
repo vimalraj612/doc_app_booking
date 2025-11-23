@@ -80,8 +80,8 @@ export default function DoctorsTab({
   }, [deleteError, clearDeleteError]);
   const { t } = useLocale();
   return (
-    <TabsContent value="doctors" className="space-y-6 mt-4">
-      <Dialog 
+    <TabsContent value="doctors" className="space-y-3 mt-4">
+            <Dialog 
         open={isAddDoctorOpen} 
         onOpenChange={(open) => {
           setIsAddDoctorOpen(open);
@@ -92,14 +92,12 @@ export default function DoctorsTab({
         }}
       >
         <DialogTrigger asChild>
-          <Button className="w-full sm:w-auto h-10 gap-2 text-sm">
-            <span title={t.messages.LABELS.ADD_NEW_DOCTOR}>
-              <Plus className="w-4 h-4" />
-            </span>
+          <button className="mb-4 w-full sm:w-auto bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+            <Plus className="w-5 h-5 bg-transparent" />
             {t.messages.LABELS.ADD_NEW_DOCTOR}
-          </Button>
+          </button>
         </DialogTrigger>
-  <DialogContent className="w-full max-w-[95vw] sm:max-w-2xl lg:max-w-3xl sm:rounded-lg max-h-[90vh] overflow-y-auto scrollbar-hide">
+  <DialogContent className="max-w-3xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto scrollbar-hide">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">{editingDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">{editingDoctor ? t.messages.LABELS.UPDATE_DOCTOR_INFO : t.messages.LABELS.FILL_DOCTOR_DETAILS}</DialogDescription>
@@ -163,7 +161,7 @@ export default function DoctorsTab({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 px-3 text-sm"
+                    className="flex items-center justify-center"
                     title={t.messages.LABELS.SLOT_TEMPLATES_ACTION}
                     onPointerDown={() => setLastClickedDoctor(doctor.id)}
                     onClick={(e) => {
@@ -171,66 +169,66 @@ export default function DoctorsTab({
                       onSlotTemplatesClick(doctor.id);
                     }}
                   >
-                    <span className="sm:hidden"><LayoutTemplate className="w-4 h-4" /></span>
+                    <span className="sm:hidden"><LayoutTemplate className="w-5 h-5 bg-transparent" /></span>
                     <span className="hidden sm:inline">{t.messages.LABELS.SLOT_TEMPLATES}</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 px-3 text-sm"
+                    className="flex items-center justify-center"
                     title={t.messages.LABELS.SLOTS}
                     onClick={(e) => {
                       e.stopPropagation();
                       onSlotsClick(doctor.id);
                     }}
                   >
-                    <span className="sm:hidden"><CalendarDays className="w-4 h-4" /></span>
+                    <span className="sm:hidden"><CalendarDays className="w-5 h-5 bg-transparent" /></span>
                     <span className="hidden sm:inline">{t.messages.LABELS.SLOTS}</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-10 px-3 text-sm"
+                    className="flex items-center justify-center"
                     title={t.messages.LABELS.LEAVES}
                     onClick={(e) => {
                       e.stopPropagation();
                       onLeavesClick(doctor.id, doctor.name);
                     }}
                   >
-                    <span className="sm:hidden"><Calendar className="w-4 h-4" /></span>
+                    <span className="sm:hidden"><Calendar className="w-5 h-5 bg-transparent" /></span>
                     <span className="hidden sm:inline">{t.messages.LABELS.LEAVES}</span>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="h-10 px-3 text-sm"
+                    className="flex items-center justify-center" 
                     title={t.messages.LABELS.APPOINTMENTS}
                     onClick={() => onViewAppointments(doctor.name)}
                   >
-                    <span className="sm:hidden"><CalendarCheck className="w-4 h-4" /></span>
+                    <span className="sm:hidden"><CalendarCheck className="w-5 h-5 bg-transparent" /></span>
                     <span className="hidden sm:inline">{t.messages.LABELS.APPOINTMENTS}</span>
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="h-10 px-3 text-sm"
+                    className="flex items-center justify-center" 
                     title={t.messages.LABELS.EDIT}
                     onClick={() => { 
                       setEditingDoctor(doctor); 
                       setIsAddDoctorOpen(true); 
                     }}
                   >
-                    <span className="sm:hidden"><Edit className="w-4 h-4" /></span>
+                    <span className="sm:hidden"><Edit className="w-5 h-5 bg-transparent" /></span>
                     <span className="hidden sm:inline">{t.messages.LABELS.EDIT}</span>
                   </Button>
                   <Button 
                     variant="destructive" 
                     size="sm" 
                     onClick={() => onDeleteClick(doctor.id)} 
-                    className="h-10 px-3 text-sm"
+                    className="flex items-center justify-center" 
                     title={t.messages.LABELS.DELETE}
                   >
-                    <span className="sm:hidden"><Trash2 className="w-4 h-4" /></span>
+                    <span className="sm:hidden"><Trash2 className="w-5 h-5 bg-transparent" /></span>
                     <span className="hidden sm:inline">{t.messages.LABELS.DELETE}</span>
                   </Button>
                 </div>

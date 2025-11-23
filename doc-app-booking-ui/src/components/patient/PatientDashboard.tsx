@@ -230,50 +230,39 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Header Bar */}
-      <header className="border-b sticky top-0 bg-white z-10">
-        <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
+      <header className="border-b sticky header">
+          <div className="patient_portal">
             {/* Patient icon */}
-            <span title={t.portals.patientPortal}>
-              <svg
-                className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                />
-              </svg>
-            </span>
-            <span className="font-semibold text-sm sm:text-base text-blue-600 truncate">{t.portals.patientPortal}</span>
+            <svg
+              className="w-6 h-6 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              />
+            </svg>
+            <span className="font-semibold text-blue-600">{t.portals.patientPortal}</span>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span className="text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{user.name}</span>
-            <LanguageSwitcher />
-            <button 
-              onClick={handleLogout} 
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 bg-transparent" />
+          <div className="right_section">
+            <span className="text-sm">{user.name}</span>
+            <LanguageSwitcher/>
+            <button onClick={handleLogout} className="">
+              <LogOut className="w-5 h-5 text-gray-600 bg-transparent" />
             </button>
-            <button 
-              onClick={handleProfileOpen} 
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title={t.patient.profile}
-            >
-              <UserIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 bg-transparent" />
+            <button onClick={handleProfileOpen} className="">
+              <UserIcon className="w-5 h-5 text-gray-600 bg-transparent" />
             </button>
           </div>
-        </div>
+        
       </header>
 
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="container mx-auto px-4 py-6">
         {profileOpen && (
           <PatientProfile
             profile={profile}
@@ -301,7 +290,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
           }}
         >
           <TabsList className="w-full flex">
-            <TabsTrigger value="details" className="flex-1">
+            <TabsTrigger value="details" className="flex-1 doctor_details_tab">
               {t.doctor.doctorDetails}
             </TabsTrigger>
             <TabsTrigger value="appointments" className="flex-1">
