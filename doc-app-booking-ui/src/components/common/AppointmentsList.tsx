@@ -158,20 +158,10 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
   <div className="grid appointment_filters grid-cols-1 lg:grid-cols-2 gap-2 w-full min-w-0 rounded-lg bg-gray-50 p-2 border border-gray-200">
           {/* Date Range */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">{t.filters.dateRange}</Label>
-            <div className="flex flex-wrap items-center gap-2 w-full min-w-0">
-              <Button
-                variant="outline"
-                size="sm"
-                className="px-2"
-                onClick={() => shiftRange(-1)}
-                title={t.filters.previousDay}
-              >
-                <ChevronLeft className="w-4 h-4 bg-transparent" />
-              </Button>
-
-              {/* Today Button for quick access */}
+          <div className="field">
+          <span style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+              <Label className="text-sm font-medium">{t.filters.dateRange}</Label>
+               {/* Today Button for quick access */}
               <Button
                 variant="outline"
                 size="sm"
@@ -185,10 +175,23 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               >
                 {t.dateTime.today}
               </Button>
+          </span>
+            <div className="flex flex-wrap items-center gap-2 w-full min-w-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2"
+                onClick={() => shiftRange(-1)}
+                title={t.filters.previousDay}
+              >
+                <ChevronLeft className="w-4 h-4 bg-transparent" />
+              </Button>
+
+           
 
               <Input
                 type="date"
-                className="flex-1 min-w-0 max-w-[110px]"
+                className="date flex-1 min-w-0"
                 value={dateRange.start}
                 max={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
@@ -198,7 +201,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
               <Input
                 type="date"
-                className="flex-1 min-w-0 max-w-[110px]"
+                className="date flex-1 min-w-0"
                 value={dateRange.end}
                 min={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
@@ -217,7 +220,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           </div>
 
           {/* Status Filter & Actions */}
-          <div className="space-y-2">
+          <div className="field">
             <Label htmlFor="statusFilter" className="text-sm font-medium">{t.filters.status}</Label>
             <div className="flex items-center gap-2 select">
               <select
@@ -280,8 +283,11 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
         {/* Additional Filters */}
         {showMoreFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 mt-4">
-            <div className="space-y-2">
+          <div className="" style={{marginTop:"10px"}}>
+          <div className='heading_wrap'>
+              <h2 className='heading'>Filters</h2>
+          </div>
+            <div className="field">
               <Label htmlFor="doctorNameFilter" className="text-sm font-medium">{t.filters.doctorName}</Label>
               <Input
                 id="doctorNameFilter"
@@ -293,7 +299,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="field">
               <Label htmlFor="patientNameFilter" className="text-sm font-medium">{t.filters.patientName}</Label>
               <Input
                 id="patientNameFilter"
@@ -305,7 +311,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="field">
               <Label htmlFor="patientPhoneFilter" className="text-sm font-medium">{t.filters.patientPhone}</Label>
               <Input
                 id="patientPhoneFilter"
@@ -429,7 +435,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                       </div>
 
                       {/* Details */}
-                      <div className="space-y-2 text-sm text-gray-600" style={{marginTop:"10px"}}>
+                      <div className="field text-sm text-gray-600" style={{marginTop:"10px"}}>
                         <div className="flex items-start gap-2">
                           <Clock className="w-4 h-4 text-gray-400 bg-transparent flex-shrink-0 mt-0.5" />
                           <span className="break-words">
@@ -561,7 +567,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
             {/* Follow-up Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.followUpInformation}</h3>
-              <div className="space-y-2">
+              <div className="field">
                 <Label htmlFor="followUpDate" className="text-sm font-medium text-gray-700">
                   {t.appointments.followUpDate} <span className="text-gray-400 font-normal">({t.forms.optional})</span>
                 </Label>
@@ -571,7 +577,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
                   value={followUpDate}
                   onChange={e => setFollowUpDate(e.target.value)}
                   disabled={completing}
-                  className="w-full h-10"
+                  className="date w-full h-10"
                   min={new Date().toISOString().split('T')[0]}
                 />
                 <p className="text-xs text-gray-500">{t.appointments.scheduleFollowUp}</p>
@@ -581,7 +587,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
             {/* Notes Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.completionNotes}</h3>
-              <div className="space-y-2">
+              <div className="field">
                 <Label htmlFor="completeNotes" className="text-sm font-medium text-gray-700">
                   {t.appointments.notes} <span className="text-gray-400 font-normal">({t.forms.optional})</span>
                 </Label>

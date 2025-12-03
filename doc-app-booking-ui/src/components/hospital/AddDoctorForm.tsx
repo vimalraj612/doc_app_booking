@@ -317,10 +317,10 @@ export function AddDoctorForm({
         <InlineMessage type="error" message={formError} />
       )}
       {/* Personal Information Section */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PERSONAL_INFO}</h3>
+      <div className="heading_wrap space-y-4">
+        <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PERSONAL_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="field">
             <Label htmlFor="firstName" className="text-sm font-medium">{t.messages.LABELS.FIRST_NAME} {t.messages.LABELS.REQUIRED}</Label>
             <Input 
               id="firstName" 
@@ -330,7 +330,7 @@ export function AddDoctorForm({
             />
             {errors.firstName && <div className="text-red-500 text-xs">{errors.firstName}</div>}
           </div>
-          <div className="space-y-2">
+          <div className="field">
             <Label htmlFor="lastName" className="text-sm font-medium">{t.messages.LABELS.LAST_NAME} {t.messages.LABELS.REQUIRED}</Label>
             <Input 
               id="lastName" 
@@ -345,9 +345,9 @@ export function AddDoctorForm({
 
       {/* Contact Information Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_CONTACT_INFO}</h3>
+        <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_CONTACT_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="field">
             <Label htmlFor="email" className="text-sm font-medium">{t.messages.LABELS.EMAIL} {t.messages.LABELS.REQUIRED}</Label>
             <Input 
               id="email" 
@@ -372,9 +372,9 @@ export function AddDoctorForm({
 
       {/* Professional Information Section */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PROFESSIONAL_INFO}</h3>
+        <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PROFESSIONAL_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="field">
             <Label htmlFor="specialization" className="text-sm font-medium">{t.messages.LABELS.SPECIALIZATION} {t.messages.LABELS.REQUIRED}</Label>
             <select 
               id="specialization"
@@ -397,7 +397,7 @@ export function AddDoctorForm({
             </select>
             {errors.specialization && <div className="text-red-500 text-xs">{errors.specialization}</div>}
           </div>
-          <div className="space-y-2">
+          <div className="field">
             <Label htmlFor="department" className="text-sm font-medium">{t.messages.LABELS.DEPARTMENT}</Label>
             <Input 
               id="department" 
@@ -407,7 +407,7 @@ export function AddDoctorForm({
             />
             {errors.department && <div className="text-red-500 text-xs">{errors.department}</div>}
           </div>
-          <div className="space-y-2">
+          <div className="field">
             <Label htmlFor="experienceYears" className="text-sm font-medium">{t.messages.LABELS.EXPERIENCE_YEARS}</Label>
             <Input 
               id="experienceYears" 
@@ -423,8 +423,8 @@ export function AddDoctorForm({
 
       {/* Additional Information */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_ADDITIONAL_INFO}</h3>
-        <div className="space-y-2">
+        <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_ADDITIONAL_INFO}</h3>
+        <div className="field">
           <Label htmlFor="qualifications" className="text-sm font-medium">{t.messages.LABELS.QUALIFICATIONS}</Label>
           <textarea 
             id="qualifications"
@@ -435,7 +435,7 @@ export function AddDoctorForm({
           />
           {errors.qualifications && <div className="text-red-500 text-xs">{errors.qualifications}</div>}
         </div>
-        <div className="space-y-2">
+        <div className="field">
           <Label htmlFor="profileImage" className="text-sm font-medium">{t.messages.LABELS.PROFILE_IMAGE}</Label>
           <Input 
             id="profileImage" 
@@ -465,14 +465,14 @@ export function AddDoctorForm({
           type="button" 
           variant="outline" 
           onClick={onSuccess}
-          className="w-full"
+          className="w-full btn_theme_secondary"
         >
           {t.messages.LABELS.CANCEL}
         </Button>
         <Button 
           type="submit" 
           disabled={submitting} 
-          className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+          className="w-full bg-purple-500 hover:bg-purple-600 text-white btn_theme"
         >
           {submitting ? t.messages.LABELS.SAVE : (initialDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR)}
         </Button>

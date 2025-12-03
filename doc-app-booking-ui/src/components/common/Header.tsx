@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, onProfileOpen }) => (
           <AvatarImage src={user.profileImage} alt={user.name} />
           <AvatarFallback>{user.name?.[0]}</AvatarFallback>
         </Avatar>
-        <span className="font-medium text-base whitespace-nowrap group-hover:text-blue-700 transition-colors">{user.name}</span>
+        {/* <span className="font-medium text-base whitespace-nowrap group-hover:text-blue-700 transition-colors">{user.name}</span> */}
   <UserCircle className="w-5 h-5 text-blue-600 bg-transparent group-hover:text-blue-800 transition-colors" />
       </button>
     </div>

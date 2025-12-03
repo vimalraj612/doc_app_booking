@@ -292,7 +292,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       value={selectedDate}
                       onChange={e => setSelectedDate(e.target.value)}
                       min={new Date().toISOString().slice(0, 10)}
-                      className="h-10 max-w-xs"
+                      className="date h-10 max-w-xs"
                     />
                     </div>
                 </div>

@@ -318,7 +318,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto modal">
                 <DialogHeader>
                     <DialogTitle>Available Slots</DialogTitle>
                 </DialogHeader>
@@ -337,7 +337,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                             type="date"
                             value={date}
                             onChange={e => setDate(e.target.value)}
-                            className="border rounded px-2 py-1 text-xs w-32 sm:w-40 md:w-48 lg:w-56"
+                            className="date border rounded px-2 py-1 text-xs w-32 sm:w-40 md:w-48 lg:w-56"
                             min={new Date().toISOString().slice(0, 10)}
                         />
                     </div>

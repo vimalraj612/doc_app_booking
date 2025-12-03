@@ -258,7 +258,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto modal edit_profile">
-        <DialogHeader className="flex-shrink-0 pb-2 sm:pb-3 md:pb-4 border-b">
+        <DialogHeader className="heading_wrap flex-shrink-0 pb-2 sm:pb-3 md:pb-4 border-b">
           <DialogTitle className="heading">{t.patient.editProfile}</DialogTitle>
           {/* <DialogDescription className="text-xs sm:text-sm text-gray-600">
             {t.profileFields.updatePersonalInfo}
@@ -308,7 +308,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     value={mappedProfile.dateOfBirth || ''} 
                     onChange={onChange}
                     disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm w-full min-w-0 max-w-[110px]"
+                    className=" date h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+               
                   />
                 </div>
                 <div className="field">
@@ -600,7 +601,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       value={relationForm.dateOfBirth} 
                       onChange={handleRelationFormChange} 
                       disabled={relationFormLoading}
-                      className={`h-8 sm:h-9 md:h-10 text-xs sm:text-sm ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
+                      className={`date h-8 sm:h-9 md:h-10 text-xs sm:text-sm" ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
+                   
                     />
                     {relationFormErrors.dateOfBirth && (
                       <p className="text-red-600 text-sm">{relationFormErrors.dateOfBirth}</p>

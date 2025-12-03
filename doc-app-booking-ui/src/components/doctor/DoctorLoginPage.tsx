@@ -189,7 +189,7 @@ export function DoctorLoginPage() {
             )}
             {step === 'otp' && (
               <form onSubmit={handleVerifyOtp} className="space-y-5">
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="otp">{t.auth.enterOTP}</Label>
                   <Input
                     id="otp"

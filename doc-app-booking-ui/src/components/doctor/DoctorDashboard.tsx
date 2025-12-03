@@ -91,7 +91,7 @@ export function DoctorDashboard({
             <h1 className="text-lg sm:text-xl">{t.portals.doctorPortal}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm">{user.name}</span>
+            {/* <span className="text-sm">{user.name}</span> */}
             <LanguageSwitcher />
             <button
               onClick={() => {

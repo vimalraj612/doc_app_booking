@@ -1,0 +1,119 @@
+//global <<
+
+.hospital_modal {
+	width: 90%;
+	padding: 10px;
+	.heading {
+		color: #3375ca !important;
+		border-bottom: solid 1px #3375ca;
+		margin-bottom: 10px;
+		padding-bottom: 10px;
+	}
+	.btn_theme {
+		width: 100%;
+		background-color: #3375ca !important;
+		color: #fff;
+	}
+	.text-purple-500 {
+		color: #3375ca !important;
+	}
+	.delete {
+		background-color: transparent !important;
+		svg {
+			color: #e4001c;
+		}
+	}
+}
+textarea {
+	border-radius: 10px;
+	border: solid 1px #ccc;
+}
+// svg{
+//     	color: #3375ca;
+// }
+.hospital_actions_wrap {
+	.action {
+		background-color: transparent;
+		border: none;
+		&.edit {
+			svg {
+				color: #3375ca;
+			}
+		}
+		&.delete {
+			background-color: transparent;
+			svg {
+				color: #e4001c;
+			}
+		}
+	}
+	.heading_wrap {
+		border-bottom: solid 1px #ebebeb;
+		padding-bottom: 5px;
+		margin-bottom: 10px;
+		.heading {
+			color: #3375ca !important;
+			padding-bottom: 5px;
+			font-weight: 500;
+			font-size: 14px;
+		}
+	}
+}
+
+//global >>
+
+.hospital_dashoard {
+    .header{
+        .right{
+            svg{
+                color: #3375ca;
+            }
+        }
+    }
+	.dbcards_wrap {
+		display: flex;
+		justify-content: center;
+
+		.bg-card {
+			margin: 0 20px;
+			border: solid 1px #ccc;
+			border-radius: 20px;
+			width: 140px;
+		}
+	}
+	h3 {
+		color: #3375ca !important;
+	}
+	.appointment_filters {
+		button {
+			&.today {
+				background-color: #3375ca;
+			}
+		}
+	}
+	.heading_wrap {
+		border-bottom: solid 1px #ebebeb;
+		padding-bottom: 5px;
+		margin-bottom: 10px;
+		.heading {
+			color: #3375ca !important;
+			padding-bottom: 5px;
+			font-weight: 500;
+			font-size: 14px;
+		}
+	}
+}
+.doctor_cards {
+	border: solid 1px #ccc;
+	border-radius: 20px;
+	button {
+		svg {
+			color: #3375ca;
+		}
+		&:last-child {
+			svg {
+				color: red;
+			}
+		}
+	}
+}

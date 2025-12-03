@@ -1271,14 +1271,15 @@
 	}
 
 	.bg-primary {
-		background-color: var(--primary);
+			background-color:#333;
+	// color:#ff2214!important;
 	}
 
 	.bg-purple-50 {
 		background-color: var(--color-purple-50);
 	}
 
-	.bg-purple-500 {
+	.from-red-500 {
 		background-color: var(--color-purple-500);
 	}
 
@@ -1380,6 +1381,21 @@
 		background-color: #05aa93;
 	}
 
+		.hospital_theme {
+		background-color: #3375ca;
+	}
+	.hospital_theme_color{
+		color: #3375ca;
+	}
+
+.data-\[state\=active\]\:bg-card[data-state=active] {
+	background-color: #05aa93 !important;
+	color: #fff;
+}
+.hospital_dashoard .data-\[state\=active\]\:bg-card[data-state=active] {
+	background-color: #3375ca !important;
+	color: #fff;
+}
 	.to-blue-600 {
 		background-color: #05aa93;
 	}
@@ -3134,17 +3150,43 @@ html {
 }
 
 //global <<
+.date{
+			max-width: 94%!important;
+			min-width: auto!important;
+			height: 31px!important;
+		}
+		
+.heading_wrap {
+		border-bottom: solid 1px #ebebeb;
+		padding-bottom: 5px;
+		.heading {
+			color: #05aa93!important;
+			font-weight: 500;
+		}
+	}
 .error_alert_message{
-	background-color:#EEC8C5;
-	color: #b42e25;
+	background-color:#ffe2e0;
+	color:#ff2214;
 	border-radius: 4px;
 	font-size: 14px;
+	position: absolute;
+	left: 50%;
+	bottom:auto;
+	 transform: translate(-50%, -50%);
+	 width: 60%;
+	 top: 90px;
 }
 .success_alert_message{
-	background-color:#CAE1C3;
-	color: #2ca507;
+	background-color:#d2fdc4;
+	color: #227309;
 	border-radius: 4px;
 	font-size: 14px;
+	position: absolute;
+	left: 50%;
+	bottom:auto;
+	 transform: translate(-50%, -50%);
+	 width: 60%;
+	 top: 90px;
 }
 .warning_alert_message{
 	background-color:#F7F3C4;
@@ -3153,7 +3195,7 @@ html {
 	font-size: 14px;
 }
 .info_alert_message{
-	background-color:#CDE9F6;
+	background-color:#dcf4ff;
 	color: #1f79a3;
 	border-radius: 4px;
 	font-size: 14px;
@@ -3161,23 +3203,20 @@ html {
 .btn_theme {
 	width: 100%;
 	background-color: #05aa93 !important;
-	color: #fff;
+	color: #fff!important;
 }
 .btn_theme_secondary {
 	width: 100%;
 	background-color: #efefef !important;
 	color: #333;
 }
-
-.data-\[state\=active\]\:bg-card[data-state=active] {
-	background-color: #05aa93 !important;
-	color: #fff;
-}
 .modal {
 	width: 90%;
+	padding: 10px;
 }
 .field {
 	margin-bottom: 14px;
+	  max-width: 98% !important;
 	label {
 		margin-bottom: 5px;
 		font-size: 14px;
@@ -3189,7 +3228,11 @@ html {
 		border-radius: 6px !important;
 		height: 38px;
 		width: 100%;
+		  min-width: auto !important;
 	}
+
+		
+	
 	
 }
 .actions_wrap {
@@ -3210,7 +3253,7 @@ html {
 	}
 }
 .btn_theme_cancel {
-	background-color: #fccaca !important;
+	background-color: #ffdfdf  !important;
 	color: #e4001c;
 	font-weight: normal;
 }
@@ -3227,9 +3270,13 @@ html {
 	align-items: center;
 	.patient_portal {
 		display: flex;
-		svg {
-			color: #333;
+		.p-3{
+			background-color: #05aa93;
+	svg {
+			color: #fff;
 		}
+		}
+	
 		span {
 			color: #333;
 		}
@@ -3279,6 +3326,9 @@ html {
 	}
 	.link {
 		text-decoration: underline;
+		    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
 	}
 	
 }
@@ -3316,13 +3366,14 @@ html {
 	}
 	.doctor_details_info {
 		.name {
-			font-size: 22px;
+			font-size: 16px;
 			font-weight: bold;
 		}
 		.spec_location {
 			display: flex;
+			flex-direction: column;
 			.specialization {
-				background-color: #efefef;
+				background-color: #f7f7f7;
 				border-radius: 30px;
 				display: flex;
 				padding: 4px 10px;
@@ -3340,6 +3391,10 @@ html {
 			.location {
 				display: flex;
 				padding: 4px 10px;
+				background-color: #f7f7f7;
+				border-radius: 30px;
+				margin-top: 5px;
+				align-items: center;
 				svg {
 					width: 18px;
 					color: #05aa93;
@@ -3412,13 +3467,7 @@ html {
 }
 
 .slot_booking {
-	.heading_wrap {
-		border-bottom: solid 1px #ebebeb;
-		padding-bottom: 5px;
-		.heading {
-			color: #05aa93;
-		}
-	}
+	
 	.date_picker {
 		display: flex;
 		h3 {
@@ -3447,41 +3496,32 @@ html {
 			margin: 8px;
 			border-radius: 4px;
 			padding: 6px 2px;
+			width: 60px;
+			max-width: 60px;
 			span {
-				font-size: 12px;
+				font-size: 11px;
 			}
 		}
 	}
 }
 
-.book_appointment {
-	.heading_wrap {
-		border-bottom: solid 1px #ebebeb;
-		padding-bottom: 5px;
-		.heading {
-			color: #05aa93;
-		}
-	}
-}
 
 .appointment_wrap {
-	.heading_wrap {
-		border-bottom: solid 1px #ebebeb;
-		padding-bottom: 5px;
-		margin-bottom: 10px;
-		.heading {
-			color: #05aa93;
-		}
-	}
+	
 	.appointment_filters {
 	button{
 		padding: 0;
 		&.today{
 			padding: 0 4px;
+			background-color: #05aa93;
+			color: #fff;
+			border-radius: 4px;
+			margin-bottom: 10px;
 		}
 	}
 	input{
 		padding: 0;
+		font-size: 14px;
 	}
 	.select{
 		select{
@@ -3497,13 +3537,7 @@ html {
 }
 }
 .appointment_list {
-	.heading_wrap {
-		border-bottom: solid 1px #ebebeb;
-		padding-bottom: 5px;
-		.heading {
-			color: #05aa93;
-		}
-	}
+	
 
 	.appointments {
 		.card {
@@ -3527,16 +3561,6 @@ html {
 			.gender {
 				margin-left: 25px;
 			}
-		}
-	}
-}
-
-.add_relation{
-	.heading_wrap {
-		border-bottom: solid 1px #ebebeb;
-		padding-bottom: 5px;
-		.heading {
-			color: #05aa93;
 		}
 	}
 }

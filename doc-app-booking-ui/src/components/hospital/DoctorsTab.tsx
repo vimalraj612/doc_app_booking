@@ -92,14 +92,14 @@ export default function DoctorsTab({
         }}
       >
         <DialogTrigger asChild>
-          <button className="mb-4 w-full sm:w-auto bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+          <button className="mb-4 w-full sm:w-auto hospital_theme hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
             <Plus className="w-5 h-5 bg-transparent" />
             {t.messages.LABELS.ADD_NEW_DOCTOR}
           </button>
         </DialogTrigger>
-  <DialogContent className="max-w-3xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto scrollbar-hide">
+  <DialogContent className="max-w-3xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto scrollbar-hide hospital_modal">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">{editingDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR}</DialogTitle>
+            <DialogTitle  className="heading text-xl font-semibold">{editingDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">{editingDoctor ? t.messages.LABELS.UPDATE_DOCTOR_INFO : t.messages.LABELS.FILL_DOCTOR_DETAILS}</DialogDescription>
           </DialogHeader>
           <div className="mt-4">
@@ -129,7 +129,7 @@ export default function DoctorsTab({
         </Card>
       ) : (
         doctors.map(doctor => (
-          <Card key={doctor.id}>
+          <Card key={doctor.id} className='doctor_cards'>
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -222,13 +222,13 @@ export default function DoctorsTab({
                     <span className="hidden sm:inline">{t.messages.LABELS.EDIT}</span>
                   </Button>
                   <Button 
-                    variant="destructive" 
+                    variant="outline" 
                     size="sm" 
                     onClick={() => onDeleteClick(doctor.id)} 
-                    className="flex items-center justify-center" 
+                    className="delete" 
                     title={t.messages.LABELS.DELETE}
                   >
-                    <span className="sm:hidden"><Trash2 className="w-5 h-5 bg-transparent" /></span>
+                    <Trash2 className="w-5 h-5 bg-transparent" />
                     <span className="hidden sm:inline">{t.messages.LABELS.DELETE}</span>
                   </Button>
                 </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { sendPatientOtp, verifyPatientOtp } from '../../api';
 import { UserRole } from "../../App";
 import { PhoneInput } from "../ui/phone-input";
@@ -81,7 +81,8 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     setMobile(value);
     setMobileError(null);
   };
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   // Only allow patient role for now
   const [activeRole] = useState<UserRole>("patient");
   const [step, setStep] = useState<'mobile' | 'otp'>('mobile');
@@ -90,6 +91,47 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
   const [info, setInfo] = useState<string | null>(null);
   const [mobileError, setMobileError] = useState<string | null>(null);
   const [otpError, setOtpError] = useState<string | null>(null);
+
+  // Handle OTP input change
+  const handleOtpChange = (index: number, value: string) => {
+    // Only allow digits
+    if (value && !/^\d+$/.test(value)) return;
+    
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+    setOtpError(null);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle OTP paste
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text');
+    const pastedDigits = pastedData.replace(/\D/g, '').slice(0, 6);
+    
+    if (pastedDigits.length === 6) {
+      const newOtp = pastedDigits.split('');
+      setOtp(newOtp);
+      setOtpError(null);
+      // Focus the last input
+      otpInputRefs.current[5]?.focus();
+    }
+  };
+
+  // Handle OTP key down (for backspace navigation)
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Get full OTP string
+  const getFullOtp = () => otp.join('');
 
   // Step 1: Send OTP (Patient)
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -115,13 +157,19 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
       if (res.success) {
         setStep('otp');
         setInfo(t.messages.AUTH.OTP_SENT);
+         setTimeout(() => {
+        setInfo(null);
+      }, 2700);
       } else {
         setError(t.messages.AUTH.OTP_SEND_FAILED);
+          setTimeout(() => setError(null), 3000);
       }
     } catch (err) {
       setError(t.messages.AUTH.OTP_SEND_FAILED);
+        setTimeout(() => setError(null), 3000);
     } finally {
       setLoading(false);
+       
     }
   };
 
@@ -133,16 +181,22 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
     setInfo(null);
     setOtpError(null);
     
+    const fullOtp = getFullOtp();
+    
     // Validate OTP
-    if (!otp || otp.trim() === '') {
+    if (!fullOtp || fullOtp.trim() === '') {
       setOtpError(t.messages.VALIDATION.PHONE_REQUIRED);
       setLoading(false);
       return;
     }
     
-    if (otp.length < 4) {
+    if (fullOtp.length < 6) {
       setOtpError(t.messages.AUTH.OTP_INVALID);
+      
       setLoading(false);
+          setTimeout(() => {
+        setOtpError(null);
+      }, 3000);
       return;
     }
     
@@ -151,7 +205,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
       const validation = validateAndFormatPhone(mobile);
       const phone = validation.formattedPhone;
       
-      const res = await verifyPatientOtp(phone, otp);
+      const res = await verifyPatientOtp(phone, fullOtp);
       if (res && res.data) {
         const { token, role, userId, phoneNumber, message, name } = res.data;
         if (token) localStorage.setItem('accessToken', token);
@@ -165,6 +219,9 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
       onLogin(phone, '', activeRole); // password is empty, not used
     } catch (err) {
       setError(t.messages.AUTH.OTP_INVALID);
+        setTimeout(() => {
+        setError(null);
+      }, 3000);
     } finally {
       setLoading(false);
     }
@@ -286,7 +343,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
           </div>
 
           {/* Bottom Section - OTP Login Form */}
-          <div className="pb-8">
+          <div className="">
             {step === 'mobile' && (
               <form onSubmit={handleSendOtp} className="space-y-5">
                 <PhoneInput
@@ -316,25 +373,35 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
             )}
             {step === 'otp' && (
               <form onSubmit={handleVerifyOtp} className="space-y-5">
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="otp">{t.auth.enterOTP}</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder={t.auth.enterOTP}
-                    value={otp}
-                    onChange={(e) => { setOtp(e.target.value); setOtpError(null); }}
-                    className="h-12"
-                    disabled={loading}
-                  />
+                  <div className="flex gap-2 justify-center" style={{display:"flex", justifyContent:"space-between"}}>
+                    {otp.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => {
+                        otpInputRefs.current[index] = el;
+                      }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        onPaste={index === 0 ? handleOtpPaste : undefined}
+                        className="w-12 h-12 text-center border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors text-lg font-semibold"
+                        disabled={loading}
+                      />
+                    ))}
+                  </div>
                   {otpError && (
-                    <p className="text-sm text-red-600 mt-1">{otpError}</p>
+                    <p className="text-sm text-red-600 mt-1 text-center">{otpError}</p>
                   )}
                 </div>
                 <button
                   type="submit"
                   className={`w-full h-12 bg-gradient-to-r ${activeConfig.gradient} text-white rounded-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 group`}
-                  disabled={loading}
+                  disabled={loading} style={{justifyContent:"center"}}
                 >
                   {loading ? t.auth.verifying : t.auth.verifyOTP}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform bg-transparent" />
@@ -342,7 +409,7 @@ export function LoginPage({ onLogin }: PatientLoginPage) {
                 <button
                   type="button"
                   className="link"
-                  onClick={() => { setStep('mobile'); setOtp(''); setError(null); setInfo(null); setOtpError(null); }}
+                  onClick={() => { setStep('mobile'); setOtp(["", "", "", "", "", ""]); setError(null); setInfo(null); setOtpError(null); }}
                   disabled={loading}
                 >
                   {t.common.changeMobileNumber}

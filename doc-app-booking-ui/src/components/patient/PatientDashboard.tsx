@@ -10,7 +10,14 @@ import { getPatientUserProfile, updatePatientProfile, PatientProfile as PatientP
 import { useLocale } from '../../contexts/LocaleContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { getAppointmentStatusOptions, getAppointmentStatusLabel } from '../../constants/dropdownOptions';
-
+import {
+  User,
+  Stethoscope,
+  Building2,
+  Shield,
+  ArrowRight,
+  Check,
+} from "lucide-react";
 export interface PatientDashboardProps {
   onLogout: () => void;
 }
@@ -233,7 +240,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
       <header className="border-b sticky header">
           <div className="patient_portal">
             {/* Patient icon */}
-            <svg
+            {/* <svg
               className="w-6 h-6 text-blue-600"
               fill="none"
               stroke="currentColor"
@@ -247,10 +254,20 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
                 d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
               />
             </svg>
-            <span className="font-semibold text-blue-600">{t.portals.patientPortal}</span>
+            <span className="font-semibold text-blue-600">{t.portals.patientPortal}</span> */}
+              <div className="flex items-center gap-3 mb-3">
+              <div
+                className={`p-3 bg-gradient-to-br  rounded-xl shadow-lg`}
+              >
+                <Stethoscope className="" />
+              </div>
+              <h2 className="">
+                {t.auth.healthCare}
+              </h2>
+            </div>
           </div>
           <div className="right_section">
-            <span className="text-sm">{user.name}</span>
+            {/* <span className="text-sm">{user.name}</span> */}
             <LanguageSwitcher/>
             <button onClick={handleLogout} className="">
               <LogOut className="w-5 h-5 text-gray-600 bg-transparent" />

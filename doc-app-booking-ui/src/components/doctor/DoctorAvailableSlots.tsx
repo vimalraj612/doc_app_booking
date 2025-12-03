@@ -93,6 +93,8 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
               <InlineMessage type="success" message={successMsg} className="mb-3" />
             )}
             {/* Slots Grid */}
+             <div className="available_slots">
+             <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.ui.availableTimeSlots}</h3>
             <div className="flex justify-center">
               <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md flex justify-center">
                 <AnimatePresence mode="wait">
@@ -110,7 +112,7 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
                       </div>
                     ) : (
                       <div
-                        className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar"
+                        className="slots_wrap grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar"
                         style={{ maxHeight: '62vh', minHeight: '80px', justifyContent: 'center', alignItems: 'center', padding: '3px' }}
                       >
                         {slotsByDate[todayStr]
@@ -181,7 +183,7 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
                                 key={String(slot.slotId)}
                                 disabled={!isClickable}
                                 onClick={() => isClickable && handleBookSlot(slot)}
-                                className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
+                                className={`slots relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
                                 style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
                               >
                                 <span className={`font-semibold text-[5.5px] leading-tight`} style={{ color: hex.text }}>{formatTime(slot.start)}</span>
@@ -195,6 +197,7 @@ const DoctorAvailableSlot: React.FC<DoctorAvailableSlotProps> = ({
                   </motion.div>
                 </AnimatePresence>
               </div>
+            </div>
             </div>
           </>
         )}

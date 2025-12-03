@@ -41,7 +41,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`field ${className}`}>
       {label && (
         <Label htmlFor={id}>
           {label}

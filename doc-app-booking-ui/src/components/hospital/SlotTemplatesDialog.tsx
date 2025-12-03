@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import { InlineMessage } from '../ui/inline-message';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { LayoutTemplate, Edit, Trash2 } from 'lucide-react';
+import { CalendarDays , Edit, Trash2 } from 'lucide-react';
 import { fetchSlotTemplatesByDoctorId, createOrUpdateSlotTemplate, deleteSlotTemplate, SlotTemplateDTO } from '../../api/doctor';
 import { useLocale } from '../../contexts/LocaleContext';
 
@@ -223,9 +223,9 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t.messages.LABELS.SLOT_TEMPLATES}</DialogTitle>
+        <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto hospital_modal">
+          <DialogHeader className="heading_wrap">
+            <DialogTitle className="heading">{t.messages.LABELS.SLOT_TEMPLATES}</DialogTitle>
             <DialogDescription>{t.messages.LABELS.MANAGE_SLOT_TEMPLATES}</DialogDescription>
           </DialogHeader>
 
@@ -269,13 +269,13 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
               
               {/* Add / Edit Template Section */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
+                <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">
                   {templateForm.id ? t.messages.LABELS.EDIT_TEMPLATE : t.messages.LABELS.ADD_NEW_TEMPLATE}
                 </h3>
                 
                 <form onSubmit={(e) => { e.preventDefault(); onSaveTemplate(); }} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="field">
                       <Label htmlFor="dayOfWeek" className="text-sm font-medium">{t.messages.LABELS.DAY_OF_WEEK} {t.messages.LABELS.REQUIRED}</Label>
                       <select 
                         id="dayOfWeek"
@@ -293,7 +293,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                       </select>
                     </div>
                     
-                    <div className="space-y-2">
+                    <div className="field">
                       <Label htmlFor="slotDuration" className="text-sm font-medium">{t.messages.LABELS.DURATION_MINUTES} {t.messages.LABELS.REQUIRED}</Label>
                       <Input 
                         id="slotDuration"
@@ -308,22 +308,24 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="field">
                       <Label htmlFor="startTime" className="text-sm font-medium">{t.messages.LABELS.START_TIME} {t.messages.LABELS.REQUIRED}</Label>
                       <Input 
                         id="startTime"
                         type="time" 
+                        className='date'
                         value={templateForm.startTime} 
                         onChange={e => setTemplateForm(f => ({ ...f, startTime: e.target.value }))}
                       />
                       {templateErrors.startTime && <div className="text-red-500 text-xs">{templateErrors.startTime}</div>}
                     </div>
                     
-                    <div className="space-y-2">
+                    <div className="field">
                       <Label htmlFor="endTime" className="text-sm font-medium">{t.messages.LABELS.END_TIME} {t.messages.LABELS.REQUIRED}</Label>
                       <Input 
                         id="endTime"
                         type="time" 
+                        className='date'
                         value={templateForm.endTime} 
                         onChange={e => setTemplateForm(f => ({ ...f, endTime: e.target.value }))}
                       />
@@ -366,12 +368,12 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
 
               {/* Existing Templates Section */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Existing Templates</h3>
+                <h3 className=" heading text-sm font-semibold text-gray-700 border-b pb-2">Existing Templates</h3>
                 
                 {slotTemplates.length === 0 ? (
                   <div className="p-6 text-center text-gray-600">
                     <div className="flex flex-col items-center gap-3">
-                      <LayoutTemplate className="w-12 h-12 text-purple-400 bg-transparent" />
+                      <CalendarDays className="w-12 h-12 text-purple-400 bg-transparent" />
                       <p className="font-medium">No slot templates yet</p>
                       <p className="text-sm">Create a recurring availability template to let patients book predictable slots.</p>
                     </div>
@@ -414,7 +416,6 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                                     onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
                                   >
                                     <Edit className="w-4 h-4 bg-transparent" />
-                                    <span>{t.messages.LABELS.EDIT}</span>
                                   </Button>
                                   <Button
                                     variant="destructive"
@@ -425,7 +426,6 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                                     onClick={() => handleDeleteTemplate(tpl.id)}
                                   >
                                     <Trash2 className="w-4 h-4 bg-transparent" />
-                                    <span>{t.messages.LABELS.DELETE}</span>
                                   </Button>
                                 </div>
                               </td>
@@ -441,9 +441,33 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                         <div key={`mobile-${tpl.id}`} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                <LayoutTemplate className="w-4 h-4 text-purple-500 bg-transparent flex-shrink-0" />
+                              <div className="flex items-center gap-2 mb-2" style={{display:"flex", justifyContent:"space-between"}}>
+                              <span style={{display:"flex", alignItems:"center"}}>
+                                  <CalendarDays style={{marginRight:"5px"}} className="w-4 h-4 text-purple-500 bg-transparent flex-shrink-0" />
                                 <span className="font-semibold text-gray-900">{tpl.dayOfWeek}</span>
+                              </span>
+                                   <div className="hospital_actions_wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="action edit"
+                                title={t.messages.LABELS.EDIT_TEMPLATE_ACTION}
+                                aria-label={`Edit template ${tpl.id}`}
+                                onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
+                              >
+                                <Edit className="w-4 h-4 bg-transparent" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="action delete"
+                                title={t.messages.LABELS.DELETE_TEMPLATE}
+                                aria-label={`Delete template ${tpl.id}`}
+                                onClick={() => handleDeleteTemplate(tpl.id)}
+                              >
+                                <Trash2 className="w-4 h-4 bg-transparent" />
+                              </Button>
+                            </div>
                               </div>
                               <div className="space-y-1 text-sm text-gray-600">
                                 <div className="flex items-center gap-2">
@@ -458,30 +482,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                                 </div>
                               </div>
                             </div>
-                            <div className="flex flex-col gap-2 w-24 flex-shrink-0">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-full flex items-center justify-center gap-1"
-                                title={t.messages.LABELS.EDIT_TEMPLATE_ACTION}
-                                aria-label={`Edit template ${tpl.id}`}
-                                onClick={() => setTemplateForm({ id: tpl.id, dayOfWeek: tpl.dayOfWeek, startTime: tpl.startTime, endTime: tpl.endTime, slotDurationMinutes: tpl.slotDurationMinutes, active: true })}
-                              >
-                                <Edit className="w-4 h-4 bg-transparent" />
-                                <span className="text-xs">{t.messages.LABELS.EDIT}</span>
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                className="w-full flex items-center justify-center gap-1"
-                                title={t.messages.LABELS.DELETE_TEMPLATE}
-                                aria-label={`Delete template ${tpl.id}`}
-                                onClick={() => handleDeleteTemplate(tpl.id)}
-                              >
-                                <Trash2 className="w-4 h-4 bg-transparent" />
-                                <span className="text-xs">{t.messages.LABELS.DELETE}</span>
-                              </Button>
-                            </div>
+                         
                           </div>
                         </div>
                       ))}

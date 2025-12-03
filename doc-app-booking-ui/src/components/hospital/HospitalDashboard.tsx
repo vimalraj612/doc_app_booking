@@ -207,15 +207,15 @@ export function HospitalDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b sticky top-0 bg-white z-10">
+    <div className="min-h-screen bg-white hospital_dashoard">
+      {/* Header */} 
+      <header className="border-b sticky top-0 bg-white z-10 header">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-purple-500 bg-transparent" />
+            <Building2 className="w-6 h-6 hospital_theme_color bg-transparent" />
             <h1 className="text-lg sm:text-xl">{t.portals.hospitalPortal}</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 right">
             <div className="hidden sm:flex items-center gap-2">
               <Avatar className="w-8 h-8">
                 <AvatarImage src={hospital?.photo} alt={hospital?.name} />
@@ -237,7 +237,7 @@ export function HospitalDashboard({
 
       <div className="container mx-auto px-4 py-6">
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 dbcards_wrap">
           <Card>
             <CardContent className="p-4 flex flex-col items-center justify-center">
               <Stethoscope className="w-8 h-8 text-green-500 mb-2 bg-transparent" />
@@ -257,8 +257,8 @@ export function HospitalDashboard({
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="doctors">{t.doctor.doctors}</TabsTrigger>
-            <TabsTrigger value="appointments">{t.appointments.appointments}</TabsTrigger>
+            <TabsTrigger className='' value="doctors">{t.doctor.doctors}</TabsTrigger>
+            <TabsTrigger className='' value="appointments">{t.appointments.appointments}</TabsTrigger>
           </TabsList>
 
           <DoctorsTab

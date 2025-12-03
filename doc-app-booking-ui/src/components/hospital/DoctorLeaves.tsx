@@ -85,9 +85,9 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">{t.messages.LABELS.DOCTOR_LEAVES}</DialogTitle>
+      <DialogContent className="max-w-2xl w-full sm:rounded-lg max-h-[90vh] overflow-y-auto hospital_modal">
+        <DialogHeader className='heading_wrap'>
+          <DialogTitle className=" heading text-xl font-semibold">{t.messages.LABELS.DOCTOR_LEAVES}</DialogTitle>
           <DialogDescription className="text-sm text-gray-600">
             Manage leave dates for {doctorName || 'the doctor'}
           </DialogDescription>
@@ -100,10 +100,10 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
           {/* Add New Leave Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.ADD_NEW_LEAVE}</h3>
+            <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.ADD_NEW_LEAVE}</h3>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="leaveDate" className="text-sm font-medium">{t.messages.LABELS.DATE} {t.messages.LABELS.REQUIRED}</Label>
                   <Input 
                     id="leaveDate"
@@ -112,9 +112,10 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                     onChange={e => setDate(e.target.value)}
                     placeholder={t.messages.LABELS.PLACEHOLDER_SELECT_DATE}
                     disabled={submitting}
+                    className='date'
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="leaveReason" className="text-sm font-medium">Reason (optional)</Label>
                   <Input 
                     id="leaveReason"
@@ -158,7 +159,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
 
           {/* Scheduled Leaves Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Scheduled Leaves</h3>
+            <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">Scheduled Leaves</h3>
             {loading ? (
               <div className="p-6 text-center">
                 <div className="inline-flex items-center gap-2 text-sm text-gray-500">
@@ -196,7 +197,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                       variant="destructive" 
                       size="sm" 
                       onClick={() => setConfirm({ open: true, id: l.id })}
-                      className="flex items-center gap-2 flex-shrink-0"
+                      className="flex items-center gap-2 flex-shrink-0 delete"
                       title={t.messages.LABELS.DELETE_LEAVE}
                     >
                       <Trash2 className="w-4 h-4 bg-transparent" />
