@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="z-[9999] min-w-[120px]"
+        className="lang_switch z-[9999] min-w-[120px]"
         side="bottom"
         sideOffset={4}
         avoidCollisions={true}

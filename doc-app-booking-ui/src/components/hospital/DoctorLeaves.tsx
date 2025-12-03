@@ -142,7 +142,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
                 <Button 
                   type="submit" 
                   disabled={submitting || !date}
-                  className="w-full bg-purple-500 hover:bg-purple-600"
+                  className="btn_theme w-full bg-purple-500 hover:bg-purple-600"
                 >
                   {submitting ? (
                     <>
@@ -158,7 +158,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
           </div>
 
           {/* Scheduled Leaves Section */}
-          <div className="space-y-4">
+          <div className="space-y-4" style={{marginTop:"20px"}}>
             <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">Scheduled Leaves</h3>
             {loading ? (
               <div className="p-6 text-center">

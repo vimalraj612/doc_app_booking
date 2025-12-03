@@ -150,7 +150,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
             return (
                 <div className="text-center py-2">
                     <div className="text-orange-700 bg-orange-50 border border-orange-100 rounded p-2 text-sm">{t.messages.LABELS.DOCTOR_ON_LEAVE}</div>
-                    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar mt-2" style={{ maxHeight: '62vh' }}>
+                    <div className="slots_wrap grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar mt-2" style={{ maxHeight: '62vh' }}>
                         {slots
                             .slice()
                             .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
@@ -218,12 +218,12 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                                         key={String(slot.slotId)}
                                         disabled={!isClickable}
                                         onClick={() => { }}
-                                        className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
+                                        className={`slots relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
                                         style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
                                     >
                                         <span className="font-semibold text-[5.5px] leading-tight" style={{ color: hex.text }}>{formatTime(slot.start)}</span>
-                                        <span className="text-[4px] leading-tight" style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
-                                        <span className="mt-[0.5px] text-[3px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors" style={{ color: hex.text }}>{statusInfo.label}</span>
+                                        {/* <span className="text-[4px] leading-tight" style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span> */}
+                                        {/* <span className="mt-[0.5px] text-[3px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors" style={{ color: hex.text }}>{statusInfo.label}</span> */}
                                     </button>
                                 );
                             })}
@@ -234,7 +234,7 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
 
         // Default: regular slots grid with clickable slots when available
         return (
-            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh' }}>
+            <div className="slots_wrap grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-[3px] mx-auto overflow-y-auto no-scrollbar" style={{ maxHeight: '62vh' }}>
                 {slots
                     .slice()
                     .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
@@ -301,12 +301,12 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
                                 key={String(slot.slotId)}
                                 disabled={!isClickable}
                                 onClick={() => handleSlotClick(slot)}
-                                className={`relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
+                                className={`slots relative p-[1px] rounded-md border flex flex-col items-center justify-center min-w-[20px] min-h-[14px] max-w-[26px] max-h-[16px] transition-all duration-200 ease-in-out text-center backdrop-blur-sm shadow-sm ${!isClickable ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'}`}
                                 style={{ backgroundColor: hex.bg, borderColor: hex.border, color: hex.text, borderStyle: 'solid' }}
                             >
                                 <span className="font-semibold text-[5.5px] leading-tight" style={{ color: hex.text }}>{formatTime(slot.start)}</span>
-                                <span className="text-[4px] leading-tight" style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
-                                <span className="mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors" style={{ color: hex.text }}>{statusInfo.label}</span>
+                                {/* <span className="text-[4px] leading-tight" style={{ color: hex.text }}>{(() => { const s = new Date(slot.start); const e = new Date(slot.end); const diff = Math.round((e.getTime() - s.getTime()) / 60000); return `${diff}m`; })()}</span>
+                                <span className="mt-[0.5px] text-[3.5px] font-medium rounded-full px-[1px] py-[0.5px] transition-colors" style={{ color: hex.text }}>{statusInfo.label}</span> */}
                             </button>
                         );
                     })}
@@ -318,10 +318,12 @@ const DoctorAvailableSlot: React.FC<Props> = ({ open, onOpenChange, doctorId, ho
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto modal">
-                <DialogHeader>
-                    <DialogTitle>Available Slots</DialogTitle>
-                </DialogHeader>
+            <DialogContent className="slot_booking modal">
+              
+                <DialogHeader className="heading_wrap">
+                            <DialogTitle className="heading">{t.ui.availableSlots}</DialogTitle>
+                           
+                          </DialogHeader>
 
                 <div className="space-y-3">
                     {error && (
