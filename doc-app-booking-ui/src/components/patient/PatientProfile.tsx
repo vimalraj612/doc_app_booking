@@ -308,8 +308,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     value={mappedProfile.dateOfBirth || ''} 
                     onChange={onChange}
                     disabled={loading}
-                    className=" date h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
-               
+                    className="date h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                   />
                 </div>
                 <div className="field">
@@ -601,8 +600,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       value={relationForm.dateOfBirth} 
                       onChange={handleRelationFormChange} 
                       disabled={relationFormLoading}
-                      className={`date h-8 sm:h-9 md:h-10 text-xs sm:text-sm" ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
-                   
+                      className={`date h-8 sm:h-9 md:h-10 text-xs sm:text-sm ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
                     />
                     {relationFormErrors.dateOfBirth && (
                       <p className="text-red-600 text-sm">{relationFormErrors.dateOfBirth}</p>
