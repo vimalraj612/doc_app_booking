@@ -42,6 +42,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   const [profile, setProfile] = useState<PatientProfileType | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   // Fetch profile from backend/localStorage
   const fetchProfile = async () => {
@@ -49,11 +50,12 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     if (!userId) return;
     setProfileLoading(true);
     setProfileMsg(null);
+    setProfileError(null);
     try {
       const resp = await getPatientUserProfile(userId);
       setProfile(resp && resp.data ? resp.data : null);
     } catch (e) {
-      setProfileMsg(t.messages.PROFILE.LOADING_FAILED);
+      setProfileError(t.messages.PROFILE.LOADING_FAILED);
     } finally {
       setProfileLoading(false);
     }
@@ -61,6 +63,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
 
   const handleProfileOpen = async () => {
     setProfileMsg(null);
+    setProfileError(null);
     setProfileOpen(true);
     
     // Start loading profile immediately
@@ -79,6 +82,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
   const handleProfileClose = () => {
     setProfileOpen(false);
     setProfileMsg(null);
+    setProfileError(null);
   };
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -91,12 +95,13 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
     if (!userId || !profile) return;
     setProfileLoading(true);
     setProfileMsg(null);
+    setProfileError(null);
     try {
       await updatePatientProfile(userId, profile);
       setProfileMsg(t.messages.PROFILE.UPDATED_SUCCESS);
       setTimeout(() => setProfileMsg(null), 2000);
     } catch (e) {
-      setProfileMsg(t.messages.PROFILE.UPDATE_FAILED);
+      setProfileError(t.messages.PROFILE.UPDATE_FAILED);
     } finally {
       setProfileLoading(false);
     }
@@ -284,7 +289,7 @@ export function PatientDashboard({ onLogout }: PatientDashboardProps) {
           <PatientProfile
             profile={profile}
             loading={profileLoading}
-            error={profileMsg}
+            error={profileError}
             onChange={handleProfileChange}
             onSave={handleProfileSave}
             onClose={handleProfileClose}
