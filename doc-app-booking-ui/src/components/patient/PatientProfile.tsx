@@ -4,6 +4,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { PhoneInput } from '../ui/phone-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { Skeleton } from '../ui/skeleton';
 import { InlineMessage } from '../ui/inline-message';
 import { PatientProfile as PatientProfileType } from '../../api/user';
@@ -65,6 +66,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     gender: '',
     relationship: '',
   });
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{
+    open: boolean;
+    relationId: string | null;
+    relationName: string;
+  }>({ open: false, relationId: null, relationName: '' });
 
   // Auto-dismiss relation success message
   useEffect(() => {
@@ -123,9 +129,21 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
     setRelationFormErrors({ fullName: '', dateOfBirth: '', phoneNumber: '', gender: '', relationship: '' });
   };
 
-  const handleDeleteRelation = (relationId: string) => {
+  const handleDeleteRelation = (relationId: string, relationName: string) => {
+    setDeleteConfirmDialog({
+      open: true,
+      relationId,
+      relationName
+    });
+  };
+
+  const confirmDeleteRelation = () => {
+    const { relationId } = deleteConfirmDialog;
+    if (!relationId) return;
     
     setRelationFormLoading(true);
+    setDeleteConfirmDialog({ open: false, relationId: null, relationName: '' });
+    
     deletePatientRelation(relationId)
       .then(() => {
         // Reload relations after delete
@@ -230,7 +248,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
       if (profile && profile.id) {
         createPatientRelation(String(profile.id), payload)
           .then((newRel: PatientRelation) => {
-            setRelations([...relations, newRel]);
+            // Refetch relations to get complete data with calculated fields
+            getPatientRelations(String(profile.id))
+              .then((data: PatientRelation[]) => setRelations(data))
+              .catch(() => setRelationError(t.patientRelations.fetchError));
             setRelationFormMsg(t.patientRelations.createSuccess);
             setShowRelationDialog(false);
           })
@@ -450,11 +471,11 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                             {/* {t.common.edit} */}
                             <SquarePen />
                           </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeleteRelation(rel.id)}
+                          <Button 
+                            type="button" 
+                            size="sm" 
+                            variant="destructive" 
+                            onClick={() => handleDeleteRelation(rel.id, rel.fullName)} 
                             disabled={relationFormLoading}
                             className="action delete"
                           >
@@ -503,8 +524,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                             <td className="px-3 py-3 text-sm text-gray-500">{rel.gender || 'N/A'}</td>
                             <td className="px-3 py-3 text-sm text-gray-500 max-w-[120px] truncate" title={rel.phoneNumber || 'N/A'}>{rel.phoneNumber || 'N/A'}</td>
                             <td className="px-3 py-3 text-sm text-gray-500 max-w-[100px] truncate" title={rel.relationship}>{rel.relationship}</td>
-                            <td className="px-3 py-3 text-sm text-gray-500">
-                              <div className="flex items-center space-x-1">
+                            <td className=" px-3 py-3 text-sm text-gray-500">
+                              <div className="actions_wrap flex items-center space-x-1 ">
                                 <Button
                                   type="button"
                                   size="sm"
@@ -514,13 +535,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                                 >
                                   {t.common.edit}
                                 </Button>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteRelation(rel.id)}
+                                <Button 
+                                  type="button" 
+                                  size="sm" 
+                                  variant="destructive" 
+                                  onClick={() => handleDeleteRelation(rel.id, rel.fullName)} 
                                   disabled={relationFormLoading}
-                                  className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2 py-1"
+                                  className="action delete text-red-600 border-red-200 hover:bg-red-50 text-xs px-2 py-1"
                                 >
                                   {t.common.delete}
                                 </Button>
@@ -705,6 +726,33 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteConfirmDialog.open} onOpenChange={(open) => 
+          setDeleteConfirmDialog({ open, relationId: null, relationName: '' })
+        }>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t.actions.confirmDeletion}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {`Are you sure you want to delete "${deleteConfirmDialog.relationName}"? This action cannot be undone.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className='actions_wrap'>
+              <AlertDialogCancel disabled={relationFormLoading}>
+                {t.common.cancel}
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmDeleteRelation}
+                disabled={relationFormLoading}
+                className="action delete bg-red-600 hover:bg-red-700 text-white"
+              >
+                {relationFormLoading && <span className="animate-spin mr-2">⏳</span>}
+                {t.common.delete}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
