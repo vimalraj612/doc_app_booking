@@ -17,7 +17,7 @@ import {
 import { useLocale } from '../../contexts/LocaleContext';
 import { getGenderOptions, getRelationshipOptions } from '../../constants/dropdownOptions';
 import { ValidationMessages } from '../../constants/messages';
-import {SquarePen, Trash   } from 'lucide-react';
+import { SquarePen, Trash } from 'lucide-react';
 interface PatientProfileProps {
   profile: PatientProfileType | null;
   loading: boolean;
@@ -104,12 +104,12 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
   const handleEditRelation = (relation: PatientRelation) => {
     setEditingRelation(relation);
-    
+
     // Extract last 10 digits from phone number for editing
-    const phoneForEdit = relation.phoneNumber 
+    const phoneForEdit = relation.phoneNumber
       ? relation.phoneNumber.replace(/^\+?91?/, '').slice(-10)
       : '';
-    
+
     setRelationForm({
       fullName: relation.fullName,
       dateOfBirth: relation.dateOfBirth || '',
@@ -124,6 +124,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
   };
 
   const handleDeleteRelation = (relationId: string) => {
+    
     setRelationFormLoading(true);
     deletePatientRelation(relationId)
       .then(() => {
@@ -159,7 +160,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
   const handleRelationFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // Reset all errors
     const errors = {
       fullName: '',
@@ -168,9 +169,9 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
       gender: '',
       relationship: '',
     };
-    
+
     let isValid = true;
-    
+
     // Client-side validation for all required fields
     if (!relationForm.fullName.trim()) {
       errors.fullName = ValidationMessages.NAME_REQUIRED;
@@ -192,17 +193,17 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
       errors.relationship = ValidationMessages.RELATION_REQUIRED;
       isValid = false;
     }
-    
+
     setRelationFormErrors(errors);
-    
+
     if (!isValid) {
       return;
     }
-    
+
     setRelationFormLoading(true);
     setRelationError('');
     setRelationFormMsg('');
-    
+
     // Format phone number with +91 prefix if not already present
     let formattedPhone = relationForm.phoneNumber.trim();
     if (formattedPhone && !formattedPhone.startsWith('+91')) {
@@ -211,7 +212,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
       // Add +91 prefix
       formattedPhone = '+91' + formattedPhone;
     }
-    
+
     const payload = {
       ...relationForm,
       phoneNumber: formattedPhone,
@@ -275,37 +276,37 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
               <h3 className="heading">{t.forms.personalInfo}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <div className="field">
-                  <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium">{t.profileFields.firstName} *</Label>
-                  <Input 
+                  <Label htmlFor="firstName" className="text-xs sm:text-sm font-medium">{t.profileFields.firstName} <span style={{ color: "red" }}>*</span></Label>
+                  <Input
                     id="firstName"
-                    name="firstName" 
-                    value={mappedProfile.firstName || ''} 
-                    onChange={onChange} 
+                    name="firstName"
+                    value={mappedProfile.firstName || ''}
+                    onChange={onChange}
                     placeholder={t.profileFields.enterFirstName}
                     disabled={loading}
                     className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                   />
                 </div>
                 <div className="field">
-                  <Label htmlFor="lastName" className="text-xs sm:text-sm font-medium">{t.profileFields.lastName} *</Label>
-                  <Input 
+                  <Label htmlFor="lastName" className="text-xs sm:text-sm font-medium">{t.profileFields.lastName} <span style={{ color: "red" }}>*</span></Label>
+                  <Input
                     id="lastName"
-                    name="lastName" 
-                    value={mappedProfile.lastName || ''} 
-                    onChange={onChange} 
+                    name="lastName"
+                    value={mappedProfile.lastName || ''}
+                    onChange={onChange}
                     placeholder={t.profileFields.enterLastName}
                     disabled={loading}
                     className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
                   />
                 </div>
-        
+
                 <div className="field">
                   <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth}</Label>
-                  <Input 
+                  <Input
                     id="dateOfBirth"
-                    name="dateOfBirth" 
+                    name="dateOfBirth"
                     type="date"
-                    value={mappedProfile.dateOfBirth || ''} 
+                    value={mappedProfile.dateOfBirth || ''}
                     onChange={onChange}
                     disabled={loading}
                     className="date h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
@@ -340,40 +341,40 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             {/* Contact Information Section */}
             <div className="contact_info">
               <h3 className="heading">{t.forms.contactInfo}</h3>
-                <div className="field">
-                  <Label htmlFor="email" className="text-xs sm:text-sm font-medium">{t.profileFields.email} *</Label>
-                  <Input 
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={mappedProfile.email || ''} 
-                    onChange={onChange} 
-                    placeholder={t.profileFields.enterEmail}
-                    disabled={loading}
-                    className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
-                  />
-                </div>
-                <div className="field">
-                  <Label htmlFor="phoneNumber" className="text-xs sm:text-sm font-medium">{t.profileFields.phoneNumber}</Label>
-                  <Input 
-                    id="phoneNumber"
-                    name="phoneNumber" 
-                    value={mappedProfile.phoneNumber || ''} 
-                    placeholder="+919876543210"
-                    className="bg-gray-50 cursor-not-allowed h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
-                    disabled
-                    readOnly
-                  />
-                  <p className="text-[6px] sm:text-[8px] md:text-[6px] text-gray-500" style={{ fontSize: '50%' }}>{t.profileFields.phoneCannotChange}</p>
-                </div>
+              <div className="field">
+                <Label htmlFor="email" className="text-xs sm:text-sm font-medium">{t.profileFields.email} <span style={{ color: "red" }}>*</span></Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={mappedProfile.email || ''}
+                  onChange={onChange}
+                  placeholder={t.profileFields.enterEmail}
+                  disabled={loading}
+                  className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                />
+              </div>
+              <div className="field">
+                <Label htmlFor="phoneNumber" className="text-xs sm:text-sm font-medium">{t.profileFields.phoneNumber}</Label>
+                <Input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={mappedProfile.phoneNumber || ''}
+                  placeholder="+919876543210"
+                  className="bg-gray-50 cursor-not-allowed h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
+                  disabled
+                  readOnly
+                />
+                <p className="text-[6px] sm:text-[8px] md:text-[6px] text-gray-500" style={{ fontSize: '50%' }}>{t.profileFields.phoneCannotChange}</p>
+              </div>
 
               <div className="field">
                 <Label htmlFor="address" className="text-xs sm:text-sm font-medium">{t.profileFields.address}</Label>
-                <Input 
+                <Input
                   id="address"
-                  name="address" 
-                  value={mappedProfile.address || ''} 
-                  onChange={onChange} 
+                  name="address"
+                  value={mappedProfile.address || ''}
+                  onChange={onChange}
                   placeholder={t.profileFields.enterAddress}
                   disabled={loading}
                   className="h-8 sm:h-9 md:h-10 text-xs sm:text-sm"
@@ -383,8 +384,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
             {/* Save Profile Button */}
             <div className="flex flex-col gap-2 sm:gap-3 items-stretch pt-2 sm:pt-4 md:pt-6 border-t mt-2">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={loading}
                 className="btn_theme"
               >
@@ -405,9 +406,9 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
               <h3 className="heading">{t.patientRelations.title}</h3>
             </div>
-            
+
             {relationFormMsg && <InlineMessage type="success" message={relationFormMsg} />}
-            
+
             {relationsLoading ? (
               <div className="flex items-center justify-center py-4 sm:py-6 md:py-8">
                 <div className="flex items-center space-x-2">
@@ -428,7 +429,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-lg overflow-hidden" style={{padding:'4px'}}>
+              <div className="bg-white rounded-lg overflow-hidden" style={{ padding: '4px' }}>
                 {/* Mobile Card View */}
                 <div className="profiles">
                   {relations.map((rel: PatientRelation) => (
@@ -439,21 +440,21 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                           <p className="text-xs text-gray-500">{rel.relationship}</p>
                         </div>
                         <div className="actions_wrap">
-                          <Button 
-                            type="button" 
-                            size="sm" 
-                            variant="outline" 
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
                             onClick={() => handleEditRelation(rel)}
                             className="action edit"
                           >
                             {/* {t.common.edit} */}
                             <SquarePen />
                           </Button>
-                          <Button 
-                            type="button" 
-                            size="sm" 
-                            variant="destructive" 
-                            onClick={() => handleDeleteRelation(rel.id)} 
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteRelation(rel.id)}
                             disabled={relationFormLoading}
                             className="action delete"
                           >
@@ -479,7 +480,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Desktop Table View */}
                 <div className="hidden md:block">
                   <div className="overflow-x-auto max-w-full">
@@ -504,20 +505,20 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                             <td className="px-3 py-3 text-sm text-gray-500 max-w-[100px] truncate" title={rel.relationship}>{rel.relationship}</td>
                             <td className="px-3 py-3 text-sm text-gray-500">
                               <div className="flex items-center space-x-1">
-                                <Button 
-                                  type="button" 
-                                  size="sm" 
-                                  variant="outline" 
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
                                   onClick={() => handleEditRelation(rel)}
                                   className="text-blue-600 border-blue-200 hover:bg-blue-50 text-xs px-2 py-1"
                                 >
                                   {t.common.edit}
                                 </Button>
-                                <Button 
-                                  type="button" 
-                                  size="sm" 
-                                  variant="destructive" 
-                                  onClick={() => handleDeleteRelation(rel.id)} 
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteRelation(rel.id)}
                                   disabled={relationFormLoading}
                                   className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2 py-1"
                                 >
@@ -537,8 +538,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-1 sm:gap-2 md:gap-3 pt-2 sm:pt-4 md:pt-6 border-t mt-2 sm:mt-4 md:mt-6">
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={handleAddRelation}
               className="btn_theme"
               style={{ backgroundColor: '#1f2937', color: 'white' }}
@@ -546,10 +547,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
               <span className="mr-2 text-sm sm:text-base md:text-lg font-bold">+</span>
               {t.patientRelations.addRelation}
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose} 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
               disabled={loading}
               className="btn_theme_secondary"
             >
@@ -569,45 +570,45 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                 {t.patientRelations.dialogDescription}
               </DialogDescription>
             </DialogHeader>
-            
+
             {relationError && <InlineMessage type="error" message={relationError} />}
             {relationFormMsg && <InlineMessage type="success" message={relationFormMsg} />}
-            
+
             <div className="space-y-6 py-4">
               <form onSubmit={handleRelationFormSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                   <div className="field">
-                    <Label htmlFor="fullName" className="text-xs sm:text-sm font-medium">{t.patientRelations.fullName} *</Label>
-                    <Input 
-                      id="fullName" 
-                      name="fullName" 
-                      value={relationForm.fullName} 
-                      onChange={handleRelationFormChange} 
+                    <Label htmlFor="fullName" className="text-xs sm:text-sm font-medium">{t.patientRelations.fullName} <span style={{ color: "red" }}>* </span></Label>
+                    <Input
+                      id="fullName"
+                      name="fullName"
+                      value={relationForm.fullName}
+                      onChange={handleRelationFormChange}
                       disabled={relationFormLoading}
                       placeholder="Enter full name"
                       className={`h-8 sm:h-9 md:h-10 text-xs sm:text-sm ${relationFormErrors.fullName ? 'border-red-500' : ''}`}
                     />
                     {relationFormErrors.fullName && (
-                      <p className="text-red-600 text-sm">{relationFormErrors.fullName}</p>
+                      <p className="text-red-500 text-xs">{relationFormErrors.fullName}</p>
                     )}
                   </div>
                   <div className="field">
-                    <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth} *</Label>
-                    <Input 
-                      id="dateOfBirth" 
-                      name="dateOfBirth" 
-                      type="date" 
-                      value={relationForm.dateOfBirth} 
-                      onChange={handleRelationFormChange} 
+                    <Label htmlFor="dateOfBirth" className="text-xs sm:text-sm font-medium">{t.profileFields.dateOfBirth}<span style={{ color: "red" }}>*</span></Label>
+                    <Input
+                      id="dateOfBirth"
+                      name="dateOfBirth"
+                      type="date"
+                      value={relationForm.dateOfBirth}
+                      onChange={handleRelationFormChange}
                       disabled={relationFormLoading}
                       className={`date h-8 sm:h-9 md:h-10 text-xs sm:text-sm ${relationFormErrors.dateOfBirth ? 'border-red-500' : ''}`}
                     />
                     {relationFormErrors.dateOfBirth && (
-                      <p className="text-red-600 text-sm">{relationFormErrors.dateOfBirth}</p>
+                      <p className="text-red-500 text-xs">{relationFormErrors.dateOfBirth}</p>
                     )}
                   </div>
                 </div>
-                
+
                 <div className='field'>
                   <PhoneInput
                     id="phoneNumber"
@@ -617,13 +618,17 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     disabled={relationFormLoading}
                     placeholder="Enter 10 digit mobile number"
                     className={`w-full text-xs sm:text-sm ${relationFormErrors.phoneNumber ? 'border-red-500' : ''}`}
-                    error={relationFormErrors.phoneNumber}
                   />
+                  {relationFormErrors.phoneNumber && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {relationFormErrors.phoneNumber}
+                    </p>
+                  )}
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                   <div className="field">
-                    <Label htmlFor="gender" className="text-xs sm:text-sm font-medium">{t.patientRelations.gender} *</Label>
+                    <Label htmlFor="gender" className="text-xs sm:text-sm font-medium">{t.patientRelations.gender} <span style={{ color: "red" }}>*</span></Label>
                     <select
                       name="gender"
                       value={relationForm.gender || ''}
@@ -645,12 +650,12 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       ))}
                     </select>
                     {relationFormErrors.gender && (
-                      <p className="text-red-600 text-sm">{relationFormErrors.gender}</p>
+                      <p className="text-red-500 text-xs">{relationFormErrors.gender}</p>
                     )}
                   </div>
-                  
+
                   <div className="field">
-                    <Label htmlFor="relationship" className="text-xs sm:text-sm font-medium">{t.patientRelations.relationship} *</Label>
+                    <Label htmlFor="relationship" className="text-xs sm:text-sm font-medium">{t.patientRelations.relationship} <span style={{ color: "red" }}>*</span></Label>
                     <select
                       name="relationship"
                       value={relationForm.relationship || ''}
@@ -672,24 +677,24 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                       ))}
                     </select>
                     {relationFormErrors.relationship && (
-                      <p className="text-red-600 text-sm">{relationFormErrors.relationship}</p>
+                      <p className="text-red-500 text-xs">{relationFormErrors.relationship}</p>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col gap-1 sm:gap-2 md:gap-3 pt-2 sm:pt-3 md:pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowRelationDialog(false)} 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowRelationDialog(false)}
                     disabled={relationFormLoading}
                     className="btn_theme_secondary"
                   >
                     {t.common.cancel}
                   </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={relationFormLoading} 
+                  <Button
+                    type="submit"
+                    disabled={relationFormLoading}
                     className="btn_theme"
                   >
                     {relationFormLoading && <span className="animate-spin mr-2">⏳</span>}

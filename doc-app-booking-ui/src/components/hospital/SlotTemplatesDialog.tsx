@@ -276,7 +276,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                 <form onSubmit={(e) => { e.preventDefault(); onSaveTemplate(); }} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="field">
-                      <Label htmlFor="dayOfWeek" className="text-sm font-medium">{t.messages.LABELS.DAY_OF_WEEK} {t.messages.LABELS.REQUIRED}</Label>
+                      <Label htmlFor="dayOfWeek" className="text-sm font-medium">{t.messages.LABELS.DAY_OF_WEEK} <span style={{color:"red"}}>{t.messages.LABELS.REQUIRED}</span></Label>
                       <select 
                         id="dayOfWeek"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2" 
@@ -294,7 +294,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                     </div>
                     
                     <div className="field">
-                      <Label htmlFor="slotDuration" className="text-sm font-medium">{t.messages.LABELS.DURATION_MINUTES} {t.messages.LABELS.REQUIRED}</Label>
+                      <Label htmlFor="slotDuration" className="text-sm font-medium">{t.messages.LABELS.DURATION_MINUTES}  <span style={{color:"red"}}>{t.messages.LABELS.REQUIRED}</span></Label>
                       <Input 
                         id="slotDuration"
                         type="number" 
@@ -309,7 +309,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="field">
-                      <Label htmlFor="startTime" className="text-sm font-medium">{t.messages.LABELS.START_TIME} {t.messages.LABELS.REQUIRED}</Label>
+                      <Label htmlFor="startTime" className="text-sm font-medium">{t.messages.LABELS.START_TIME} <span style={{color:"red"}}>{t.messages.LABELS.REQUIRED}</span></Label>
                       <Input 
                         id="startTime"
                         type="time" 
@@ -321,7 +321,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                     </div>
                     
                     <div className="field">
-                      <Label htmlFor="endTime" className="text-sm font-medium">{t.messages.LABELS.END_TIME} {t.messages.LABELS.REQUIRED}</Label>
+                      <Label htmlFor="endTime" className="text-sm font-medium">{t.messages.LABELS.END_TIME}  <span style={{color:"red"}}>{t.messages.LABELS.REQUIRED}</span></Label>
                       <Input 
                         id="endTime"
                         type="time" 
@@ -356,7 +356,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                     </Button>
                     <Button 
                       type="submit"
-                      className="w-full bg-purple-500 hover:bg-purple-600"
+                      className="btn_theme w-full bg-purple-500 hover:bg-purple-600"
                     >
                       {templateForm.id 
                         ? t.messages.LABELS.EDIT_TEMPLATE
@@ -367,7 +367,7 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
               </div>
 
               {/* Existing Templates Section */}
-              <div className="space-y-4">
+              <div className="space-y-4" style={{marginTop:"20px"}}>
                 <h3 className=" heading text-sm font-semibold text-gray-700 border-b pb-2">Existing Templates</h3>
                 
                 {slotTemplates.length === 0 ? (

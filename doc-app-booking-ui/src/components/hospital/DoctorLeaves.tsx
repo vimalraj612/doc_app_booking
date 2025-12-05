@@ -104,7 +104,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="field">
-                  <Label htmlFor="leaveDate" className="text-sm font-medium">{t.messages.LABELS.DATE} {t.messages.LABELS.REQUIRED}</Label>
+                  <Label htmlFor="leaveDate" className="text-sm font-medium">{t.messages.LABELS.DATE} <span style={{color:"red"}}>{t.messages.LABELS.REQUIRED}</span></Label>
                   <Input 
                     id="leaveDate"
                     type="date" 

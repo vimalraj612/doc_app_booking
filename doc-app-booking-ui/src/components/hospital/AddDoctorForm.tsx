@@ -20,12 +20,12 @@ interface AddDoctorFormProps {
   onSubmitError?: (message: string) => void;
 }
 
-export function AddDoctorForm({ 
-  onSuccess, 
-  onAddDoctor, 
-  onUpdateDoctor, 
-  initialDoctor = null, 
-  hospital, 
+export function AddDoctorForm({
+  onSuccess,
+  onAddDoctor,
+  onUpdateDoctor,
+  initialDoctor = null,
+  hospital,
   user,
   onSubmitError,
 }: AddDoctorFormProps) {
@@ -59,7 +59,7 @@ export function AddDoctorForm({
 
   const validate = () => {
     const errs: { [k: string]: string } = {};
-    
+
     if (!firstName || !firstName.trim()) errs.firstName = t.messages.VALIDATION.FIRST_NAME_REQUIRED;
     else if (firstName.length > 100) errs.firstName = t.messages.VALIDATION.FIRST_NAME_MAX;
     else if (!namePattern.test(firstName)) errs.firstName = t.messages.VALIDATION.FIRST_NAME_INVALID;
@@ -225,7 +225,7 @@ export function AddDoctorForm({
           try {
             const parsed = JSON.parse(message);
             if (parsed && typeof parsed.message === 'string') message = parsed.message;
-          } catch {}
+          } catch { }
         }
         setErrors({ submit: message });
         setFormError(message);
@@ -291,7 +291,7 @@ export function AddDoctorForm({
       setDepartment(ui.department || '');
       setExperienceYears(ui.experienceYears ?? '');
       setQualifications(ui.qualifications || '');
-      
+
       if (hasPhoto && ui.photo && ui.photo.startsWith('data:')) {
         const parts = ui.photo.split(',');
         if (parts.length === 2) {
@@ -321,22 +321,22 @@ export function AddDoctorForm({
         <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PERSONAL_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="field">
-            <Label htmlFor="firstName" className="text-sm font-medium">{t.messages.LABELS.FIRST_NAME} {t.messages.LABELS.REQUIRED}</Label>
-            <Input 
-              id="firstName" 
-              value={firstName} 
-              onChange={e => setFirstName(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_FIRST_NAME} 
+            <Label htmlFor="firstName" className="text-sm font-medium">{t.messages.LABELS.FIRST_NAME} <span style={{ color: "red" }}>{t.messages.LABELS.REQUIRED}</span></Label>
+            <Input
+              id="firstName"
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              placeholder={t.messages.LABELS.PLACEHOLDER_FIRST_NAME}
             />
             {errors.firstName && <div className="text-red-500 text-xs">{errors.firstName}</div>}
           </div>
           <div className="field">
-            <Label htmlFor="lastName" className="text-sm font-medium">{t.messages.LABELS.LAST_NAME} {t.messages.LABELS.REQUIRED}</Label>
-            <Input 
-              id="lastName" 
-              value={lastName} 
-              onChange={e => setLastName(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_LAST_NAME} 
+            <Label htmlFor="lastName" className="text-sm font-medium">{t.messages.LABELS.LAST_NAME}<span style={{ color: "red" }}> {t.messages.LABELS.REQUIRED}</span></Label>
+            <Input
+              id="lastName"
+              value={lastName}
+              onChange={e => setLastName(e.target.value)}
+              placeholder={t.messages.LABELS.PLACEHOLDER_LAST_NAME}
             />
             {errors.lastName && <div className="text-red-500 text-xs">{errors.lastName}</div>}
           </div>
@@ -348,25 +348,29 @@ export function AddDoctorForm({
         <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_CONTACT_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="field">
-            <Label htmlFor="email" className="text-sm font-medium">{t.messages.LABELS.EMAIL} {t.messages.LABELS.REQUIRED}</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_EMAIL} 
+            <Label htmlFor="email" className="text-sm font-medium">{t.messages.LABELS.EMAIL} <span style={{ color: "red" }}>{t.messages.LABELS.REQUIRED}</span></Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder={t.messages.LABELS.PLACEHOLDER_EMAIL}
             />
             {errors.email && <div className="text-red-500 text-xs">{errors.email}</div>}
           </div>
-          <PhoneInput 
-            id="phone" 
-            label={t.messages.LABELS.PHONE_NUMBER}
-            value={phoneNumber} 
-            onChange={(value) => setPhoneNumber(value)} 
-            placeholder={t.messages.LABELS.PLACEHOLDER_PHONE}
-            error={errors.phoneNumber}
-            required
-          />
+          <div className="field">
+            <Label htmlFor="phone" className="text-sm font-medium">{t.messages.LABELS.PHONE_NUMBER}<span style={{ color: "red" }}>{t.messages.LABELS.REQUIRED}</span></Label>
+            <PhoneInput
+              id="phone"
+              value={phoneNumber}
+              onChange={(value) => setPhoneNumber(value)}
+              placeholder={t.messages.LABELS.PLACEHOLDER_PHONE}
+              required
+            />
+            {errors.phoneNumber && (
+              <div className="text-red-500 text-xs">{errors.phoneNumber}</div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -375,8 +379,8 @@ export function AddDoctorForm({
         <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_PROFESSIONAL_INFO}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="field">
-            <Label htmlFor="specialization" className="text-sm font-medium">{t.messages.LABELS.SPECIALIZATION} {t.messages.LABELS.REQUIRED}</Label>
-            <select 
+            <Label htmlFor="specialization" className="text-sm font-medium">{t.messages.LABELS.SPECIALIZATION} <span style={{ color: "red" }}>{t.messages.LABELS.REQUIRED}</span></Label>
+            <select
               id="specialization"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-8 text-sm appearance-none bg-white"
               style={{
@@ -399,22 +403,22 @@ export function AddDoctorForm({
           </div>
           <div className="field">
             <Label htmlFor="department" className="text-sm font-medium">{t.messages.LABELS.DEPARTMENT}</Label>
-            <Input 
-              id="department" 
-              value={department} 
-              onChange={e => setDepartment(e.target.value)} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_DEPARTMENT} 
+            <Input
+              id="department"
+              value={department}
+              onChange={e => setDepartment(e.target.value)}
+              placeholder={t.messages.LABELS.PLACEHOLDER_DEPARTMENT}
             />
             {errors.department && <div className="text-red-500 text-xs">{errors.department}</div>}
           </div>
           <div className="field">
             <Label htmlFor="experienceYears" className="text-sm font-medium">{t.messages.LABELS.EXPERIENCE_YEARS}</Label>
-            <Input 
-              id="experienceYears" 
-              type="number" 
-              value={experienceYears} 
-              onChange={e => setExperienceYears(e.target.value === '' ? '' : Number(e.target.value))} 
-              placeholder={t.messages.LABELS.PLACEHOLDER_EXPERIENCE} 
+            <Input
+              id="experienceYears"
+              type="number"
+              value={experienceYears}
+              onChange={e => setExperienceYears(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder={t.messages.LABELS.PLACEHOLDER_EXPERIENCE}
             />
             {errors.experienceYears && <div className="text-red-500 text-xs">{errors.experienceYears}</div>}
           </div>
@@ -426,7 +430,7 @@ export function AddDoctorForm({
         <h3 className="heading text-sm font-semibold text-gray-700 border-b pb-2">{t.messages.LABELS.SECTION_ADDITIONAL_INFO}</h3>
         <div className="field">
           <Label htmlFor="qualifications" className="text-sm font-medium">{t.messages.LABELS.QUALIFICATIONS}</Label>
-          <textarea 
+          <textarea
             id="qualifications"
             className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={qualifications}
@@ -437,18 +441,18 @@ export function AddDoctorForm({
         </div>
         <div className="field">
           <Label htmlFor="profileImage" className="text-sm font-medium">{t.messages.LABELS.PROFILE_IMAGE}</Label>
-          <Input 
-            id="profileImage" 
-            type="file" 
+          <Input
+            id="profileImage"
+            type="file"
             accept="image/*"
-            onChange={e => handleImage(e.target.files?.[0])} 
+            onChange={e => handleImage(e.target.files?.[0])}
           />
           {errors.profileBase64 && <div className="text-red-500 text-xs">{errors.profileBase64}</div>}
           {profileBase64 && (
             <div className="mt-3 flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <img 
-                src={`data:${imageContentType};base64,${profileBase64}`} 
-                alt="Profile preview" 
+              <img
+                src={`data:${imageContentType};base64,${profileBase64}`}
+                alt="Profile preview"
                 className="w-16 h-16 rounded-full object-cover border-2 border-purple-200 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
@@ -461,17 +465,17 @@ export function AddDoctorForm({
       </div>
 
       <div className="flex flex-col gap-3 pt-6 mt-6 border-t">
-        <Button 
-          type="button" 
-          variant="outline" 
+        <Button
+          type="button"
+          variant="outline"
           onClick={onSuccess}
           className="w-full btn_theme_secondary"
         >
           {t.messages.LABELS.CANCEL}
         </Button>
-        <Button 
-          type="submit" 
-          disabled={submitting} 
+        <Button
+          type="submit"
+          disabled={submitting}
           className="w-full bg-purple-500 hover:bg-purple-600 text-white btn_theme"
         >
           {submitting ? t.messages.LABELS.SAVE : (initialDoctor ? t.messages.LABELS.EDIT_DOCTOR : t.messages.LABELS.ADD_NEW_DOCTOR)}
