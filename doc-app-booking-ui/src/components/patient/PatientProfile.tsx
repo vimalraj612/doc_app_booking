@@ -154,6 +154,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
         }
         setRelationFormMsg(t.patientRelations.deleteSuccess);
         setRelationError('');
+        
+        // Scroll the main modal to top to show the success message
+        setTimeout(() => {
+          const mainModalContent = document.querySelector('.modal.edit_profile');
+          if (mainModalContent) {
+            mainModalContent.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }, 100);
       })
       .catch(() => setRelationError(t.patientRelations.deleteError))
       .finally(() => setRelationFormLoading(false));
@@ -241,6 +249,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
           setRelations(relations.map((r: PatientRelation) => r.id === updated.id ? updated : r));
           setRelationFormMsg(t.patientRelations.updateSuccess);
           setShowRelationDialog(false);
+          
+          // Scroll the main modal to top to show the success message
+          setTimeout(() => {
+            const mainModalContent = document.querySelector('.modal.edit_profile');
+            if (mainModalContent) {
+              mainModalContent.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }, 100);
         })
         .catch(() => setRelationError(t.patientRelations.updateError))
         .finally(() => setRelationFormLoading(false));
@@ -254,6 +270,14 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
               .catch(() => setRelationError(t.patientRelations.fetchError));
             setRelationFormMsg(t.patientRelations.createSuccess);
             setShowRelationDialog(false);
+            
+            // Scroll the main modal to top to show the success message
+            setTimeout(() => {
+              const mainModalContent = document.querySelector('.modal.edit_profile');
+              if (mainModalContent) {
+                mainModalContent.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }, 100);
           })
           .catch(() => setRelationError(t.patientRelations.createError))
           .finally(() => setRelationFormLoading(false));
