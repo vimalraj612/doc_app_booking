@@ -291,7 +291,10 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
           {error && <InlineMessage type="error" message={error} />}
           {msg && !error && <InlineMessage type="success" message={msg} />}
 
-          <form onSubmit={e => { e.preventDefault(); onSave(); }} className="space-y-3 sm:space-y-4 md:space-y-6 mt-1 sm:mt-2 md:mt-4">
+          <form onSubmit={e => { 
+            e.preventDefault(); 
+            onSave(); 
+          }} className="space-y-3 sm:space-y-4 md:space-y-6 mt-1 sm:mt-2 md:mt-4">
             {/* Personal Information Section */}
             <div className="personal_info">
               <h3 className="heading">{t.forms.personalInfo}</h3>

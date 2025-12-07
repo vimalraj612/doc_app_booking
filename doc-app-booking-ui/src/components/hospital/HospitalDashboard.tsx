@@ -82,6 +82,9 @@ export function HospitalDashboard({
   const [cancelDialog, setCancelDialog] = useState<{ open: boolean; appt?: any }>({ open: false });
   const [appointmentsFetched, setAppointmentsFetched] = useState(false);
   
+  // Doctor operation messages
+  const [doctorMsg, setDoctorMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
   // Doctor delete confirmation
   const [doctorConfirmOpen, setDoctorConfirmOpen] = useState(false);
   const [doctorToDelete, setDoctorToDelete] = useState<string | null>(null);
@@ -191,19 +194,39 @@ export function HospitalDashboard({
 
   // Add doctor handler
   const handleAddDoctor = async (doctor: Partial<DoctorDTO>) => {
-    await addDoctor({
-      ...doctor,
-      hospitalId: Number(doctor.hospitalId),
-    });
-    await fetchDoctors();
+    try {
+      await addDoctor({
+        ...doctor,
+        hospitalId: Number(doctor.hospitalId),
+      });
+      await fetchDoctors();
+      // Show success message
+      setDoctorMsg({ type: 'success', text: t.messages.DOCTOR.ADDED_SUCCESS || 'Doctor added successfully!' });
+      // Clear message after 3 seconds
+      setTimeout(() => setDoctorMsg(null), 3000);
+    } catch (error) {
+      // Show error message
+      setDoctorMsg({ type: 'error', text: t.messages.DOCTOR.ADD_FAILED || 'Failed to add doctor' });
+      setTimeout(() => setDoctorMsg(null), 5000);
+    }
   };
 
   const handleUpdateDoctor = async (id: string, doctor: Partial<DoctorDTO>) => {
-    await updateDoctor(id, {
-      ...doctor,
-      hospitalId: Number(doctor.hospitalId),
-    } as any);
-    await fetchDoctors();
+    try {
+      await updateDoctor(id, {
+        ...doctor,
+        hospitalId: Number(doctor.hospitalId),
+      } as any);
+      await fetchDoctors();
+      // Show success message
+      setDoctorMsg({ type: 'success', text: t.messages.DOCTOR.UPDATED_SUCCESS || 'Doctor updated successfully!' });
+      // Clear message after 3 seconds
+      setTimeout(() => setDoctorMsg(null), 3000);
+    } catch (error) {
+      // Show error message
+      setDoctorMsg({ type: 'error', text: t.messages.DOCTOR.UPDATE_FAILED || 'Failed to update doctor' });
+      setTimeout(() => setDoctorMsg(null), 5000);
+    }
   };
 
   return (
@@ -274,6 +297,8 @@ export function HospitalDashboard({
             onSlotTemplatesClick={handleSlotTemplateClick}
             deleteError={deleteError}
             clearDeleteError={() => setDeleteError(null)}
+            doctorMsg={doctorMsg}
+            setDoctorMsg={setDoctorMsg}
             onDoctorError={(message) => {
               // Only set delete errors, not add doctor errors
               if (typeof message === 'string' && message.toLowerCase().includes('delete')) {

@@ -10,6 +10,7 @@ import { getPatientUserProfile, updatePatientProfile, PatientProfile as PatientP
 import { useLocale } from '../../contexts/LocaleContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { getAppointmentStatusOptions, getAppointmentStatusLabel } from '../../constants/dropdownOptions';
+import { InlineMessage } from '../ui/inline-message';
 import {
   User,
   Stethoscope,

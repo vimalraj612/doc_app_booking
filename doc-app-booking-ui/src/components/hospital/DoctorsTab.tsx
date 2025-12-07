@@ -41,6 +41,8 @@ interface DoctorsTabProps {
   deleteError?: string | null;
   clearDeleteError?: () => void;
   onDoctorError?: (message: string) => void;
+  doctorMsg?: { type: 'success' | 'error'; text: string } | null;
+  setDoctorMsg?: (msg: { type: 'success' | 'error'; text: string } | null) => void;
 }
 
 export default function DoctorsTab({
@@ -62,6 +64,8 @@ export default function DoctorsTab({
   deleteError,
   clearDeleteError,
   onDoctorError,
+  doctorMsg,
+  setDoctorMsg,
 }: DoctorsTabProps) {
   const [transientError, setTransientError] = useState<string | null>(null);
 
@@ -81,6 +85,14 @@ export default function DoctorsTab({
   const { t } = useLocale();
   return (
     <TabsContent value="doctors" className="space-y-3 mt-4">
+      {/* Doctor operation messages */}
+      {doctorMsg && (
+        <InlineMessage 
+          type={doctorMsg.type} 
+          message={doctorMsg.text} 
+        />
+      )}
+      
             <Dialog 
         open={isAddDoctorOpen} 
         onOpenChange={(open) => {
