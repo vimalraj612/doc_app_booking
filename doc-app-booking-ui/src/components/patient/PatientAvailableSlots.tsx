@@ -515,7 +515,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                       if (selectedRelationError) setSelectedRelationError('');
                     }}
                     disabled={loadingRelations}
-                    className={`flex h-10 w-full rounded-md border ${selectedRelationError ? 'border-red-500 text-red-500' : 'border-gray-300'} bg-white px-3 py-2 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`flex h-10 w-full rounded-md border ${selectedRelationError ? 's' : 'border-gray-300'} bg-white px-3 py-2 pr-8 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 appearance-none disabled:opacity-50 disabled:cursor-not-allowed`}
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: 'right 8px center',
@@ -540,7 +540,7 @@ const PatientAvailableSlots: React.FC<PatientAvailableSlotsProps> = ({
                     })}
                   </select>
                   {selectedRelationError && (
-                    <p className="text-red-500 text-sm mt-1 font-semibold">{selectedRelationError}</p>
+                    <p className="text-xs text-red-500">{selectedRelationError}</p>
                   )}
                 </div>
 

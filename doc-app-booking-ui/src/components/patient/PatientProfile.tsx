@@ -637,8 +637,8 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
                     value={relationForm.phoneNumber}
                     onChange={handleRelationPhoneChange}
                     disabled={relationFormLoading}
-                    placeholder="Enter 10 digit mobile number"
-                    className={`w-full text-xs sm:text-sm ${relationFormErrors.phoneNumber ? 'border-red-500' : ''}`}
+                    placeholder="Enter 10 digit mobile number" 
+                    className={`w-full phone-input-custom text-xs  ${relationFormErrors.phoneNumber ? 'border-red-500' : ''}`}
                   />
                   {relationFormErrors.phoneNumber && (
                     <p className="text-red-500 text-xs mt-1">
@@ -731,7 +731,7 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
         <AlertDialog open={deleteConfirmDialog.open} onOpenChange={(open) => 
           setDeleteConfirmDialog({ open, relationId: null, relationName: '' })
         }>
-          <AlertDialogContent>
+          <AlertDialogContent  className="confirm-dialog" >
             <AlertDialogHeader>
               <AlertDialogTitle>{t.actions.confirmDeletion}</AlertDialogTitle>
               <AlertDialogDescription>
