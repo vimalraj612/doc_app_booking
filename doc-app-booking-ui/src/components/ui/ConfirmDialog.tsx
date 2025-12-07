@@ -19,6 +19,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
+  variant?: 'default' | 'destructive'; // New prop for button styling
 }
 
 export default function ConfirmDialog({
@@ -29,7 +30,12 @@ export default function ConfirmDialog({
   cancelText = 'No',
   onConfirm,
   onCancel,
+  variant = 'default',
 }: ConfirmDialogProps) {
+  const buttonClassName = variant === 'destructive' 
+    ? 'action delete' 
+    : '';
+
   return (
     <AlertDialog open={open} onOpenChange={v => { if (!v) onCancel(); }}>
       <AlertDialogContent className="confirm-dialog">
@@ -39,7 +45,7 @@ export default function ConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter className='actions_wrap'>
           <AlertDialogCancel onClick={onCancel}>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction className='' onClick={onConfirm}>{confirmText}</AlertDialogAction>
+          <AlertDialogAction className={buttonClassName} onClick={onConfirm}>{confirmText}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

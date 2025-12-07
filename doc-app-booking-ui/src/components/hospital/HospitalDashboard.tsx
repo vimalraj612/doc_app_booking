@@ -358,6 +358,7 @@ export function HospitalDashboard({
         message={doctorToDelete ? t.messages.CONFIRM.DELETE_DOCTOR : ''}
         confirmText={t.common.delete}
         cancelText={t.common.cancel}
+        variant="destructive"
         onConfirm={async () => {
           if (doctorToDelete) {
             try {

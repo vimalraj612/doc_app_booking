@@ -216,6 +216,7 @@ const DoctorLeaves: React.FC<DoctorLeavesProps> = ({ doctorId, doctorName, open,
           message={t.messages.CONFIRM.DELETE_LEAVE}
           confirmText={t.common.delete}
           cancelText={t.common.cancel}
+          variant="destructive"
           onConfirm={() => handleDelete(confirm.id)}
           onCancel={() => setConfirm({ open: false })}
         />
