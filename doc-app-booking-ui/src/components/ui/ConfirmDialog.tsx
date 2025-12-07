@@ -34,6 +34,8 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   const buttonClassName = variant === 'destructive' 
     ? 'action delete' 
+    : confirmText === 'Reserve' || confirmText === 'Reserving...'
+    ? 'btn_theme'
     : '';
 
   return (
