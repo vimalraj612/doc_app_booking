@@ -102,6 +102,17 @@ textarea {
 			font-size: 14px;
 		}
 	}
+	.appointments{
+		.card{
+			
+				svg{
+					color: #3375ca!important;
+				}
+			.status{
+				color: #3375ca!important;
+			}
+		}
+	}
 }
 .doctor_cards {
 	border: solid 1px #ccc;

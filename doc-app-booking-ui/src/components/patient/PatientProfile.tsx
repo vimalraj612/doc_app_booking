@@ -318,6 +318,13 @@ const PatientProfile: React.FC<PatientProfileProps> = ({
           <form onSubmit={e => { 
             e.preventDefault(); 
             onSave(); 
+             setTimeout(() => {
+      const mainModalContent = document.querySelector('.modal.edit_profile');
+      if (mainModalContent) {
+        mainModalContent.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 10);
+  
           }} className="space-y-3 sm:space-y-4 md:space-y-6 mt-1 sm:mt-2 md:mt-4">
             {/* Personal Information Section */}
             <div className="personal_info">

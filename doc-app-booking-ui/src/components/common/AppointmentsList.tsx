@@ -476,7 +476,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
                       {/* Action buttons */}
                       {appt.status === 'SCHEDULED' && (
-                        <div className="pt-3 mt-3 border-t border-gray-300">
+                        <div className="pt-3 mt-3 border-gray-300">
                           {isDoctor ? (
                             <Button
                               size="sm"
@@ -525,9 +525,9 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 </div>
       {/* Complete Dialog for Doctor */}
       <Dialog open={completeDialog.open} onOpenChange={(open) => !open && setCompleteDialog({ open: false })}>
-        <DialogContent className="modal max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="space-y-3">
-            <DialogTitle className="text-2xl font-bold text-gray-900">{t.appointments.completeAppointment}</DialogTitle>
+        <DialogContent className="hospital_modal max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-3 heading_wrap">
+            <DialogTitle className="heading text-2xl font-bold text-gray-900">{t.appointments.completeAppointment}</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">
               {t.appointments.markAppointmentComplete} <span className="font-semibold text-gray-900">{completeDialog.appt?.doctorName}</span> {t.ui.on}{' '}
               <span className="font-semibold text-gray-900">{completeDialog.appt && new Date(completeDialog.appt.appointmentDateTime).toLocaleString()}</span> as completed.
@@ -537,7 +537,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
           <div className="space-y-6 py-4">
             {/* Appointment Details Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.appointmentDetails}</h3>
+              <h3 className="heading text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.appointmentDetails}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-gray-500 uppercase">{t.appointments.patientName}</p>
@@ -566,7 +566,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
             {/* Follow-up Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.followUpInformation}</h3>
+              <h3 className="heading text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.followUpInformation}</h3>
               <div className="field">
                 <Label htmlFor="followUpDate" className="text-sm font-medium text-gray-700">
                   {t.appointments.followUpDate} <span className="text-gray-400 font-normal">({t.forms.optional})</span>
@@ -586,7 +586,7 @@ const AppointmentsList: React.FC<AppointmentsListProps> = ({
 
             {/* Notes Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.completionNotes}</h3>
+              <h3 className="heading text-lg font-semibold text-gray-900 border-b pb-2">{t.appointments.completionNotes}</h3>
               <div className="field">
                 <Label htmlFor="completeNotes" className="text-sm font-medium text-gray-700">
                   {t.appointments.notes} <span className="text-gray-400 font-normal">({t.forms.optional})</span>

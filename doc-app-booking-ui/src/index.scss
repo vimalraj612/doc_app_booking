@@ -3162,12 +3162,12 @@ html {
 }
 
 .success_alert_message {
-	background: rgba(225, 249, 217, 0.35);
+	background: rgba(213, 249, 202, 0.35);
 	/* semi-transparent */
 	backdrop-filter: blur(10px);
 	/* frosted glass blur */
 	-webkit-backdrop-filter: blur(10px);
-	color: #227309;
+	color: #165503;
 	border-radius: 4px;
 	font-size: 14px;
 	position: absolute;
@@ -3299,11 +3299,11 @@ html {
 		}
 
 		&.delete {
-			background-color: #ffe2e6;
-			color: #e4001c;
+			background-color: #e4001c;
+			color: #fff;
 
 			svg {
-				color: #e4001c;
+				color: #fff;
 			}
 		}
 	}
