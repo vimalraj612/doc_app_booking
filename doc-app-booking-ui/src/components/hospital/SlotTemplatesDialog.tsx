@@ -298,7 +298,6 @@ export function SlotTemplatesDialog({ open, onOpenChange, doctorId }: SlotTempla
                       <Input 
                         id="slotDuration"
                         type="number" 
-                        min={5} 
                         value={templateForm.slotDurationMinutes} 
                         onChange={e => setTemplateForm(f => ({ ...f, slotDurationMinutes: Number(e.target.value || 0) }))}
                         placeholder={t.messages.LABELS.PLACEHOLDER_DURATION}
