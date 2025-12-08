@@ -32,8 +32,11 @@ export default function ConfirmDialog({
   onCancel,
   variant = 'default',
 }: ConfirmDialogProps) {
-  const buttonClassName = variant === 'destructive' 
-    ? 'action delete' 
+const buttonClassName =
+  confirmText === 'Yes, Cancel'
+    ? 'action delete'
+    : variant === 'destructive'
+    ? 'action delete'
     : confirmText === 'Reserve' || confirmText === 'Reserving...'
     ? 'btn_theme'
     : '';
