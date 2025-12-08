@@ -390,11 +390,20 @@ export function HospitalDashboard({
               setDeleteError(null); // Clear previous errors
               await onDeleteDoctor(doctorToDelete);
               await fetchDoctors();
+              
+              // Scroll to top after successful deletion
+              setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }, 100);
+              
             } catch (e: any) {
               console.error('Failed to delete doctor', e);
               // Extract only the message from the backend response
               const errorMessage = extractErrorMessage(e);
               setDeleteError(errorMessage);
+               setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }, 100);
             }
           }
           setDoctorConfirmOpen(false);
