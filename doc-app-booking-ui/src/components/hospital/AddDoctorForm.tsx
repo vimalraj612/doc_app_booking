@@ -362,6 +362,7 @@ export function AddDoctorForm({
             <Label htmlFor="phone" className="text-sm font-medium">{t.messages.LABELS.PHONE_NUMBER}<span style={{ color: "red" }}>{t.messages.LABELS.REQUIRED}</span></Label>
             <PhoneInput
               id="phone"
+              label=""
               value={phoneNumber}
               onChange={(value) => setPhoneNumber(value)}
               placeholder={t.messages.LABELS.PLACEHOLDER_PHONE}
