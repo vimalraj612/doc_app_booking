@@ -1,0 +1,14 @@
+# OS / editor
+.DS_Store
+.vscode/
+
+# Java / Maven / Gradle build output
+**/target/
+**/build/
+**/out/
+**/*.class
+
+# Node / frontend build output
+**/node_modules/
+**/dist/
+**/coverage/
