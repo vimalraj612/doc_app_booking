@@ -4,6 +4,7 @@ import com.doc_app.booking.util.LocaleManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -40,7 +41,7 @@ public class LocaleInterceptor implements HandlerInterceptor {
     public void afterCompletion(@NonNull HttpServletRequest request, 
                                @NonNull HttpServletResponse response, 
                                @NonNull Object handler, 
-                               Exception ex) {
+                               @Nullable Exception ex) {
         // Clear locale to prevent memory leaks
         LocaleManager.clearLocale();
     }
